@@ -7,6 +7,7 @@ import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { FormControl, FormControlLabel, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
+import { Alert } from 'react-native';
 
 interface Establecimiento {
   id: string;
@@ -57,27 +58,27 @@ export default function Establecimientos() {
     };
 
     if (!formData.nombre.trim()) {
-      newErrors.nombre = 'El nombre del establecimiento es requerido';
+      newErrors.nombre = 'Por favor, escriba el nombre del almacén';
     }
 
     if (!formData.calle.trim()) {
-      newErrors.calle = 'La calle es requerida';
+      newErrors.calle = 'Por favor, escriba la calle y número';
     }
 
     if (!formData.cp.trim()) {
-      newErrors.cp = 'El código postal es requerido';
+      newErrors.cp = 'Por favor, ingrese el código postal';
     } else if (!/^\d{5}$/.test(formData.cp)) {
-      newErrors.cp = 'El código postal debe tener 5 dígitos';
+      newErrors.cp = 'El código postal debe tener exactamente 5 dígitos';
     }
 
     if (!formData.colonia.trim()) {
-      newErrors.colonia = 'La colonia es requerida';
+      newErrors.colonia = 'Por favor, escriba la colonia';
     }
 
     if (!formData.celular.trim()) {
-      newErrors.celular = 'El número de celular es requerido';
+      newErrors.celular = 'Por favor, ingrese el número de teléfono';
     } else if (!/^\d{10}$/.test(formData.celular.replace(/\D/g, ''))) {
-      newErrors.celular = 'El número de celular debe tener 10 dígitos';
+      newErrors.celular = 'El número de teléfono debe tener 10 dígitos';
     }
 
     setErrors(newErrors);
@@ -111,6 +112,13 @@ export default function Establecimientos() {
         colonia: '',
         celular: '',
       });
+      
+      // Mostrar confirmación de éxito
+      Alert.alert(
+        '✅ ¡Almacén Creado!',
+        'El almacén se ha guardado correctamente.',
+        [{ text: 'Entendido', style: 'default' }]
+      );
     }
   };
 
@@ -136,33 +144,34 @@ export default function Establecimientos() {
     <Box className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
         <Box className="p-6">
-          <Heading className="font-bold text-3xl mb-6 text-gray-900">
-            Establecimientos
+          <Heading className="font-bold text-4xl mb-8 text-gray-900">
+            Mis Almacenes
           </Heading>
 
           {!showForm ? (
             <>
-              <Box className="mb-6">
+              <Box className="mb-8">
                 <Button
                   size="xl"
                   action="primary"
                   onPress={() => setShowForm(true)}
-                  className="bg-blue-600 py-2"
+                  className="bg-blue-600 py-5 rounded-2xl"
                 >
-                  <ButtonText className="text-lg font-semibold">
-                    + Agregar Nuevo Establecimiento
+                  <ButtonText className="text-2xl font-bold">
+                    ➕ Agregar Almacén Nuevo
                   </ButtonText>
                 </Button>
               </Box>
 
               {/* Lista de Establecimientos - Tarjetas grandes */}
               {establecimientos.length === 0 ? (
-                <Box className="mt-8 items-center bg-white p-8 rounded-xl border-2 border-gray-200">
-                  <Text className="text-xl text-gray-600 text-center">
-                    No hay establecimientos registrados
+                <Box className="mt-8 items-center bg-white p-10 rounded-2xl border-3 border-gray-300">
+                  <Text className="text-3xl mb-4">🏢</Text>
+                  <Text className="text-2xl text-gray-800 text-center font-semibold mb-3">
+                    Aún no tiene almacenes registrados
                   </Text>
-                  <Text className="text-lg text-gray-500 text-center mt-2">
-                    Presiona el botón de arriba para agregar uno
+                  <Text className="text-xl text-gray-600 text-center">
+                    Toque el botón de arriba para agregar su primer almacén
                   </Text>
                 </Box>
               ) : (
@@ -170,35 +179,35 @@ export default function Establecimientos() {
                   {establecimientos.map((establecimiento) => (
                     <Box
                       key={establecimiento.id}
-                      className="bg-white p-6 rounded-xl border-2 border-gray-300 shadow-sm"
+                      className="bg-white p-8 rounded-2xl border-3 border-gray-400 shadow-lg"
                     >
-                      <VStack space="md">
-                        <Box>
-                          <Text className="text-lg font-semibold text-gray-700 mb-1">
-                            Nombre:
-                          </Text>
-                          <Text className="text-xl font-bold text-gray-900">
-                            {establecimiento.nombre}
+                      <VStack space="lg">
+                        <Box className="bg-blue-50 p-5 rounded-xl border-2 border-blue-300">
+                          <Text className="text-2xl font-bold text-blue-900 mb-2">
+                            🏢 {establecimiento.nombre}
                           </Text>
                         </Box>
 
-                        <Box className="border-t border-gray-200 pt-4">
-                          <Text className="text-lg font-semibold text-gray-700 mb-1">
-                            Dirección:
+                        <Box className="bg-gray-50 p-5 rounded-xl border-2 border-gray-300">
+                          <Text className="text-xl font-bold text-gray-900 mb-3">
+                            📍 Dirección:
                           </Text>
-                          <Text className="text-xl text-gray-900">
+                          <Text className="text-2xl text-gray-800 mb-2">
                             {establecimiento.calle}
                           </Text>
-                          <Text className="text-xl text-gray-900">
-                            {establecimiento.colonia}, CP {establecimiento.cp}
+                          <Text className="text-2xl text-gray-800">
+                            {establecimiento.colonia}
+                          </Text>
+                          <Text className="text-xl text-gray-700 mt-2">
+                            Código Postal: {establecimiento.cp}
                           </Text>
                         </Box>
 
-                        <Box className="border-t border-gray-200 pt-4">
-                          <Text className="text-lg font-semibold text-gray-700 mb-1">
-                            Teléfono:
+                        <Box className="bg-gray-50 p-5 rounded-xl border-2 border-gray-300">
+                          <Text className="text-xl font-bold text-gray-900 mb-2">
+                            📞 Teléfono:
                           </Text>
-                          <Text className="text-xl text-gray-900">
+                          <Text className="text-2xl text-gray-800">
                             {establecimiento.celular}
                           </Text>
                         </Box>
@@ -209,31 +218,41 @@ export default function Establecimientos() {
               )}
             </>
           ) : (
-            <Box className="bg-white p-6 rounded-xl border-2 border-gray-300 shadow-md">
-              <Heading className="font-bold text-2xl mb-6 text-gray-900">
-                Nuevo Establecimiento
+            <Box className="bg-white p-8 rounded-2xl border-3 border-gray-400 shadow-lg">
+              <Heading className="font-bold text-4xl mb-4 text-gray-900">
+                Agregar Almacén Nuevo
               </Heading>
-              <Text className="text-lg text-gray-600 mb-6">
-                Complete todos los campos para registrar un nuevo almacén
+              <Text className="text-xl text-gray-700 mb-8 font-semibold">
+                Complete la información paso a paso. Todos los campos marcados con * son obligatorios.
               </Text>
 
               <VStack space="xl">
+                {/* Paso 1: Información Básica */}
+                <Box className="bg-blue-50 p-4 rounded-xl border-2 border-blue-300 mb-4">
+                  <Text className="text-2xl font-bold text-blue-900 mb-1">
+                    Paso 1: Información Básica
+                  </Text>
+                  <Text className="text-lg text-blue-800">
+                    Escriba el nombre del almacén
+                  </Text>
+                </Box>
+
                 {/* Nombre del Establecimiento */}
                 <FormControl isInvalid={!!errors.nombre}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Nombre del Establecimiento
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿Cómo se llama este almacén? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.nombre ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.nombre ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
-                      placeholder="Ejemplo: Almacén Central"
+                      placeholder="Ejemplo: Almacén Central, Bodega Principal"
                       value={formData.nombre}
                       onChangeText={(text) => {
                         setFormData({ ...formData, nombre: text });
@@ -241,30 +260,40 @@ export default function Establecimientos() {
                           setErrors({ ...errors, nombre: '' });
                         }
                       }}
-                      className="text-xl py-3"
+                      className="text-2xl py-4"
                     />
                   </Input>
                   {errors.nombre && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.nombre}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ {errors.nombre}
                       </FormControlErrorText>
                     </FormControlError>
                   )}
                 </FormControl>
 
+                {/* Paso 2: Dirección */}
+                <Box className="bg-blue-50 p-4 rounded-xl border-2 border-blue-300 mb-4">
+                  <Text className="text-2xl font-bold text-blue-900 mb-1">
+                    Paso 2: Dirección
+                  </Text>
+                  <Text className="text-lg text-blue-800">
+                    Escriba la dirección completa del almacén
+                  </Text>
+                </Box>
+
                 {/* Calle */}
                 <FormControl isInvalid={!!errors.calle}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Calle
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿En qué calle y número está? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.calle ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.calle ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
@@ -276,13 +305,48 @@ export default function Establecimientos() {
                           setErrors({ ...errors, calle: '' });
                         }
                       }}
-                      className="text-xl py-3"
+                      className="text-2xl py-4"
                     />
                   </Input>
                   {errors.calle && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.calle}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ {errors.calle}
+                      </FormControlErrorText>
+                    </FormControlError>
+                  )}
+                </FormControl>
+
+                {/* Colonia */}
+                <FormControl isInvalid={!!errors.colonia}>
+                  <FormControlLabel>
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿En qué colonia está? *
+                    </Text>
+                  </FormControlLabel>
+                  <Input
+                    variant="outline"
+                    size="xl"
+                    className={`rounded-2xl border-3 ${
+                      errors.colonia ? 'border-red-600' : 'border-gray-500'
+                    }`}
+                  >
+                    <InputField
+                      placeholder="Ejemplo: Centro, Del Valle, Industrial"
+                      value={formData.colonia}
+                      onChangeText={(text) => {
+                        setFormData({ ...formData, colonia: text });
+                        if (errors.colonia) {
+                          setErrors({ ...errors, colonia: '' });
+                        }
+                      }}
+                      className="text-2xl py-4"
+                    />
+                  </Input>
+                  {errors.colonia && (
+                    <FormControlError>
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ {errors.colonia}
                       </FormControlErrorText>
                     </FormControlError>
                   )}
@@ -291,19 +355,19 @@ export default function Establecimientos() {
                 {/* Código Postal */}
                 <FormControl isInvalid={!!errors.cp}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Código Postal
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿Cuál es el código postal? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.cp ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.cp ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
-                      placeholder="12345"
+                      placeholder="Ejemplo: 12345"
                       value={formData.cp}
                       onChangeText={(text) => {
                         setFormData({ ...formData, cp: text.replace(/\D/g, '') });
@@ -313,69 +377,44 @@ export default function Establecimientos() {
                       }}
                       keyboardType="numeric"
                       maxLength={5}
-                      className="text-xl py-3"
+                      className="text-2xl py-4 text-center"
                     />
                   </Input>
                   {errors.cp && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.cp}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ {errors.cp}
                       </FormControlErrorText>
                     </FormControlError>
                   )}
                 </FormControl>
 
-                {/* Colonia */}
-                <FormControl isInvalid={!!errors.colonia}>
-                  <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Colonia
-                    </Text>
-                  </FormControlLabel>
-                  <Input
-                    variant="outline"
-                    size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.colonia ? 'border-red-500' : 'border-gray-400'
-                    }`}
-                  >
-                    <InputField
-                      placeholder="Ejemplo: Centro"
-                      value={formData.colonia}
-                      onChangeText={(text) => {
-                        setFormData({ ...formData, colonia: text });
-                        if (errors.colonia) {
-                          setErrors({ ...errors, colonia: '' });
-                        }
-                      }}
-                      className="text-xl py-3"
-                    />
-                  </Input>
-                  {errors.colonia && (
-                    <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.colonia}
-                      </FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
+                {/* Paso 3: Contacto */}
+                <Box className="bg-blue-50 p-4 rounded-xl border-2 border-blue-300 mb-4">
+                  <Text className="text-2xl font-bold text-blue-900 mb-1">
+                    Paso 3: Contacto
+                  </Text>
+                  <Text className="text-lg text-blue-800">
+                    Escriba el número de teléfono del almacén
+                  </Text>
+                </Box>
 
                 {/* Número de Celular */}
                 <FormControl isInvalid={!!errors.celular}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Número de Celular
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿Cuál es el número de teléfono? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.celular ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.celular ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
-                      placeholder="5551234567"
+                      placeholder="Ejemplo: 5551234567"
                       value={formData.celular}
                       onChangeText={(text) => {
                         const cleaned = text.replace(/\D/g, '');
@@ -386,28 +425,28 @@ export default function Establecimientos() {
                       }}
                       keyboardType="phone-pad"
                       maxLength={10}
-                      className="text-xl py-3"
+                      className="text-2xl py-4 text-center"
                     />
                   </Input>
                   {errors.celular && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.celular}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ {errors.celular}
                       </FormControlErrorText>
                     </FormControlError>
                   )}
                 </FormControl>
 
                 {/* Botones */}
-                <VStack space="md" className="mt-6">
+                <VStack space="lg" className="mt-8">
                   <Button
                     size="xl"
                     action="primary"
                     onPress={handleSubmit}
-                    className="bg-blue-600 py-2"
+                    className="bg-green-600 py-6 rounded-2xl"
                   >
-                    <ButtonText className="text-xl font-semibold">
-                      Guardar Establecimiento
+                    <ButtonText className="text-2xl font-bold">
+                      ✅ Guardar Almacén
                     </ButtonText>
                   </Button>
                   <Button
@@ -415,10 +454,10 @@ export default function Establecimientos() {
                     action="secondary"
                     variant="outline"
                     onPress={handleCancel}
-                    className="border-2 border-gray-400 py-2"
+                    className="border-3 border-gray-500 py-6 rounded-2xl"
                   >
-                    <ButtonText className="text-xl font-semibold text-gray-700">
-                      Cancelar
+                    <ButtonText className="text-2xl font-bold text-gray-700">
+                      ❌ Cancelar
                     </ButtonText>
                   </Button>
                 </VStack>

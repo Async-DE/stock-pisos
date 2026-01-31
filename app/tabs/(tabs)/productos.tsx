@@ -232,50 +232,50 @@ export default function Productos() {
     };
 
     if (!formData.foto) {
-      newErrors.foto = 'La foto es requerida';
+      newErrors.foto = 'Por favor, agregue una foto del producto';
     }
 
     if (!formData.nombre.trim()) {
-      newErrors.nombre = 'El nombre del producto es requerido';
+      newErrors.nombre = 'Por favor, escriba el nombre del producto';
     }
 
     if (!formData.tipo.trim()) {
-      newErrors.tipo = 'El tipo de producto es requerido';
+      newErrors.tipo = 'Por favor, escriba el tipo de producto';
     }
 
     if (!formData.cantidad.trim()) {
-      newErrors.cantidad = 'La cantidad es requerida';
+      newErrors.cantidad = 'Por favor, ingrese cuántas unidades hay';
     } else {
       const cantidad = parseInt(formData.cantidad);
       if (isNaN(cantidad) || cantidad < 1) {
-        newErrors.cantidad = 'La cantidad debe ser mayor a 0';
+        newErrors.cantidad = 'Por favor, ingrese cuántas unidades hay (mínimo 1)';
       }
     }
 
     if (!formData.precioVenta.trim()) {
-      newErrors.precioVenta = 'El precio de venta es requerido';
+      newErrors.precioVenta = 'Por favor, ingrese el precio de venta';
     } else {
       const precio = parseFloat(formData.precioVenta);
       if (isNaN(precio) || precio < 0) {
-        newErrors.precioVenta = 'El precio de venta debe ser un número válido';
+        newErrors.precioVenta = 'Por favor, ingrese un precio válido (solo números)';
       }
     }
 
     if (!formData.costoCompra.trim()) {
-      newErrors.costoCompra = 'El costo de compra es requerido';
+      newErrors.costoCompra = 'Por favor, ingrese el costo de compra';
     } else {
       const costo = parseFloat(formData.costoCompra);
       if (isNaN(costo) || costo < 0) {
-        newErrors.costoCompra = 'El costo de compra debe ser un número válido';
+        newErrors.costoCompra = 'Por favor, ingrese un costo válido (solo números)';
       }
     }
 
     if (!formData.establecimientoId) {
-      newErrors.establecimientoId = 'Debe seleccionar un establecimiento';
+      newErrors.establecimientoId = 'Por favor, elija un almacén de la lista';
     }
 
     if (!formData.estanteId) {
-      newErrors.estanteId = 'Debe seleccionar un estante';
+      newErrors.estanteId = 'Por favor, elija un lugar de guardado';
     }
 
     setErrors(newErrors);
@@ -333,6 +333,13 @@ export default function Productos() {
         establecimientoId: '',
         estanteId: '',
       });
+      
+      // Mostrar confirmación de éxito
+      Alert.alert(
+        '✅ ¡Producto Guardado!',
+        'El producto se ha guardado correctamente en su lista.',
+        [{ text: 'Entendido', style: 'default' }]
+      );
     }
   };
 
@@ -376,161 +383,133 @@ export default function Productos() {
     <Box className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
         <Box className="p-6">
-          <Heading className="font-bold text-3xl mb-6 text-gray-900">
-            Productos
+          <Heading className="font-bold text-4xl mb-8 text-gray-900">
+            Mis Productos
           </Heading>
 
           {establecimientos.length === 0 || estantes.length === 0 ? (
-            <Box className="bg-yellow-50 border-2 border-yellow-300 p-6 rounded-xl">
-              <Text className="text-xl text-yellow-800 text-center font-semibold">
-                ⚠️ Primero debe crear establecimientos y estantes
+            <Box className="bg-yellow-50 border-3 border-yellow-400 p-8 rounded-2xl">
+              <Text className="text-2xl text-yellow-900 text-center font-bold mb-3">
+                ⚠️ Configuración Necesaria
               </Text>
-              <Text className="text-lg text-yellow-700 text-center mt-2">
-                Vaya a las pestañas correspondientes para crearlos
+              <Text className="text-xl text-yellow-800 text-center font-semibold mb-2">
+                Primero debe crear almacenes y lugares de guardado
+              </Text>
+              <Text className="text-lg text-yellow-700 text-center">
+                Vaya a las pestañas "Mis Almacenes" y "Lugares de Guardado" para crearlos
               </Text>
             </Box>
           ) : !showForm ? (
             <>
-              <Box className="mb-6">
+              <Box className="mb-8">
                 <Button
                   size="xl"
                   action="primary"
                   onPress={() => setShowForm(true)}
-                  className="bg-blue-600 py-2"
+                  className="bg-blue-600 py-5 rounded-2xl"
                 >
-                  <ButtonText className="text-lg font-semibold">
-                    + Agregar Nuevo Producto
+                  <ButtonText className="text-2xl font-bold">
+                    ➕ Agregar Producto Nuevo
                   </ButtonText>
                 </Button>
               </Box>
 
               {/* Lista de Productos */}
               {productos.length === 0 ? (
-                <Box className="mt-8 items-center bg-white p-8 rounded-xl border-2 border-gray-200">
-                  <Text className="text-xl text-gray-600 text-center">
-                    No hay productos registrados
+                <Box className="mt-8 items-center bg-white p-10 rounded-2xl border-3 border-gray-300">
+                  <Text className="text-3xl mb-4">📦</Text>
+                  <Text className="text-2xl text-gray-800 text-center font-semibold mb-3">
+                    Aún no tiene productos registrados
                   </Text>
-                  <Text className="text-lg text-gray-500 text-center mt-2">
-                    Presiona el botón de arriba para agregar un producto
+                  <Text className="text-xl text-gray-600 text-center">
+                    Toque el botón de arriba para agregar su primer producto
                   </Text>
                 </Box>
               ) : (
                 <VStack space="xl">
                   {Object.values(productosPorEstablecimiento).map((grupo) => (
-                    <Box key={grupo.establecimiento?.id} className="mb-6">
-                      <Box className="bg-blue-100 p-4 rounded-t-xl border-2 border-blue-300">
-                        <Text className="text-2xl font-bold text-blue-900">
-                          {grupo.establecimiento?.nombre}
+                    <Box key={grupo.establecimiento?.id} className="mb-8">
+                      <Box className="bg-blue-100 p-5 rounded-t-2xl border-3 border-blue-400">
+                        <Text className="text-3xl font-bold text-blue-900">
+                          🏢 {grupo.establecimiento?.nombre}
                         </Text>
                       </Box>
 
-                      <VStack space="md" className="bg-white border-2 border-blue-300 border-t-0 rounded-b-xl p-4">
+                      <VStack space="lg" className="bg-white border-3 border-blue-400 border-t-0 rounded-b-2xl p-6">
                         {grupo.productos.map((producto) => (
                           <Box
                             key={producto.id}
-                            className="bg-gray-50 border-2 border-gray-300 p-4 rounded-xl"
+                            className="bg-gray-50 border-3 border-gray-400 p-6 rounded-2xl"
                           >
-                            <Box className="flex-row gap-4">
-                              {producto.foto && (
-                                <Image
-                                  source={{ uri: producto.foto }}
-                                  className="w-24 h-24 rounded-lg"
-                                  alt={producto.nombre}
-                                />
-                              )}
-                              <Box className="flex-1">
-                                <VStack space="sm">
-                                  <Box>
-                                    <Text className="text-lg font-semibold text-gray-700">
-                                      Nombre:
-                                    </Text>
-                                    <Text className="text-xl font-bold text-gray-900">
-                                      {producto.nombre}
-                                    </Text>
+                            <VStack space="md">
+                              {/* Imagen y Nombre */}
+                              <Box className="flex-row items-start">
+                                {producto.foto && (
+                                  <Box className="mr-4">
+                                    <Image
+                                      source={{ uri: producto.foto }}
+                                      className="w-32 h-32 rounded-xl"
+                                      alt={producto.nombre}
+                                    />
                                   </Box>
-
-                                  <Box className="flex-row gap-4">
-                                    <Box className="flex-1">
-                                      <Text className="text-base font-semibold text-gray-700">
-                                        Tipo:
-                                      </Text>
-                                      <Text className="text-lg text-gray-900">
-                                        {producto.tipo}
-                                      </Text>
-                                    </Box>
-                                    <Box className="flex-1">
-                                      <Text className="text-base font-semibold text-gray-700">
-                                        Cantidad:
-                                      </Text>
-                                      <Text className="text-lg text-gray-900">
-                                        {producto.cantidad}
-                                      </Text>
-                                    </Box>
-                                  </Box>
-
-                                  <Box className="flex-row gap-4">
-                                    <Box className="flex-1">
-                                      <Text className="text-base font-semibold text-gray-700">
-                                        Precio Venta:
-                                      </Text>
-                                      <Text className="text-lg text-gray-900">
-                                        ${producto.precioVenta.toFixed(2)}
-                                      </Text>
-                                    </Box>
-                                    <Box className="flex-1">
-                                      <Text className="text-base font-semibold text-gray-700">
-                                        Costo:
-                                      </Text>
-                                      <Text className="text-lg text-gray-900">
-                                        ${producto.costoCompra.toFixed(2)}
-                                      </Text>
-                                    </Box>
-                                  </Box>
-
-                                  <Box>
-                                    <Text className="text-base font-semibold text-gray-700">
-                                      Ganancia:
-                                    </Text>
-                                    <Text
-                                      className={`text-xl font-bold ${
-                                        producto.ganancia >= 0
-                                          ? 'text-green-600'
-                                          : 'text-red-600'
-                                      }`}
-                                    >
-                                      ${producto.ganancia.toFixed(2)}
-                                    </Text>
-                                  </Box>
-
-                                  <Box className="border-t border-gray-300 pt-2 mt-2">
-                                    <Text className="text-base font-semibold text-gray-700">
-                                      Ubicación:
-                                    </Text>
-                                    <Text className="text-lg text-gray-900">
-                                      Estante {producto.estanteCodigo}
-                                    </Text>
-                                  </Box>
-
-                                  <Box>
-                                    <Text className="text-base font-semibold text-gray-700">
-                                      Código:
-                                    </Text>
-                                    <Text className="text-lg font-mono text-gray-900">
-                                      {producto.codigo}
-                                    </Text>
-                                  </Box>
-
-                                  <Box>
-                                    <Text className="text-base font-semibold text-gray-700">
-                                      Fecha de Creación:
-                                    </Text>
-                                    <Text className="text-lg text-gray-900">
-                                      {producto.fechaCreacion}
-                                    </Text>
-                                  </Box>
-                                </VStack>
+                                )}
+                                <Box className="flex-1">
+                                  <Text className="text-xl font-bold text-gray-900 mb-1">
+                                    📦 {producto.nombre}
+                                  </Text>
+                                  <Text className="text-lg text-gray-700">
+                                    Tipo: {producto.tipo}
+                                  </Text>
+                                </Box>
                               </Box>
-                            </Box>
+
+                              {/* Información de Precios */}
+                              <Box className="bg-white p-4 rounded-xl border-2 border-gray-300">
+                                <Box className="flex-row justify-between items-center mb-2">
+                                  <Text className="text-lg font-semibold text-gray-700">
+                                    💰 Precio:
+                                  </Text>
+                                  <Text className="text-2xl font-bold text-blue-600">
+                                    ${producto.precioVenta.toFixed(2)}
+                                  </Text>
+                                </Box>
+                                <Box className="flex-row justify-between items-center mb-2">
+                                  <Text className="text-lg font-semibold text-gray-700">
+                                    📊 Cantidad:
+                                  </Text>
+                                  <Text className="text-2xl font-bold text-gray-900">
+                                    {producto.cantidad} unidades
+                                  </Text>
+                                </Box>
+                                <Box className="flex-row justify-between items-center border-t-2 border-gray-300 pt-2">
+                                  <Text className="text-lg font-semibold text-gray-700">
+                                    💵 Ganancia:
+                                  </Text>
+                                  <Text
+                                    className={`text-2xl font-bold ${
+                                      producto.ganancia >= 0
+                                        ? 'text-green-600'
+                                        : 'text-red-600'
+                                    }`}
+                                  >
+                                    ${producto.ganancia.toFixed(2)}
+                                  </Text>
+                                </Box>
+                              </Box>
+
+                              {/* Ubicación */}
+                              <Box className="bg-blue-50 p-4 rounded-xl border-2 border-blue-300">
+                                <Text className="text-lg font-semibold text-blue-900 mb-1">
+                                  📍 Ubicación:
+                                </Text>
+                                <Text className="text-xl text-blue-800">
+                                  Almacén: {grupo.establecimiento?.nombre}
+                                </Text>
+                                <Text className="text-xl text-blue-800">
+                                  Lugar: {producto.estanteCodigo}
+                                </Text>
+                              </Box>
+                            </VStack>
                           </Box>
                         ))}
                       </VStack>
@@ -540,46 +519,66 @@ export default function Productos() {
               )}
             </>
           ) : (
-            <Box className="bg-white p-6 rounded-xl border-2 border-gray-300 shadow-md">
-              <Heading className="font-bold text-2xl mb-6 text-gray-900">
-                Nuevo Producto
+            <Box className="bg-white p-8 rounded-2xl border-3 border-gray-400 shadow-lg">
+              <Heading className="font-bold text-4xl mb-4 text-gray-900">
+                Agregar Producto Nuevo
               </Heading>
-              <Text className="text-lg text-gray-600 mb-6">
-                Complete todos los campos para registrar un nuevo producto
+              <Text className="text-xl text-gray-700 mb-8 font-semibold">
+                Complete la información paso a paso. Todos los campos marcados con * son obligatorios.
               </Text>
 
               <VStack space="xl">
-                {/* Foto */}
+                {/* Paso 1: Foto */}
+                <Box className="bg-blue-50 p-4 rounded-xl border-2 border-blue-300 mb-4">
+                  <Text className="text-2xl font-bold text-blue-900 mb-1">
+                    Paso 1: Foto del Producto
+                  </Text>
+                  <Text className="text-lg text-blue-800">
+                    Agregue una foto para identificar fácilmente el producto
+                  </Text>
+                </Box>
+
                 <FormControl isInvalid={!!errors.foto}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Foto del Producto *
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      📷 Foto del Producto *
                     </Text>
                   </FormControlLabel>
                   <Pressable onPress={handleSelectImage}>
                     <Box
-                      className={`border-2 rounded-xl p-4 items-center justify-center ${
+                      className={`border-3 rounded-2xl p-6 items-center justify-center ${
                         errors.foto
-                          ? 'border-red-500 bg-red-50'
+                          ? 'border-red-600 bg-red-100'
                           : formData.foto
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-400 bg-gray-100'
+                          ? 'border-green-600 bg-green-100'
+                          : 'border-gray-500 bg-gray-100'
                       }`}
-                      style={{ minHeight: 200 }}
+                      style={{ minHeight: 240 }}
                     >
                       {formData.foto ? (
-                        <Image
-                          source={{ uri: formData.foto }}
-                          className="w-full h-48 rounded-lg"
-                          alt="Producto"
-                        />
+                        <VStack space="md" className="items-center w-full">
+                          <Image
+                            source={{ uri: formData.foto }}
+                            className="w-full h-56 rounded-xl"
+                            alt="Producto"
+                          />
+                          <Text className="text-xl font-semibold text-green-800">
+                            ✅ Foto agregada correctamente
+                          </Text>
+                          <Text className="text-lg text-green-700">
+                            Toque aquí para cambiar la foto
+                          </Text>
+                        </VStack>
                       ) : (
-                        <VStack space="sm" className="items-center">
-                          <Box className="w-16 h-16 bg-gray-400 rounded-full items-center justify-center">
-                            <Text className="text-3xl text-white">📷</Text>
+                        <VStack space="md" className="items-center">
+                          <Box className="w-24 h-24 bg-gray-500 rounded-full items-center justify-center">
+                            <Text className="text-5xl">📷</Text>
                           </Box>
-                          <Text className="text-lg text-gray-600 text-center">
-                            Tocar para tomar foto o elegir de galería
+                          <Text className="text-2xl font-bold text-gray-700 text-center">
+                            Toque aquí para tomar una foto
+                          </Text>
+                          <Text className="text-xl text-gray-600 text-center">
+                            o elegir una foto de su galería
                           </Text>
                         </VStack>
                       )}
@@ -587,29 +586,39 @@ export default function Productos() {
                   </Pressable>
                   {errors.foto && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.foto}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ {errors.foto}
                       </FormControlErrorText>
                     </FormControlError>
                   )}
                 </FormControl>
 
+                {/* Paso 2: Información Básica */}
+                <Box className="bg-blue-50 p-4 rounded-xl border-2 border-blue-300 mb-4">
+                  <Text className="text-2xl font-bold text-blue-900 mb-1">
+                    Paso 2: Información Básica
+                  </Text>
+                  <Text className="text-lg text-blue-800">
+                    Escriba el nombre, tipo y cantidad del producto
+                  </Text>
+                </Box>
+
                 {/* Nombre */}
                 <FormControl isInvalid={!!errors.nombre}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Nombre del Producto
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿Cómo se llama este producto? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.nombre ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.nombre ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
-                      placeholder="Ejemplo: Laptop HP 15"
+                      placeholder="Ejemplo: Laptop HP 15, Camisa Azul, Arroz 1kg"
                       value={formData.nombre}
                       onChangeText={(text) => {
                         setFormData({ ...formData, nombre: text });
@@ -617,13 +626,13 @@ export default function Productos() {
                           setErrors({ ...errors, nombre: '' });
                         }
                       }}
-                      className="text-xl py-3"
+                      className="text-2xl py-4"
                     />
                   </Input>
                   {errors.nombre && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.nombre}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ Por favor, escriba el nombre del producto
                       </FormControlErrorText>
                     </FormControlError>
                   )}
@@ -632,19 +641,19 @@ export default function Productos() {
                 {/* Tipo */}
                 <FormControl isInvalid={!!errors.tipo}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Tipo de Producto
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿Qué tipo de producto es? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.tipo ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.tipo ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
-                      placeholder="Ejemplo: Electrónica, Ropa, Alimentos"
+                      placeholder="Ejemplo: Electrónica, Ropa, Alimentos, Herramientas"
                       value={formData.tipo}
                       onChangeText={(text) => {
                         setFormData({ ...formData, tipo: text });
@@ -652,13 +661,13 @@ export default function Productos() {
                           setErrors({ ...errors, tipo: '' });
                         }
                       }}
-                      className="text-xl py-3"
+                      className="text-2xl py-4"
                     />
                   </Input>
                   {errors.tipo && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.tipo}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ Por favor, escriba el tipo de producto
                       </FormControlErrorText>
                     </FormControlError>
                   )}
@@ -667,15 +676,15 @@ export default function Productos() {
                 {/* Cantidad */}
                 <FormControl isInvalid={!!errors.cantidad}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Cantidad
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿Cuántas unidades hay? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.cantidad ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.cantidad ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
@@ -691,30 +700,40 @@ export default function Productos() {
                         }
                       }}
                       keyboardType="numeric"
-                      className="text-xl py-3 text-center"
+                      className="text-2xl py-4 text-center"
                     />
                   </Input>
                   {errors.cantidad && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.cantidad}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ Por favor, ingrese cuántas unidades hay (mínimo 1)
                       </FormControlErrorText>
                     </FormControlError>
                   )}
                 </FormControl>
 
+                {/* Paso 3: Precios */}
+                <Box className="bg-blue-50 p-4 rounded-xl border-2 border-blue-300 mb-4">
+                  <Text className="text-2xl font-bold text-blue-900 mb-1">
+                    Paso 3: Precios
+                  </Text>
+                  <Text className="text-lg text-blue-800">
+                    Indique cuánto cuesta y a cuánto lo vende
+                  </Text>
+                </Box>
+
                 {/* Precio de Venta */}
                 <FormControl isInvalid={!!errors.precioVenta}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Precio de Venta
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿A cuánto lo vende? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.precioVenta ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.precioVenta ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
@@ -730,13 +749,13 @@ export default function Productos() {
                         }
                       }}
                       keyboardType="decimal-pad"
-                      className="text-xl py-3 text-center"
+                      className="text-2xl py-4 text-center"
                     />
                   </Input>
                   {errors.precioVenta && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.precioVenta}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ Por favor, ingrese el precio de venta
                       </FormControlErrorText>
                     </FormControlError>
                   )}
@@ -745,15 +764,15 @@ export default function Productos() {
                 {/* Costo de Compra */}
                 <FormControl isInvalid={!!errors.costoCompra}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Costo de Compra
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿Cuánto le costó comprarlo? *
                     </Text>
                   </FormControlLabel>
                   <Input
                     variant="outline"
                     size="xl"
-                    className={`rounded-xl border-2 ${
-                      errors.costoCompra ? 'border-red-500' : 'border-gray-400'
+                    className={`rounded-2xl border-3 ${
+                      errors.costoCompra ? 'border-red-600' : 'border-gray-500'
                     }`}
                   >
                     <InputField
@@ -769,40 +788,55 @@ export default function Productos() {
                         }
                       }}
                       keyboardType="decimal-pad"
-                      className="text-xl py-3 text-center"
+                      className="text-2xl py-4 text-center"
                     />
                   </Input>
                   {errors.costoCompra && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.costoCompra}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ Por favor, ingrese el costo de compra
                       </FormControlErrorText>
                     </FormControlError>
                   )}
                 </FormControl>
 
                 {/* Ganancia (Auto-generada) */}
-                <Box className="bg-blue-50 border-2 border-blue-300 p-4 rounded-xl">
-                  <Text className="text-xl font-semibold text-blue-900 mb-2">
-                    Ganancia (Calculada automáticamente)
+                <Box className="bg-green-50 border-3 border-green-500 p-6 rounded-2xl">
+                  <Text className="text-2xl font-bold text-green-900 mb-3">
+                    💵 Ganancia Calculada Automáticamente
                   </Text>
                   <Text
-                    className={`text-2xl font-bold ${
+                    className={`text-4xl font-bold mb-2 ${
                       ganancia >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
                     ${ganancia.toFixed(2)}
                   </Text>
-                  <Text className="text-base text-blue-700 mt-1">
-                    Precio de Venta - Costo de Compra
+                  <Text className="text-xl text-green-800">
+                    (Precio de Venta - Costo de Compra)
+                  </Text>
+                  {ganancia < 0 && (
+                    <Text className="text-xl font-semibold text-red-700 mt-2">
+                      ⚠️ Advertencia: La ganancia es negativa
+                    </Text>
+                  )}
+                </Box>
+
+                {/* Paso 4: Ubicación */}
+                <Box className="bg-blue-50 p-4 rounded-xl border-2 border-blue-300 mb-4">
+                  <Text className="text-2xl font-bold text-blue-900 mb-1">
+                    Paso 4: Ubicación
+                  </Text>
+                  <Text className="text-lg text-blue-800">
+                    Indique dónde está guardado el producto
                   </Text>
                 </Box>
 
                 {/* Establecimiento */}
                 <FormControl isInvalid={!!errors.establecimientoId}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Establecimiento (Almacén)
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿En qué almacén está guardado? *
                     </Text>
                   </FormControlLabel>
                   <Select
@@ -821,15 +855,15 @@ export default function Productos() {
                     <SelectTrigger
                       variant="outline"
                       size="xl"
-                      className={`rounded-xl border-2 ${
+                      className={`rounded-2xl border-3 ${
                         errors.establecimientoId
-                          ? 'border-red-500'
-                          : 'border-gray-400'
+                          ? 'border-red-600'
+                          : 'border-gray-500'
                       }`}
                     >
                       <SelectInput
-                        placeholder="Seleccione un establecimiento"
-                        className="text-xl py-3"
+                        placeholder="Elija un almacén de la lista"
+                        className="text-2xl py-4"
                       />
                       <SelectIcon className="mr-3">
                         <ChevronDownIcon />
@@ -855,8 +889,8 @@ export default function Productos() {
                   </Select>
                   {errors.establecimientoId && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.establecimientoId}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ Por favor, elija un almacén de la lista
                       </FormControlErrorText>
                     </FormControlError>
                   )}
@@ -865,8 +899,8 @@ export default function Productos() {
                 {/* Estante */}
                 <FormControl isInvalid={!!errors.estanteId}>
                   <FormControlLabel>
-                    <Text className="text-xl font-semibold text-gray-900 mb-2">
-                      Estante (Sección y Nivel)
+                    <Text className="text-2xl font-bold text-gray-900 mb-3">
+                      ¿En qué lugar del almacén está guardado? *
                     </Text>
                   </FormControlLabel>
                   <Select
@@ -882,21 +916,21 @@ export default function Productos() {
                     <SelectTrigger
                       variant="outline"
                       size="xl"
-                      className={`rounded-xl border-2 ${
+                      className={`rounded-2xl border-3 ${
                         errors.estanteId
-                          ? 'border-red-500'
+                          ? 'border-red-600'
                           : formData.establecimientoId
-                          ? 'border-gray-400'
-                          : 'border-gray-300 bg-gray-100'
+                          ? 'border-gray-500'
+                          : 'border-gray-400 bg-gray-200'
                       }`}
                     >
                       <SelectInput
                         placeholder={
                           formData.establecimientoId
-                            ? 'Seleccione un estante'
-                            : 'Primero seleccione un establecimiento'
+                            ? 'Elija un lugar de guardado'
+                            : 'Primero elija un almacén arriba'
                         }
-                        className="text-xl py-3"
+                        className="text-2xl py-4"
                       />
                       <SelectIcon className="mr-3">
                         <ChevronDownIcon />
@@ -922,8 +956,8 @@ export default function Productos() {
                   </Select>
                   {errors.estanteId && (
                     <FormControlError>
-                      <FormControlErrorText className="text-lg">
-                        {errors.estanteId}
+                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                        ⚠️ Por favor, elija un lugar de guardado
                       </FormControlErrorText>
                     </FormControlError>
                   )}
@@ -931,29 +965,29 @@ export default function Productos() {
 
                 {/* Código (Auto-generado) */}
                 {codigoGenerado && (
-                  <Box className="bg-green-50 border-2 border-green-300 p-4 rounded-xl">
-                    <Text className="text-xl font-semibold text-green-900 mb-2">
-                      Código del Producto (Generado automáticamente)
+                  <Box className="bg-green-50 border-3 border-green-500 p-6 rounded-2xl">
+                    <Text className="text-2xl font-bold text-green-900 mb-3">
+                      ✅ Número de Identificación (Generado automáticamente)
                     </Text>
-                    <Text className="text-2xl font-mono font-bold text-green-900">
+                    <Text className="text-3xl font-mono font-bold text-green-900 mb-2">
                       {codigoGenerado}
                     </Text>
-                    <Text className="text-base text-green-700 mt-1">
-                      Formato: Fecha (YYMMDD) - Estante (Sección-Nivel)
+                    <Text className="text-lg text-green-800">
+                      Este número se genera automáticamente para identificar el producto
                     </Text>
                   </Box>
                 )}
 
                 {/* Botones */}
-                <VStack space="md" className="mt-6">
+                <VStack space="lg" className="mt-8">
                   <Button
                     size="xl"
                     action="primary"
                     onPress={handleSubmit}
-                    className="bg-blue-600 py-2"
+                    className="bg-green-600 py-6 rounded-2xl"
                   >
-                    <ButtonText className="text-xl font-semibold">
-                      Guardar Producto
+                    <ButtonText className="text-2xl font-bold">
+                      ✅ Guardar Producto
                     </ButtonText>
                   </Button>
                   <Button
@@ -961,10 +995,10 @@ export default function Productos() {
                     action="secondary"
                     variant="outline"
                     onPress={handleCancel}
-                    className="border-2 border-gray-400 py-2"
+                    className="border-3 border-gray-500 py-6 rounded-2xl"
                   >
-                    <ButtonText className="text-xl font-semibold text-gray-700">
-                      Cancelar
+                    <ButtonText className="text-2xl font-bold text-gray-700">
+                      ❌ Cancelar
                     </ButtonText>
                   </Button>
                 </VStack>
