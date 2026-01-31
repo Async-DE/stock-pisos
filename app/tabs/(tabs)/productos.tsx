@@ -125,9 +125,10 @@ export default function Productos() {
 
   // Calcular ganancia automáticamente
   const ganancia = useMemo(() => {
+    const cantidad = parseInt(formData.cantidad) || 0;
     const venta = parseFloat(formData.precioVenta) || 0;
     const costo = parseFloat(formData.costoCompra) || 0;
-    return venta - costo;
+    return (venta - costo) * cantidad;
   }, [formData.precioVenta, formData.costoCompra]);
 
   // Generar código automáticamente
@@ -406,7 +407,7 @@ export default function Productos() {
                   size="xl"
                   action="primary"
                   onPress={() => setShowForm(true)}
-                  className="bg-blue-600 py-5 rounded-2xl"
+                  className="bg-blue-600 py-2 rounded-2xl"
                 >
                   <ButtonText className="text-2xl font-bold">
                     ➕ Agregar Producto Nuevo
@@ -984,7 +985,7 @@ export default function Productos() {
                     size="xl"
                     action="primary"
                     onPress={handleSubmit}
-                    className="bg-green-600 py-6 rounded-2xl"
+                    className="bg-green-600 py-2 rounded-2xl"
                   >
                     <ButtonText className="text-2xl font-bold">
                       ✅ Guardar Producto
@@ -995,7 +996,7 @@ export default function Productos() {
                     action="secondary"
                     variant="outline"
                     onPress={handleCancel}
-                    className="border-3 border-gray-500 py-6 rounded-2xl"
+                    className="border-3 border-gray-500 py-2 rounded-2xl"
                   >
                     <ButtonText className="text-2xl font-bold text-gray-700">
                       ❌ Cancelar

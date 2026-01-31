@@ -155,7 +155,7 @@ export default function Establecimientos() {
                   size="xl"
                   action="primary"
                   onPress={() => setShowForm(true)}
-                  className="bg-blue-600 py-5 rounded-2xl"
+                  className="bg-blue-600 py-2 rounded-2xl"
                 >
                   <ButtonText className="text-2xl font-bold">
                     ➕ Agregar Almacén Nuevo
@@ -443,7 +443,7 @@ export default function Establecimientos() {
                     size="xl"
                     action="primary"
                     onPress={handleSubmit}
-                    className="bg-green-600 py-6 rounded-2xl"
+                    className="bg-green-600 py-2 rounded-2xl"
                   >
                     <ButtonText className="text-2xl font-bold">
                       ✅ Guardar Almacén
@@ -454,7 +454,7 @@ export default function Establecimientos() {
                     action="secondary"
                     variant="outline"
                     onPress={handleCancel}
-                    className="border-3 border-gray-500 py-6 rounded-2xl"
+                    className="border-3 border-gray-500 py-2 rounded-2xl"
                   >
                     <ButtonText className="text-2xl font-bold text-gray-700">
                       ❌ Cancelar
