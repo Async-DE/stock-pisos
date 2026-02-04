@@ -5,12 +5,14 @@ import { Text } from "@/components/ui/text";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Grid3x3 } from "lucide-react-native";
-
+import { MapPinCheckInside } from "lucide-react-native";
+import { ScrollView } from '@/components/ui/scroll-view';
 import { Input, InputField } from "@/components/ui/input";
-
+import { Building2 } from "lucide-react-native";
 export default function Inicio() {
   return (
-    <Center className="flex-1 bg-[#000000]">
+    <Box className="flex-1 bg-[#000000]">
+     <ScrollView contentContainerStyle={{flex: 1, backgroundColor: '#000000'}}>
       <HStack
         space="xl"
         reversed={false}
@@ -22,7 +24,7 @@ export default function Inicio() {
           size="md"
           isDisabled={false}
           isInvalid={false}
-          isReadOnly={false}
+          isReadOnly={false}  
           className="flex-1"
         >
           <InputField placeholder="Buscar una categoria..." />
@@ -31,16 +33,30 @@ export default function Inicio() {
 
       <Box className="items-center">
         <HStack space="lg" reversed={false} className="mt-8">
+
           <Box className="h-32 w-32 rounded-2xl justify-center items-center">
             <Box className="h-24 w-24 bg-secondary-500 rounded-2xl justify-center items-center">
-              <Grid3x3 size={50} color="#fff112" />
+              <Grid3x3 size={50} color="#FFD700" />  {/*color y tamaño del icono*/}
             </Box>
-            <Text className="text-white text-center text-lg mt-12">Categoria larga</Text>
+            <Text className="text-white text-center text-lg mt-2 justify-center items-center">Categoria  larga</Text>
           </Box>
+            
+         <Box className="h-32 w-32 rounded-2xl justify-center items-center">
+            <Box className="h-24 w-24 bg-secondary-500 rounded-2xl justify-center items-center">
+              <MapPinCheckInside size={50} color="#FFD700" />  {/*color y tamaño del icono*/}
+            </Box>
+            <Text className="text-white text-center text-lg mt-2 justify-center items-center">Categoria mapa</Text>
+          </Box>
+          
+       <Box className="h-32 w-32 rounded-2xl justify-center items-center">
+            <Box className="h-20 w-24 bg-secondary-500 rounded-2xl justify-center items-center">
+              <Building2 size={50} color="#FFD700" />  {/*color y tamaño del icono*/}
+            </Box>
+            <Text className="text-white text-center text-lg mt-2 justify-center items-center">Categoria almacen</Text>
+          </Box>
+          
 
-          <Box className="h-32 w-32 bg-secondary-500 rounded-2xl" />
-          <Box className="h-32 w-32 bg-secondary-500 rounded-2xl" />
-        </HStack>
+        </HStack>{/* Repite el bloque HStack para crear más filas de categorías */}
         <HStack space="lg" reversed={false} className="mt-8">
           <Box className="h-32 w-32 bg-secondary-500 rounded-2xl" />
           <Box className="h-32 w-32 bg-secondary-500 rounded-2xl" />
@@ -57,6 +73,7 @@ export default function Inicio() {
           <Box className="h-32 w-32 bg-secondary-500 rounded-2xl" />
         </HStack>
       </Box>
-    </Center>
+    </ScrollView>
+    </Box>
   );
 }
