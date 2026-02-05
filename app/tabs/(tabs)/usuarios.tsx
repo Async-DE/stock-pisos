@@ -5,7 +5,6 @@ import { Text } from '@/components/ui/text';
 import { Heading } from '@/components/ui/heading';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
-import { Icon, UsersIcon, UserCheckIcon, UserXIcon } from '@/components/ui/icon';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Input, InputField } from '@/components/ui/input';
 
@@ -137,11 +136,9 @@ export default function Usuarios() {
                         usuario.activo ? 'bg-[#2a2a2a]' : 'bg-[#111111]'
                       }`}
                     >
-                      <Icon
-                        as={UsersIcon}
-                        size="lg"
-                        className={usuario.activo ? 'text-[#FFD700]' : 'text-[#B8860B]'}
-                      />
+                      <Text className={usuario.activo ? 'text-[#FFD700] text-xl' : 'text-[#B8860B] text-xl'}>
+                        👤
+                      </Text>
                     </Box>
                     <VStack>
                       <Text className="font-bold text-lg text-[#FFD700]">
@@ -169,12 +166,12 @@ export default function Usuarios() {
                   >
                     {usuario.activo ? (
                       <HStack className="items-center space-x-2">
-                        <Icon as={UserXIcon} size="sm" className="text-[#FFD700]" />
+                        <Text className="text-[#FFD700]">❌</Text>
                         <Text className="text-[#FFD700] font-bold">Desactivar</Text>
                       </HStack>
                     ) : (
                       <HStack className="items-center space-x-2">
-                        <Icon as={UserCheckIcon} size="sm" className="text-[#B8860B]" />
+                        <Text className="text-[#B8860B]">✅</Text>
                         <Text className="text-[#B8860B] font-bold">Activar</Text>
                       </HStack>
                     )}
@@ -187,7 +184,7 @@ export default function Usuarios() {
           {/* Mensaje si no hay usuarios */}
           {usuariosFiltrados.length === 0 && (
             <Box className="bg-[#1a1a1a] border border-[#FFD700] rounded-xl p-8 items-center mt-8">
-              <Icon as={UsersIcon} size="xl" className="text-[#B8860B] mb-4" />
+              <Text className="text-[#B8860B] text-4xl mb-4">👥</Text>
               <Text className="text-[#B8860B] text-center">
                 No se encontraron usuarios
               </Text>
