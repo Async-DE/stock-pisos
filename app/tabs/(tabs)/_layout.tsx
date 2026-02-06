@@ -1,10 +1,10 @@
-import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import React from "react";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Tabs } from "expo-router";
+import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
+  name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
   return <FontAwesome size={18} style={{ marginBottom: -3 }} {...props} />;
@@ -22,43 +22,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="inicio"
         options={{
-          title: 'Inicio',
+          title: "Inicio",
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="productos"
+        name="search"
         options={{
-          title: 'Productos',
+          title: "Search",
+          tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="almacenes"
+        options={{
+          title: "Almacenes",
           tabBarIcon: ({ color }) => <TabBarIcon name="cube" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="establecimientos"
-        options={{
-          title: 'Establecimientos',
-          tabBarIcon: ({ color }) => <TabBarIcon name="building" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="estantes"
-        options={{
-          title: 'Estantes',
-          tabBarIcon: ({ color }) => <TabBarIcon name="archive" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="usuarios"
-        options={{
-          title: 'Usuarios',
-          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="bitacora"
-        options={{
-          title: 'Bitacora',
-          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
         }}
       />
     </Tabs>
