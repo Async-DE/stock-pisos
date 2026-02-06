@@ -43,7 +43,7 @@ const bottomSheetItemStyle = tva({
 
 const BottomSheetContext = createContext<{
   visible: boolean;
-  bottomSheetRef: React.RefObject<GorhomBottomSheet>;
+  bottomSheetRef: React.RefObject<GorhomBottomSheet | null>;
   handleClose: () => void;
   handleOpen: () => void;
 }>({
@@ -152,6 +152,8 @@ export const BottomSheetTrigger = ({
     </Pressable>
   );
 };
+cssInterop(GorhomBottomSheetBackdrop, { className: "style" });
+
 type IBottomSheetBackdrop = React.ComponentProps<
   typeof GorhomBottomSheetBackdrop
 >;
@@ -164,17 +166,17 @@ export const BottomSheetBackdrop = ({
 }: Partial<IBottomSheetBackdrop> & { className?: string }) => {
   return (
     <GorhomBottomSheetBackdrop
+      {...(props as any)}
       className={bottomSheetBackdropStyle({
         className: className,
       })}
       disappearsOnIndex={disappearsOnIndex}
       appearsOnIndex={appearsOnIndex}
-      {...props}
     />
   );
 };
 
-cssInterop(GorhomBottomSheetBackdrop, { className: "style" });
+cssInterop(BottomSheetHandle, { className: "style" });
 
 type IBottomSheetDragIndicator = React.ComponentProps<typeof BottomSheetHandle>;
 
@@ -185,7 +187,7 @@ export const BottomSheetDragIndicator = ({
 }: Partial<IBottomSheetDragIndicator> & { className?: string }) => {
   return (
     <BottomSheetHandle
-      {...props}
+      {...(props as any)}
       className={bottomSheetIndicatorStyle({
         className: className,
       })}
@@ -194,8 +196,6 @@ export const BottomSheetDragIndicator = ({
     </BottomSheetHandle>
   );
 };
-
-cssInterop(BottomSheetHandle, { className: "style" });
 
 type IBottomSheetContent = React.ComponentProps<typeof GorhomBottomSheetView>;
 
