@@ -52,6 +52,15 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="producto/[id]"
+        options={{
+          href: null, // Oculta esta ruta del tab bar (no aparece como tab, pero el tab bar sigue visible)
+          headerShown: false, // No mostrar header superior
+          // El tab bar se mostrará automáticamente porque está dentro de Tabs
+        }}
+      />
     </Tabs>
   );
 }

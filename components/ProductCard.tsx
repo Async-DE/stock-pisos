@@ -12,12 +12,15 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, width, onPress }: ProductCardProps) {
-  const onSale = product.oldPrice && product.oldPrice > product.price;
+  const handlePress = () => {
+    console.log("ProductCard presionado - Product ID:", product.id);
+    onPress?.(product.id);
+  };
 
   return (
-    <Pressable onPress={() => onPress?.(product.id)} className="mb-4">
+    <Pressable onPress={handlePress} className="mb-4">
       <Box
-        className="bg-secondary-500 rounded-lg overflow-hidden border border-yellow-400"
+        className="bg-secondary-500 rounded-lg overflow-hidden border border-yellow-400 mt-50"
         style={{ width }}
       >
         {/* Imagen placeholder */}
@@ -42,36 +45,10 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
           <Box className="items-start mt-2">
             <HStack space="sm" className="items-center">
               <Text className="text-yellow-400 font-bold text-lg">
-                ${product.price.toLocaleString()}
+                Alamacen del Lago
               </Text>
-              {onSale && (
-                <Text className="text-gray-400 line-through text-xs">
-                  ${product.oldPrice?.toLocaleString()}
-                </Text>
-              )}
             </HStack>
-            {onSale && (
-              <Text className="text-red-400 text-xs font-bold mt-1">
-                Oferta
-              </Text>
-            )}
           </Box>
-
-          {/* Rating */}
-          <HStack space="xs" className="items-center mt-2">
-            <HStack space="xs">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={14}
-                  color={i < Math.floor(product.rating) ? "#FFD700" : "#4B5563"}
-                  fill={i < Math.floor(product.rating) ? "#FFD700" : "none"}
-                  strokeWidth={1.5}
-                />
-              ))}
-            </HStack>
-            <Text className="text-gray-400 text-xs">({product.reviews})</Text>
-          </HStack>
         </Box>
       </Box>
     </Pressable>

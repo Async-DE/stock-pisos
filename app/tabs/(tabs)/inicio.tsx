@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Dimensions } from "react-native";
+import { useRouter } from "expo-router";
 import {
   categories,
   getProductsForCategory,
@@ -13,6 +14,7 @@ import { ProductsView } from "@/components/ProductsView";
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Inicio() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
@@ -44,8 +46,11 @@ export default function Inicio() {
   };
 
   const handleProductPress = (productId: number) => {
-    // TODO: Implementar lógica para ver detalles del producto
-    console.log("Producto presionado:", productId);
+    console.log("Navegando a producto:", productId);
+    // Intentar con ruta relativa primero
+    const route = `./producto/${productId}`;
+    console.log("Ruta a navegar:", route);
+    router.push(route as any);
   };
 
   return (
