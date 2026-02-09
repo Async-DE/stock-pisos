@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Dimensions } from "react-native";
+import { useRouter } from "expo-router";
 import {
   categories,
   getProductsForCategory,
@@ -13,6 +14,7 @@ import { ProductsView } from "@/components/ProductsView";
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Inicio() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
@@ -68,6 +70,11 @@ export default function Inicio() {
     setSearchTerm("");
   };
 
+  const handleProductPress = (productId: number) => {
+    console.log("Navegando a producto:", productId);
+    router.push(`/tabs/(tabs)/producto/${productId}`);
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-[#000000]"
@@ -92,6 +99,7 @@ export default function Inicio() {
         {selectedCategory ? (
           <ProductsView
             products={productsInCategory}
+            onProductPress={handleProductPress}
             categoryName={
               selectedSubcategory
                 ? `${selectedCategoryData?.name || ""} / ${selectedSubcategory}`
