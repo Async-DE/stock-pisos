@@ -82,8 +82,8 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
         showsVerticalScrollIndicator={false}
       >
         {/* Header con botón de volver */}
-        <Box 
-          className="px-4 pb-2 bg-[#000000]"
+        <Box
+          className="px-4 pb-3 bg-[#000000] border-b border-yellow-400/40"
           style={{ paddingTop: Math.max(insets.top, 16) }}
         >
           <Pressable onPress={() => router.back()}>
@@ -96,7 +96,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
           </Pressable>
         </Box>
 
-        <Box className="px-4">
+        <Box className="px-4 pt-4">
         {/* Imagen del producto */}
         <Box
           className="bg-secondary-600 justify-center items-center rounded-lg border border-yellow-400 mb-4"

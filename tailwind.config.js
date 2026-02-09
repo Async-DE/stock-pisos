@@ -183,8 +183,19 @@ module.exports = {
       fontWeight: {
         extrablack: "950",
       },
+      // Aumentamos las fuentes ~25% respecto a los valores típicos por defecto
       fontSize: {
         "2xs": "10px",
+        xs: "15px",
+        sm: "18px",
+        base: "20px",
+        lg: "22px",
+        xl: "25px",
+        "2xl": "30px",
+        "3xl": "38px",
+        "4xl": "45px",
+        "5xl": "60px",
+        "6xl": "75px",
       },
       boxShadow: {
         "hard-1": "-2px 2px 8px 0px rgba(38, 38, 38, 0.20)",

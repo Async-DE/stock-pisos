@@ -30,13 +30,13 @@ export function SearchHeader({
   return (
     <>
       {/* Logo de la compañía */}
-      <Center className="mt-2 mb-4">
+      <Center className="mt-3 mb-5">
         <Box className="flex-row items-center justify-center">
-          <Box className="bg-yellow-400 rounded-full p-2 mr-2">
+          <Box className="bg-yellow-400 rounded-full p-2.5 mr-2 shadow-hard-2">
             <Home size={26} color="#000000" strokeWidth={2.5} />
           </Box>
           <Text
-            className="text-white text-2xl font-bold"
+            className="text-white text-2xl font-bold tracking-wide"
             style={{ fontSize: screenWidth < 375 ? 22 : 28 }}
           >
             MercaFácil
@@ -49,7 +49,7 @@ export function SearchHeader({
         <HStack
           space="sm"
           reversed={false}
-          className="items-center bg-secondary-400 py-2.5 px-3 rounded-lg border-2 border-yellow-400"
+          className="items-center bg-secondary-500/70 py-2 px-3 rounded-full border border-yellow-400"
         >
           {showBack ? (
             <Pressable onPress={onBack}>

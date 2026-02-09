@@ -54,7 +54,7 @@ export function CategoriesGrid({
             <AccordionItem
               key={category.id}
               value={`category-${category.id}`}
-              className="border-2 border-yellow-400 rounded-lg bg-secondary-500/40"
+              className="border border-yellow-400 rounded-xl bg-secondary-500/50 overflow-hidden"
             >
               <AccordionHeader>
                 <AccordionTrigger className="px-3 py-3">
@@ -63,14 +63,14 @@ export function CategoriesGrid({
                     reversed={false}
                     className="items-center flex-1"
                   >
-                    <Box className="bg-secondary-500 rounded-md border-2 border-yellow-400 items-center justify-center w-11 h-11">
+                    <Box className="bg-secondary-500 rounded-lg border border-yellow-400 items-center justify-center w-11 h-11">
                       <IconComponent
                         size={20}
                         color="#fff112"
                         strokeWidth={2}
                       />
                     </Box>
-                    <AccordionTitleText className="text-white flex-1 text-lg">
+                    <AccordionTitleText className="text-white flex-1 text-base font-semibold">
                       {category.name}
                     </AccordionTitleText>
                   </HStack>

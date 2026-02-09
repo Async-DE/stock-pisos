@@ -182,7 +182,7 @@ export default function Establecimientos() {
       <ScrollView className="flex-1">
         <Box className="p-6">
           {/* Título principal de la pantalla */}
-          <Heading className="font-bold text-4xl mb-8 text-[#B8860B]">
+          <Heading className="font-bold text-3xl mb-6 text-[#B8860B]">
             Mis Almacenes
           </Heading>
 
@@ -197,7 +197,7 @@ export default function Establecimientos() {
                   onPress={() => setShowForm(true)}
                   className="bg-[#FFD700] py-2 rounded-2xl"
                 >
-                  <ButtonText className="text-2xl font-bold text-black">
+                  <ButtonText className="text-xl font-bold text-black">
                     ➕ Agregar Almacén Nuevo
                   </ButtonText>
                 </Button>
@@ -207,11 +207,11 @@ export default function Establecimientos() {
               {/* Si no hay establecimientos, mostrar mensaje de vacío */}
               {establecimientos.length === 0 ? (
                 <Box className="mt-8 items-center bg-[#1a1a1a] p-10 rounded-2xl border-3 border-[#FFD700]">
-                  <Text className="text-3xl mb-4">🏢</Text>
-                  <Text className="text-2xl text-[#FFD700] text-center font-semibold mb-3">
+                  <Text className="text-2xl mb-4">🏢</Text>
+                  <Text className="text-xl text-[#FFD700] text-center font-semibold mb-3">
                     Aún no tiene almacenes registrados
                   </Text>
-                  <Text className="text-xl text-[#FFD700] text-center">
+                  <Text className="text-base text-[#FFD700] text-center">
                     Toque el botón de arriba para agregar su primer almacén
                   </Text>
                 </Box>
@@ -227,33 +227,33 @@ export default function Establecimientos() {
                       <VStack space="lg">
                         {/* Sección del nombre del establecimiento */}
                         <Box className="bg-[#2a2a2a] p-5 rounded-xl border-2 border-[#FFD700]">
-                          <Text className="text-2xl font-bold text-[#FFD700] mb-2">
+                          <Text className="text-xl font-bold text-[#FFD700] mb-1">
                             🏢 {establecimiento.nombre}
                           </Text>
                         </Box>
 
                         {/* Sección de la dirección */}
                         <Box className="bg-[#2a2a2a] p-5 rounded-xl border-2 border-[#FFD700]">
-                          <Text className="text-xl font-bold text-[#FFD700] mb-3">
+                          <Text className="text-lg font-bold text-[#FFD700] mb-2">
                             📍 Dirección:
                           </Text>
-                          <Text className="text-2xl text-[#FFD700] mb-2">
+                          <Text className="text-lg text-[#FFD700] mb-1">
                             {establecimiento.calle}
                           </Text>
-                          <Text className="text-2xl text-[#FFD700]">
+                          <Text className="text-lg text-[#FFD700]">
                             {establecimiento.colonia}
                           </Text>
-                          <Text className="text-xl text-[#FFD700] mt-2">
+                          <Text className="text-base text-[#FFD700] mt-2">
                             Código Postal: {establecimiento.cp}
                           </Text>
                         </Box>
 
                         {/* Sección del teléfono de contacto */}
                         <Box className="bg-[#2a2a2a] p-5 rounded-xl border-2 border-[#FFD700]">
-                          <Text className="text-xl font-bold text-[#FFD700] mb-2">
+                          <Text className="text-lg font-bold text-[#FFD700] mb-1">
                             📞 Teléfono:
                           </Text>
-                          <Text className="text-2xl text-[#FFD700]">
+                          <Text className="text-lg text-[#FFD700]">
                             {establecimiento.celular}
                           </Text>
                         </Box>
@@ -266,10 +266,10 @@ export default function Establecimientos() {
           ) : (
             // Formulario para agregar un nuevo almacén
             <Box className="bg-[#1a1a1a] p-8 rounded-2xl border-3 border-[#FFD700] shadow-lg">
-              <Heading className="font-bold text-4xl mb-4 text-[#FFD700]">
+              <Heading className="font-bold text-3xl mb-4 text-[#FFD700]">
                 Agregar Almacén Nuevo
               </Heading>
-              <Text className="text-xl text-[#FFD700] mb-8 font-semibold">
+              <Text className="text-base text-[#FFD700] mb-8 font-semibold">
                 Complete la información paso a paso. Todos los campos marcados con * son obligatorios.
               </Text>
 
@@ -277,10 +277,10 @@ export default function Establecimientos() {
                 {/* ====== Paso 1: Información Básica ====== */}
                 {/* Encabezado del paso 1 */}
                 <Box className="bg-[#2a2a2a] p-4 rounded-xl border-2 border-[#FFD700] mb-4">
-                  <Text className="text-2xl font-bold text-[#FFD700] mb-1">
+                  <Text className="text-xl font-bold text-[#FFD700] mb-1">
                     Paso 1: Información Básica
                   </Text>
-                  <Text className="text-lg text-[#FFD700]">
+                  <Text className="text-sm text-[#FFD700]">
                     Escriba el nombre del almacén
                   </Text>
                 </Box>
@@ -289,7 +289,7 @@ export default function Establecimientos() {
                 {/* FormControl maneja el estado de validación y muestra errores */}
                 <FormControl isInvalid={!!errors.nombre}>
                   <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
+                    <Text className="text-xl font-bold text-[#FFD700] mb-2">
                       ¿Cómo se llama este almacén? *
                     </Text>
                   </FormControlLabel>
@@ -311,14 +311,14 @@ export default function Establecimientos() {
                           setErrors({ ...errors, nombre: '' });
                         }
                       }}
-                      className="text-2xl py-4 text-[#FFD700]"
+                      className="text-lg py-3 text-[#FFD700]"
                       placeholderTextColor="#B8860B"
                     />
                   </Input>
                   {/* Mostrar mensaje de error solo si existe */}
                   {errors.nombre && (
                     <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                      <FormControlErrorText className="text-base font-semibold text-red-700">
                         ⚠️ {errors.nombre}
                       </FormControlErrorText>
                     </FormControlError>
@@ -328,10 +328,10 @@ export default function Establecimientos() {
                 {/* ====== Paso 2: Dirección ====== */}
                 {/* Encabezado del paso 2 */}
                 <Box className="bg-[#2a2a2a] p-4 rounded-xl border-2 border-[#FFD700] mb-4">
-                  <Text className="text-2xl font-bold text-[#FFD700] mb-1">
+                  <Text className="text-xl font-bold text-[#FFD700] mb-1">
                     Paso 2: Dirección
                   </Text>
-                  <Text className="text-lg text-[#FFD700]">
+                  <Text className="text-sm text-[#FFD700]">
                     Escriba la dirección completa del almacén
                   </Text>
                 </Box>
@@ -339,7 +339,7 @@ export default function Establecimientos() {
                 {/* Campo: Calle y número */}
                 <FormControl isInvalid={!!errors.calle}>
                   <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
+                    <Text className="text-xl font-bold text-[#FFD700] mb-2">
                       ¿En qué calle y número está? *
                     </Text>
                   </FormControlLabel>
@@ -359,13 +359,13 @@ export default function Establecimientos() {
                           setErrors({ ...errors, calle: '' });
                         }
                       }}
-                      className="text-2xl py-4 text-[#FFD700]"
+                      className="text-lg py-3 text-[#FFD700]"
                       placeholderTextColor="#B8860B"
                     />
                   </Input>
                   {errors.calle && (
                     <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                      <FormControlErrorText className="text-base font-semibold text-red-700">
                         ⚠️ {errors.calle}
                       </FormControlErrorText>
                     </FormControlError>
@@ -375,7 +375,7 @@ export default function Establecimientos() {
                 {/* Campo: Colonia */}
                 <FormControl isInvalid={!!errors.colonia}>
                   <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
+                    <Text className="text-xl font-bold text-[#FFD700] mb-2">
                       ¿En qué colonia está? *
                     </Text>
                   </FormControlLabel>
@@ -395,13 +395,13 @@ export default function Establecimientos() {
                           setErrors({ ...errors, colonia: '' });
                         }
                       }}
-                      className="text-2xl py-4 text-[#FFD700]"
+                      className="text-lg py-3 text-[#FFD700]"
                       placeholderTextColor="#B8860B"
                     />
                   </Input>
                   {errors.colonia && (
                     <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                      <FormControlErrorText className="text-base font-semibold text-red-700">
                         ⚠️ {errors.colonia}
                       </FormControlErrorText>
                     </FormControlError>
@@ -411,7 +411,7 @@ export default function Establecimientos() {
                 {/* Campo: Código Postal (solo acepta números, máximo 5 dígitos) */}
                 <FormControl isInvalid={!!errors.cp}>
                   <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
+                    <Text className="text-xl font-bold text-[#FFD700] mb-2">
                       ¿Cuál es el código postal? *
                     </Text>
                   </FormControlLabel>
@@ -434,13 +434,13 @@ export default function Establecimientos() {
                       }}
                       keyboardType="numeric" // Mostrar teclado numérico en móvil
                       maxLength={5} // Limitar a 5 caracteres
-                      className="text-2xl py-4 text-center text-[#FFD700]"
+                      className="text-lg py-3 text-center text-[#FFD700]"
                       placeholderTextColor="#B8860B"
                     />
                   </Input>
                   {errors.cp && (
                     <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                      <FormControlErrorText className="text-base font-semibold text-red-700">
                         ⚠️ {errors.cp}
                       </FormControlErrorText>
                     </FormControlError>
@@ -450,10 +450,10 @@ export default function Establecimientos() {
                 {/* ====== Paso 3: Contacto ====== */}
                 {/* Encabezado del paso 3 */}
                 <Box className="bg-[#2a2a2a] p-4 rounded-xl border-2 border-[#FFD700] mb-4">
-                  <Text className="text-2xl font-bold text-[#FFD700] mb-1">
+                  <Text className="text-xl font-bold text-[#FFD700] mb-1">
                     Paso 3: Contacto
                   </Text>
-                  <Text className="text-lg text-[#FFD700]">
+                  <Text className="text-sm text-[#FFD700]">
                     Escriba el número de teléfono del almacén
                   </Text>
                 </Box>
@@ -461,7 +461,7 @@ export default function Establecimientos() {
                 {/* Campo: Número de Celular (solo acepta números, máximo 10 dígitos) */}
                 <FormControl isInvalid={!!errors.celular}>
                   <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
+                    <Text className="text-xl font-bold text-[#FFD700] mb-2">
                       ¿Cuál es el número de teléfono? *
                     </Text>
                   </FormControlLabel>
@@ -485,13 +485,13 @@ export default function Establecimientos() {
                       }}
                       keyboardType="phone-pad" // Mostrar teclado de teléfono en móvil
                       maxLength={10} // Limitar a 10 dígitos
-                      className="text-2xl py-4 text-center text-[#FFD700]"
+                      className="text-lg py-3 text-center text-[#FFD700]"
                       placeholderTextColor="#B8860B"
                     />
                   </Input>
                   {errors.celular && (
                     <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
+                      <FormControlErrorText className="text-base font-semibold text-red-700">
                         ⚠️ {errors.celular}
                       </FormControlErrorText>
                     </FormControlError>
@@ -507,7 +507,7 @@ export default function Establecimientos() {
                     onPress={handleSubmit}
                     className="bg-[#FFD700] py-2 rounded-2xl"
                   >
-                    <ButtonText className="text-2xl font-bold text-black">
+                    <ButtonText className="text-xl font-bold text-black">
                       ✅ Guardar Almacén
                     </ButtonText>
                   </Button>
@@ -520,7 +520,7 @@ export default function Establecimientos() {
                     onPress={handleCancel}
                     className="border-3 border-[#FFD700] py-2 rounded-2xl bg-[#2a2a2a]"
                   >
-                    <ButtonText className="text-2xl font-bold text-[#FFD700]">
+                    <ButtonText className="text-xl font-bold text-[#FFD700]">
                       ❌ Cancelar
                     </ButtonText>
                   </Button>
