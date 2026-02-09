@@ -10,9 +10,9 @@ import { Dimensions } from "react-native";
 interface SearchHeaderProps {
   searchTerm: string;
   onSearchChange: (text: string) => void;
-  selectedCategory: number | null;
+  selectedCategory?: number | null;
   selectedCategoryName?: string;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -24,6 +24,9 @@ export function SearchHeader({
   selectedCategoryName,
   onBack,
 }: SearchHeaderProps) {
+  const hasCategory = Boolean(selectedCategory);
+  const showBack = hasCategory && typeof onBack === "function";
+
   return (
     <>
       {/* Logo de la compañía */}
@@ -48,7 +51,7 @@ export function SearchHeader({
           reversed={false}
           className="items-center bg-secondary-400 py-2.5 px-3 rounded-lg border-2 border-yellow-400"
         >
-          {selectedCategory ? (
+          {showBack ? (
             <Pressable onPress={onBack}>
               <ArrowLeft size={22} color="#FFFFFF" strokeWidth={2} />
             </Pressable>
@@ -65,8 +68,8 @@ export function SearchHeader({
           >
             <InputField
               placeholder={
-                selectedCategory
-                  ? `Buscar en ${selectedCategoryName}...`
+                hasCategory
+                  ? `Buscar en ${selectedCategoryName || "categoria"}...`
                   : "Buscar..."
               }
               value={searchTerm}
