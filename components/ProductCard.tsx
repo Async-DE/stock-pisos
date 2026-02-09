@@ -34,7 +34,7 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
         {/* Info del producto */}
         <Box className="p-3">
           <Text
-            className="text-white font-semibold text-sm leading-tight"
+            className="text-white font-semibold text-base leading-tight"
             numberOfLines={2}
             ellipsizeMode="tail"
           >
@@ -44,7 +44,7 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
           {/* Precios */}
           <Box className="items-start mt-2">
             <HStack space="sm" className="items-center">
-              <Text className="text-yellow-400 font-bold text-lg">
+              <Text className="text-yellow-400 font-bold text-xl">
                 Alamacen del Lago
               </Text>
             </HStack>

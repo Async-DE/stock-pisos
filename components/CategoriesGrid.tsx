@@ -70,7 +70,7 @@ export function CategoriesGrid({
                         strokeWidth={2}
                       />
                     </Box>
-                    <AccordionTitleText className="text-white flex-1">
+                    <AccordionTitleText className="text-white flex-1 text-lg">
                       {category.name}
                     </AccordionTitleText>
                   </HStack>
@@ -91,7 +91,7 @@ export function CategoriesGrid({
                           onSubcategoryPress(category.id, subcategory)
                         }
                       >
-                        <Text className="text-white text-sm py-1">
+                        <Text className="text-white text-base py-1">
                           {subcategory}
                         </Text>
                       </Pressable>
