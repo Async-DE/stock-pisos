@@ -2,6 +2,7 @@ import { Box } from "@/components/ui/box";
 import { Center } from "@/components/ui/center";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
+import { Pressable } from "react-native";
 import {
   Accordion,
   AccordionContent,
@@ -21,9 +22,13 @@ interface CategoriesGridProps {
     icon: LucideIcon;
     subcategories: string[];
   }>;
+  onSubcategoryPress: (categoryId: number, subcategory: string) => void;
 }
 
-export function CategoriesGrid({ categories }: CategoriesGridProps) {
+export function CategoriesGrid({
+  categories,
+  onSubcategoryPress,
+}: CategoriesGridProps) {
   if (categories.length === 0) {
     return (
       <Center className="py-8">
@@ -80,12 +85,16 @@ export function CategoriesGrid({ categories }: CategoriesGridProps) {
                     </Text>
                   ) : (
                     category.subcategories.map((subcategory) => (
-                      <Text
+                      <Pressable
                         key={`${category.id}-${subcategory}`}
-                        className="text-white text-sm py-1"
+                        onPress={() =>
+                          onSubcategoryPress(category.id, subcategory)
+                        }
                       >
-                        {subcategory}
-                      </Text>
+                        <Text className="text-white text-sm py-1">
+                          {subcategory}
+                        </Text>
+                      </Pressable>
                     ))
                   )}
                 </Box>
