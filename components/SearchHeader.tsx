@@ -3,8 +3,8 @@ import { Center } from "@/components/ui/center";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { Input, InputField } from "@/components/ui/input";
-import { Pressable } from "react-native";
-import { Search, ArrowLeft, Home } from "lucide-react-native";
+import { Pressable, Image } from "react-native";
+import { Search, ArrowLeft } from "lucide-react-native";
 import { Dimensions } from "react-native";
 
 interface SearchHeaderProps {
@@ -30,17 +30,16 @@ export function SearchHeader({
   return (
     <>
       {/* Logo de la compañía */}
-      <Center className="mt-3 mb-5">
-        <Box className="flex-row items-center justify-center">
-          <Box className="bg-yellow-400 rounded-full p-2.5 mr-2 shadow-hard-2">
-            <Home size={26} color="#000000" strokeWidth={2.5} />
-          </Box>
-          <Text
-            className="text-white text-2xl font-bold tracking-wide"
-            style={{ fontSize: screenWidth < 375 ? 22 : 28 }}
-          >
-            MercaFácil
-          </Text>
+      <Center className="mt-4 mb-5 rounded-full">
+        <Box className="rounded-full">
+          <Image
+            source={require("@/assets/images/Pisos-logo1.png")}
+            style={{
+              width: screenWidth < 375 ? 300 : 350,
+              height: screenWidth < 375 ? 90 : 105,
+              resizeMode: "contain",
+            }}
+          />
         </Box>
       </Center>
 
