@@ -9,10 +9,12 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 import { ScrollView } from '@/components/ui/scroll-view';
+import { Center } from "@/components/ui/center";
+import { Dimensions } from "react-native";
 import { FormControl, FormControlLabel, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
 
 // Importación de componentes nativos de React Native
-import { Alert } from 'react-native';
+import { Alert, Image } from 'react-native';
 
 // Interface que define la estructura de un establecimiento/almacén
 interface Establecimiento {
@@ -23,6 +25,8 @@ interface Establecimiento {
   colonia: string;
   celular: string;
 }
+
+const { width: screenWidth } = Dimensions.get("window");
 
 export default function Establecimientos() {
   // Estado que almacena la lista de todos los establecimientos registrados
@@ -178,76 +182,247 @@ export default function Establecimientos() {
 
   // Renderizado del componente
   return (
-    <Box className="flex-1 bg-[#000000]">
-      <ScrollView className="flex-1">
-        <Box className="p-6">
-          {/* Título principal de la pantalla */}
-          <Heading className="font-bold text-3xl mb-6 text-[#B8860B]">
-            Mis Almacenes
-          </Heading>
-
-          <Box className="mb-6">
-            <VStack space="md">
-              <Button
-                size="xl"
-                variant="outline"
-                action="secondary"
-                className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
-                onPress={() => {}}
-              >
-                <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
-                  Ubicaciones
-                </ButtonText>
-              </Button>
-              <Button
-                size="xl"
-                variant="outline"
-                action="secondary"
-                className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
-                onPress={() => {}}
-              >
-                <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
-                  Categorías
-                </ButtonText>
-              </Button>
-              <Button
-                size="xl"
-                variant="outline"
-                action="secondary"
-                className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
-                onPress={() => {}}
-              >
-                <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
-                  Subcategorías
-                </ButtonText>
-              </Button>
-              <Button
-                size="xl"
-                variant="outline"
-                action="secondary"
-                className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
-                onPress={() => {}}
-              >
-                <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
-                  Productos
-                </ButtonText>
-              </Button>
-              <Button
-                size="xl"
-                variant="outline"
-                action="secondary"
-                className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
-                onPress={() => {}}
-              >
-                <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
-                  Estantes
-                </ButtonText>
-              </Button>
-            </VStack>
-          </Box>
+    <>
+      {/* Header con logo */}
+      <Center className="mt-4 mb-4 rounded-lg mx-4">
+        <Box className="rounded-full">
+          <Image
+            source={require("@/assets/images/Pisos-logo1.png")}
+            style={{
+              width: screenWidth < 375 ? 260 : 320,
+              height: screenWidth < 375 ? 80 : 100,
+              resizeMode: "contain",
+            }}
+          />
         </Box>
-      </ScrollView>
-    </Box>
+      </Center>
+
+      <Box className="flex-1 bg-[#000000]">
+        <ScrollView className="flex-1">
+          <Box className="p-6">
+            {/* Título y descripción */}
+            <Box className="mb-6">
+              <Heading size="lg" className="text-[#FFD700] mb-1">
+                Gestión de almacenes
+              </Heading>
+              <Text className="text-gray-300 text-sm">
+                Crea y administra las ubicaciones donde almacenas tus productos.
+              </Text>
+            </Box>
+
+            {/* Contenido principal: formulario o menú */}
+            {showForm ? (
+              <Box className="bg-[#111111] rounded-2xl p-4 border border-[#333333]">
+                <Heading size="md" className="text-[#FFD700] mb-4">
+                  Nuevo almacén
+                </Heading>
+
+                <VStack space="md">
+                  <FormControl isInvalid={!!errors.nombre}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Nombre del almacén
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.nombre}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, nombre: text }))
+                        }
+                        placeholder="Ej. Almacén Central"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.nombre ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.nombre}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.calle}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Calle y número
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.calle}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, calle: text }))
+                        }
+                        placeholder="Ej. Av. Principal 123"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.calle ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.calle}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.cp}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Código postal
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.cp}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, cp: text }))
+                        }
+                        placeholder="Ej. 12345"
+                        keyboardType="number-pad"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.cp ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.cp}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.colonia}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Colonia
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.colonia}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, colonia: text }))
+                        }
+                        placeholder="Ej. Centro"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.colonia ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.colonia}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.celular}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Teléfono de contacto
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.celular}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, celular: text }))
+                        }
+                        placeholder="Ej. 5551234567"
+                        keyboardType="phone-pad"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.celular ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.celular}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <Box className="flex-row justify-between mt-4">
+                    <Button
+                      size="md"
+                      action="primary"
+                      className="border border-gray-500 flex-1 mr-2"
+                      onPress={handleCancel}
+                    >
+                      <ButtonText className="text-base text-gray-200">
+                        Cancelar
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      size="md"
+                      action="primary"
+                      className="bg-[#FFD700] flex-1 ml-2"
+                      onPress={handleSubmit}
+                    >
+                      <ButtonText className="text-base font-bold text-black">
+                        Guardar almacén
+                      </ButtonText>
+                    </Button>
+                  </Box>
+                </VStack>
+              </Box>
+            ) : (
+              <>
+                {/* Acciones principales */}
+                <Box className="mb-6">
+                  <VStack space="md">
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => setShowForm(true)}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Crear nuevo almacén
+                      </ButtonText>
+                    </Button>
+
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => {}}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Categorías
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => {}}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Subcategorías
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => {}}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Productos
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => {}}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Estantes
+                      </ButtonText>
+                    </Button>
+                  </VStack>
+                </Box>
+              </>
+            )}
+          </Box>
+        </ScrollView>
+      </Box>
+    </>
   );
 }
 
