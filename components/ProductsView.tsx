@@ -72,8 +72,8 @@ export function ProductsView({
   return (
     <Box className="pb-6">
       <Box className="mb-4">
-        <Text className="text-white text-xl font-bold">{categoryName}</Text>
-        <Text className="text-gray-400 text-sm mt-1">
+        <Text className="text-white text-2xl font-bold">{categoryName}</Text>
+        <Text className="text-gray-400 text-base mt-1">
           {products.length} productos disponibles
         </Text>
       </Box>

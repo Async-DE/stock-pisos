@@ -9,10 +9,12 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Input, InputField } from '@/components/ui/input';
 import { VStack } from '@/components/ui/vstack';
 import { ScrollView } from '@/components/ui/scroll-view';
+import { Center } from "@/components/ui/center";
+import { Dimensions } from "react-native";
 import { FormControl, FormControlLabel, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
 
 // Importación de componentes nativos de React Native
-import { Alert } from 'react-native';
+import { Alert, Image } from 'react-native';
 
 // Interface que define la estructura de un establecimiento/almacén
 interface Establecimiento {
@@ -23,6 +25,8 @@ interface Establecimiento {
   colonia: string;
   celular: string;
 }
+
+const { width: screenWidth } = Dimensions.get("window");
 
 export default function Establecimientos() {
   // Estado que almacena la lista de todos los establecimientos registrados
@@ -178,359 +182,247 @@ export default function Establecimientos() {
 
   // Renderizado del componente
   return (
-    <Box className="flex-1 bg-[#000000]">
-      <ScrollView className="flex-1">
-        <Box className="p-6">
-          {/* Título principal de la pantalla */}
-          <Heading className="font-bold text-4xl mb-8 text-[#B8860B]">
-            Mis Almacenes
-          </Heading>
-
-          {/* Renderizado condicional: mostrar lista O formulario, nunca ambos */}
-          {!showForm ? (
-            <>
-              {/* Botón para mostrar el formulario de agregar nuevo almacén */}
-              <Box className="mb-8">
-                <Button
-                  size="xl"
-                  action="primary"
-                  onPress={() => setShowForm(true)}
-                  className="bg-[#FFD700] py-2 rounded-2xl"
-                >
-                  <ButtonText className="text-2xl font-bold text-black">
-                    ➕ Agregar Almacén Nuevo
-                  </ButtonText>
-                </Button>
-              </Box>
-
-              {/* Lista de Establecimientos - Muestra tarjetas grandes para cada almacén */}
-              {/* Si no hay establecimientos, mostrar mensaje de vacío */}
-              {establecimientos.length === 0 ? (
-                <Box className="mt-8 items-center bg-[#1a1a1a] p-10 rounded-2xl border-3 border-[#FFD700]">
-                  <Text className="text-3xl mb-4">🏢</Text>
-                  <Text className="text-2xl text-[#FFD700] text-center font-semibold mb-3">
-                    Aún no tiene almacenes registrados
-                  </Text>
-                  <Text className="text-xl text-[#FFD700] text-center">
-                    Toque el botón de arriba para agregar su primer almacén
-                  </Text>
-                </Box>
-              ) : (
-                // Si hay establecimientos, mostrarlos en una lista vertical
-                <VStack space="lg">
-                  {/* Mapear cada establecimiento a una tarjeta */}
-                  {establecimientos.map((establecimiento) => (
-                    <Box
-                      key={establecimiento.id}
-                      className="bg-[#1a1a1a] p-8 rounded-2xl border-3 border-[#FFD700] shadow-lg"
-                    >
-                      <VStack space="lg">
-                        {/* Sección del nombre del establecimiento */}
-                        <Box className="bg-[#2a2a2a] p-5 rounded-xl border-2 border-[#FFD700]">
-                          <Text className="text-2xl font-bold text-[#FFD700] mb-2">
-                            🏢 {establecimiento.nombre}
-                          </Text>
-                        </Box>
-
-                        {/* Sección de la dirección */}
-                        <Box className="bg-[#2a2a2a] p-5 rounded-xl border-2 border-[#FFD700]">
-                          <Text className="text-xl font-bold text-[#FFD700] mb-3">
-                            📍 Dirección:
-                          </Text>
-                          <Text className="text-2xl text-[#FFD700] mb-2">
-                            {establecimiento.calle}
-                          </Text>
-                          <Text className="text-2xl text-[#FFD700]">
-                            {establecimiento.colonia}
-                          </Text>
-                          <Text className="text-xl text-[#FFD700] mt-2">
-                            Código Postal: {establecimiento.cp}
-                          </Text>
-                        </Box>
-
-                        {/* Sección del teléfono de contacto */}
-                        <Box className="bg-[#2a2a2a] p-5 rounded-xl border-2 border-[#FFD700]">
-                          <Text className="text-xl font-bold text-[#FFD700] mb-2">
-                            📞 Teléfono:
-                          </Text>
-                          <Text className="text-2xl text-[#FFD700]">
-                            {establecimiento.celular}
-                          </Text>
-                        </Box>
-                      </VStack>
-                    </Box>
-                  ))}
-                </VStack>
-              )}
-            </>
-          ) : (
-            // Formulario para agregar un nuevo almacén
-            <Box className="bg-[#1a1a1a] p-8 rounded-2xl border-3 border-[#FFD700] shadow-lg">
-              <Heading className="font-bold text-4xl mb-4 text-[#FFD700]">
-                Agregar Almacén Nuevo
-              </Heading>
-              <Text className="text-xl text-[#FFD700] mb-8 font-semibold">
-                Complete la información paso a paso. Todos los campos marcados con * son obligatorios.
-              </Text>
-
-              <VStack space="xl">
-                {/* ====== Paso 1: Información Básica ====== */}
-                {/* Encabezado del paso 1 */}
-                <Box className="bg-[#2a2a2a] p-4 rounded-xl border-2 border-[#FFD700] mb-4">
-                  <Text className="text-2xl font-bold text-[#FFD700] mb-1">
-                    Paso 1: Información Básica
-                  </Text>
-                  <Text className="text-lg text-[#FFD700]">
-                    Escriba el nombre del almacén
-                  </Text>
-                </Box>
-
-                {/* Campo: Nombre del Establecimiento */}
-                {/* FormControl maneja el estado de validación y muestra errores */}
-                <FormControl isInvalid={!!errors.nombre}>
-                  <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
-                      ¿Cómo se llama este almacén? *
-                    </Text>
-                  </FormControlLabel>
-                  <Input
-                    variant="outline"
-                    size="xl"
-                    className={`rounded-2xl border-3 ${
-                      errors.nombre ? 'border-red-600' : 'border-[#FFD700]'
-                    } bg-[#2a2a2a]`}
-                  >
-                    <InputField
-                      placeholder="Ejemplo: Almacén Central, Bodega Principal"
-                      value={formData.nombre}
-                      onChangeText={(text) => {
-                        // Actualizar el valor del campo en el estado
-                        setFormData({ ...formData, nombre: text });
-                        // Si había un error, limpiarlo cuando el usuario empiece a escribir
-                        if (errors.nombre) {
-                          setErrors({ ...errors, nombre: '' });
-                        }
-                      }}
-                      className="text-2xl py-4 text-[#FFD700]"
-                      placeholderTextColor="#B8860B"
-                    />
-                  </Input>
-                  {/* Mostrar mensaje de error solo si existe */}
-                  {errors.nombre && (
-                    <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
-                        ⚠️ {errors.nombre}
-                      </FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-
-                {/* ====== Paso 2: Dirección ====== */}
-                {/* Encabezado del paso 2 */}
-                <Box className="bg-[#2a2a2a] p-4 rounded-xl border-2 border-[#FFD700] mb-4">
-                  <Text className="text-2xl font-bold text-[#FFD700] mb-1">
-                    Paso 2: Dirección
-                  </Text>
-                  <Text className="text-lg text-[#FFD700]">
-                    Escriba la dirección completa del almacén
-                  </Text>
-                </Box>
-
-                {/* Campo: Calle y número */}
-                <FormControl isInvalid={!!errors.calle}>
-                  <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
-                      ¿En qué calle y número está? *
-                    </Text>
-                  </FormControlLabel>
-                  <Input
-                    variant="outline"
-                    size="xl"
-                    className={`rounded-2xl border-3 ${
-                      errors.calle ? 'border-red-600' : 'border-[#FFD700]'
-                    } bg-[#2a2a2a]`}
-                  >
-                    <InputField
-                      placeholder="Ejemplo: Av. Principal 123"
-                      value={formData.calle}
-                      onChangeText={(text) => {
-                        setFormData({ ...formData, calle: text });
-                        if (errors.calle) {
-                          setErrors({ ...errors, calle: '' });
-                        }
-                      }}
-                      className="text-2xl py-4 text-[#FFD700]"
-                      placeholderTextColor="#B8860B"
-                    />
-                  </Input>
-                  {errors.calle && (
-                    <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
-                        ⚠️ {errors.calle}
-                      </FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-
-                {/* Campo: Colonia */}
-                <FormControl isInvalid={!!errors.colonia}>
-                  <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
-                      ¿En qué colonia está? *
-                    </Text>
-                  </FormControlLabel>
-                  <Input
-                    variant="outline"
-                    size="xl"
-                    className={`rounded-2xl border-3 ${
-                      errors.colonia ? 'border-red-600' : 'border-[#FFD700]'
-                    } bg-[#2a2a2a]`}
-                  >
-                    <InputField
-                      placeholder="Ejemplo: Centro, Del Valle, Industrial"
-                      value={formData.colonia}
-                      onChangeText={(text) => {
-                        setFormData({ ...formData, colonia: text });
-                        if (errors.colonia) {
-                          setErrors({ ...errors, colonia: '' });
-                        }
-                      }}
-                      className="text-2xl py-4 text-[#FFD700]"
-                      placeholderTextColor="#B8860B"
-                    />
-                  </Input>
-                  {errors.colonia && (
-                    <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
-                        ⚠️ {errors.colonia}
-                      </FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-
-                {/* Campo: Código Postal (solo acepta números, máximo 5 dígitos) */}
-                <FormControl isInvalid={!!errors.cp}>
-                  <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
-                      ¿Cuál es el código postal? *
-                    </Text>
-                  </FormControlLabel>
-                  <Input
-                    variant="outline"
-                    size="xl"
-                    className={`rounded-2xl border-3 ${
-                      errors.cp ? 'border-red-600' : 'border-[#FFD700]'
-                    } bg-[#2a2a2a]`}
-                  >
-                    <InputField
-                      placeholder="Ejemplo: 12345"
-                      value={formData.cp}
-                      onChangeText={(text) => {
-                        // Eliminar cualquier carácter que no sea número
-                        setFormData({ ...formData, cp: text.replace(/\D/g, '') });
-                        if (errors.cp) {
-                          setErrors({ ...errors, cp: '' });
-                        }
-                      }}
-                      keyboardType="numeric" // Mostrar teclado numérico en móvil
-                      maxLength={5} // Limitar a 5 caracteres
-                      className="text-2xl py-4 text-center text-[#FFD700]"
-                      placeholderTextColor="#B8860B"
-                    />
-                  </Input>
-                  {errors.cp && (
-                    <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
-                        ⚠️ {errors.cp}
-                      </FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-
-                {/* ====== Paso 3: Contacto ====== */}
-                {/* Encabezado del paso 3 */}
-                <Box className="bg-[#2a2a2a] p-4 rounded-xl border-2 border-[#FFD700] mb-4">
-                  <Text className="text-2xl font-bold text-[#FFD700] mb-1">
-                    Paso 3: Contacto
-                  </Text>
-                  <Text className="text-lg text-[#FFD700]">
-                    Escriba el número de teléfono del almacén
-                  </Text>
-                </Box>
-
-                {/* Campo: Número de Celular (solo acepta números, máximo 10 dígitos) */}
-                <FormControl isInvalid={!!errors.celular}>
-                  <FormControlLabel>
-                    <Text className="text-2xl font-bold text-[#FFD700] mb-3">
-                      ¿Cuál es el número de teléfono? *
-                    </Text>
-                  </FormControlLabel>
-                  <Input
-                    variant="outline"
-                    size="xl"
-                    className={`rounded-2xl border-3 ${
-                      errors.celular ? 'border-red-600' : 'border-[#FFD700]'
-                    } bg-[#2a2a2a]`}
-                  >
-                    <InputField
-                      placeholder="Ejemplo: 5551234567"
-                      value={formData.celular}
-                      onChangeText={(text) => {
-                        // Eliminar cualquier carácter que no sea número
-                        const cleaned = text.replace(/\D/g, '');
-                        setFormData({ ...formData, celular: cleaned });
-                        if (errors.celular) {
-                          setErrors({ ...errors, celular: '' });
-                        }
-                      }}
-                      keyboardType="phone-pad" // Mostrar teclado de teléfono en móvil
-                      maxLength={10} // Limitar a 10 dígitos
-                      className="text-2xl py-4 text-center text-[#FFD700]"
-                      placeholderTextColor="#B8860B"
-                    />
-                  </Input>
-                  {errors.celular && (
-                    <FormControlError>
-                      <FormControlErrorText className="text-xl font-semibold text-red-700">
-                        ⚠️ {errors.celular}
-                      </FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-
-                {/* ====== Botones de acción ====== */}
-                <VStack space="lg" className="mt-8">
-                  {/* Botón para guardar el nuevo almacén (valida y guarda) */}
-                  <Button
-                    size="xl"
-                    action="primary"
-                    onPress={handleSubmit}
-                    className="bg-[#FFD700] py-2 rounded-2xl"
-                  >
-                    <ButtonText className="text-2xl font-bold text-black">
-                      ✅ Guardar Almacén
-                    </ButtonText>
-                  </Button>
-                  
-                  {/* Botón para cancelar y volver a la lista (descarta cambios) */}
-                  <Button
-                    size="xl"
-                    action="secondary"
-                    variant="outline"
-                    onPress={handleCancel}
-                    className="border-3 border-[#FFD700] py-2 rounded-2xl bg-[#2a2a2a]"
-                  >
-                    <ButtonText className="text-2xl font-bold text-[#FFD700]">
-                      ❌ Cancelar
-                    </ButtonText>
-                  </Button>
-                </VStack>
-              </VStack>
-            </Box>
-          )}
+    <>
+      {/* Header con logo */}
+      <Center className="mt-4 mb-4 rounded-lg mx-4">
+        <Box className="rounded-full">
+          <Image
+            source={require("@/assets/images/Pisos-logo1.png")}
+            style={{
+              width: screenWidth < 375 ? 260 : 320,
+              height: screenWidth < 375 ? 80 : 100,
+              resizeMode: "contain",
+            }}
+          />
         </Box>
-      </ScrollView>
-    </Box>
+      </Center>
+
+      <Box className="flex-1 bg-[#000000]">
+        <ScrollView className="flex-1">
+          <Box className="p-6">
+            {/* Título y descripción */}
+            <Box className="mb-6">
+              <Heading size="lg" className="text-[#FFD700] mb-1">
+                Gestión de almacenes
+              </Heading>
+              <Text className="text-gray-300 text-sm">
+                Crea y administra las ubicaciones donde almacenas tus productos.
+              </Text>
+            </Box>
+
+            {/* Contenido principal: formulario o menú */}
+            {showForm ? (
+              <Box className="bg-[#111111] rounded-2xl p-4 border border-[#333333]">
+                <Heading size="md" className="text-[#FFD700] mb-4">
+                  Nuevo almacén
+                </Heading>
+
+                <VStack space="md">
+                  <FormControl isInvalid={!!errors.nombre}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Nombre del almacén
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.nombre}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, nombre: text }))
+                        }
+                        placeholder="Ej. Almacén Central"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.nombre ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.nombre}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.calle}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Calle y número
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.calle}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, calle: text }))
+                        }
+                        placeholder="Ej. Av. Principal 123"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.calle ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.calle}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.cp}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Código postal
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.cp}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, cp: text }))
+                        }
+                        placeholder="Ej. 12345"
+                        keyboardType="number-pad"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.cp ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.cp}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.colonia}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Colonia
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.colonia}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, colonia: text }))
+                        }
+                        placeholder="Ej. Centro"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.colonia ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.colonia}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <FormControl isInvalid={!!errors.celular}>
+                    <Text className="text-sm text-gray-200 mb-1">
+                      Teléfono de contacto
+                    </Text>
+                    <Input variant="outline" size="md" className="border-[#FFD700]/40">
+                      <InputField
+                        value={formData.celular}
+                        onChangeText={(text) =>
+                          setFormData((prev) => ({ ...prev, celular: text }))
+                        }
+                        placeholder="Ej. 5551234567"
+                        keyboardType="phone-pad"
+                        className="text-sm text-white"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </Input>
+                    {errors.celular ? (
+                      <FormControlError>
+                        <FormControlErrorText>{errors.celular}</FormControlErrorText>
+                      </FormControlError>
+                    ) : null}
+                  </FormControl>
+
+                  <Box className="flex-row justify-between mt-4">
+                    <Button
+                      size="md"
+                      action="primary"
+                      className="border border-gray-500 flex-1 mr-2"
+                      onPress={handleCancel}
+                    >
+                      <ButtonText className="text-base text-gray-200">
+                        Cancelar
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      size="md"
+                      action="primary"
+                      className="bg-[#FFD700] flex-1 ml-2"
+                      onPress={handleSubmit}
+                    >
+                      <ButtonText className="text-base font-bold text-black">
+                        Guardar almacén
+                      </ButtonText>
+                    </Button>
+                  </Box>
+                </VStack>
+              </Box>
+            ) : (
+              <>
+                {/* Acciones principales */}
+                <Box className="mb-6">
+                  <VStack space="md">
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => setShowForm(true)}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Crear nuevo almacén
+                      </ButtonText>
+                    </Button>
+
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => {}}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Categorías
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => {}}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Subcategorías
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => {}}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Productos
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                      onPress={() => {}}
+                    >
+                      <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                        Estantes
+                      </ButtonText>
+                    </Button>
+                  </VStack>
+                </Box>
+              </>
+            )}
+          </Box>
+        </ScrollView>
+      </Box>
+    </>
   );
 }
 

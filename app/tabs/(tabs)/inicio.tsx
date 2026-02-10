@@ -17,40 +17,62 @@ export default function Inicio() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-
-  // Calcular tamaño de los items
-  const itemSize = Math.min((screenWidth - 40) / 3, 100);
-  const iconBoxSize = itemSize * 0.7;
-
-  // Filtrar categorías basado en la búsqueda
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
+    null,
   );
 
-  // Obtener datos de categoría seleccionada
+  const normalizedTerm = searchTerm.trim().toLowerCase();
+
+  const filteredCategories = categories
+    .map((category) => {
+      const subcategories = category.subcategories ?? [];
+      const matchesCategory = normalizedTerm
+        ? category.name.toLowerCase().includes(normalizedTerm)
+        : true;
+      const matchingSubcategories = normalizedTerm
+        ? subcategories.filter((subcategory) =>
+            subcategory.toLowerCase().includes(normalizedTerm),
+          )
+        : subcategories;
+
+      if (!normalizedTerm) {
+        return category;
+      }
+
+      if (matchesCategory) {
+        return category;
+      }
+
+      if (matchingSubcategories.length > 0) {
+        return { ...category, subcategories: matchingSubcategories };
+      }
+
+      return null;
+    })
+    .filter(Boolean) as typeof categories;
+
   const selectedCategoryData = selectedCategory
-    ? categories.find((c) => c.id === selectedCategory)
+    ? categories.find((category) => category.id === selectedCategory)
     : null;
   const productsInCategory = selectedCategory
     ? getProductsForCategory(selectedCategory)
     : [];
 
-  const handleCategoryPress = (categoryId: number) => {
+  const handleSubcategoryPress = (categoryId: number, subcategory: string) => {
     setSelectedCategory(categoryId);
-    setSearchTerm(""); // Limpiar búsqueda al cambiar de categoría
+    setSelectedSubcategory(subcategory);
+    setSearchTerm("");
   };
 
   const handleBack = () => {
     setSelectedCategory(null);
+    setSelectedSubcategory(null);
     setSearchTerm("");
   };
 
   const handleProductPress = (productId: number) => {
     console.log("Navegando a producto:", productId);
-    // Intentar con ruta relativa primero
-    const route = `./producto/${productId}`;
-    console.log("Ruta a navegar:", route);
-    router.push(route as any);
+    router.push(`/tabs/(tabs)/producto/${productId}`);
   };
 
   return (
@@ -77,17 +99,18 @@ export default function Inicio() {
         {selectedCategory ? (
           <ProductsView
             products={productsInCategory}
-            categoryName={selectedCategoryData?.name || ""}
-            screenWidth={screenWidth}
             onProductPress={handleProductPress}
+            categoryName={
+              selectedSubcategory
+                ? `${selectedCategoryData?.name || ""} / ${selectedSubcategory}`
+                : selectedCategoryData?.name || ""
+            }
+            screenWidth={screenWidth}
           />
         ) : (
           <CategoriesGrid
             categories={filteredCategories}
-            onCategoryPress={handleCategoryPress}
-            screenWidth={screenWidth}
-            itemSize={itemSize}
-            iconBoxSize={iconBoxSize}
+            onSubcategoryPress={handleSubcategoryPress}
           />
         )}
       </Box>
