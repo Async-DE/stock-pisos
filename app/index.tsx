@@ -7,40 +7,13 @@ import { Icon } from "@/components/ui/icon";
 import { VStack } from "@/components/ui/vstack";
 import { Pressable } from "react-native";
 import { EyeIcon, EyeOffIcon, ArrowRightIcon } from "@/components/ui/icon";
-import { createIcon } from "@gluestack-ui/core/icon/creator";
-import { Path } from "react-native-svg";
-import { Svg } from "@gluestack-ui/core/icon/creator";
 import { useRouter } from "expo-router";
+import { Center } from "@/components/ui/center";
+import { Image } from "react-native";
+import { Dimensions } from "react-native";
 
-const BoxIcon = createIcon({
-  Root: Svg,
-  viewBox: "0 0 24 24",
-  path: (
-    <>
-      <Path
-        d="M21 16V8C21 7.46957 20.7893 6.96086 20.4142 6.58579C20.0391 6.21071 19.5304 6 19 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V16C3 16.5304 3.21071 17.0391 3.58579 17.4142C3.96086 17.7893 4.46957 18 5 18H19C19.5304 18 20.0391 17.7893 20.4142 17.4142C20.7893 17.0391 21 16.5304 21 16Z"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        stroke="white"
-      />
-      <Path
-        d="M3 10H21"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        stroke="white"
-      />
-      <Path
-        d="M7 14H7.01"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        stroke="white"
-      />
-    </>
-  ),
-});
+const { width: screenWidth } = Dimensions.get("window");
+
 
 export default function Home() {
   const router = useRouter();
@@ -83,16 +56,21 @@ export default function Home() {
       {/* White Card Container */}
       <Box className="bg-gray-900 rounded-2xl p-8 w-full max-w-md shadow-lg border-2 border-[#FFD700]">
         <VStack space="xl" className="items-center">
-          {/* Icon Circle */}
-          <Box className="w-20 h-20 rounded-full bg-[#FFD700] items-center justify-center mb-2">
-            <Icon as={BoxIcon} size="xl" className="text-black" />
-          </Box>
+      <Center className="mt-4 mb-5 rounded-full">
+        <Box className="rounded-full">
+          <Image
+            source={require("@/assets/images/Pisos-logo1.png")}
+            style={{
+              width: screenWidth < 375 ? 300 : 350,
+              height: screenWidth < 375 ? 90 : 105,
+              resizeMode: "contain",
+            }}
+          />
+        </Box>
+      </Center>
 
           {/* Title */}
           <VStack space="sm" className="items-center w-full justify-center">
-            <Text className="text-3xl font-bold text-white text-center w-full">
-              Sistema de Inventario
-            </Text>
             <Text className="text-base text-[#B8860B] text-center w-full">
               Ingresa tus datos para acceder al sistema
             </Text>
