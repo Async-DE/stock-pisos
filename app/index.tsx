@@ -59,8 +59,8 @@ export default function Home() {
         password,
       });
 
-      if (response.status === 200 && response.token && response.usuario) {
-        const { token, usuario } = response;
+      if (response.status === 200 && response.data?.token && response.data?.usuario) {
+        const { token, usuario } = response.data;
 
         await AsyncStorage.multiSet([
           ["token", token],

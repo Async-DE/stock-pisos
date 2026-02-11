@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Dimensions } from "react-native";
@@ -7,15 +7,19 @@ import {
   categories,
   getProductsForCategory,
 } from "../../../components/constants";
+import { request } from "@/constants/Request";
 import { SearchHeader } from "@/components/SearchHeader";
 import { CategoriesGrid } from "@/components/CategoriesGrid";
 import { ProductsView } from "@/components/ProductsView";
 
 const { width: screenWidth } = Dimensions.get("window");
 
+type Category = (typeof categories)[number];
+
 export default function Inicio() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [apiCategories, setApiCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
     null,
@@ -23,7 +27,43 @@ export default function Inicio() {
 
   const normalizedTerm = searchTerm.trim().toLowerCase();
 
-  const filteredCategories = categories
+  const allCategories = apiCategories.length > 0 ? apiCategories : categories;
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await request("/stock/categorias/ver", "GET");
+
+        if (response.status === 200 && Array.isArray(response.data)) {
+          // Mapear respuesta del backend al formato esperado por CategoriesGrid
+          const mapped: Category[] = response.data.map(
+            (cat: any, index: number) => {
+              const fallbackIcon =
+                categories[index % categories.length]?.icon ??
+                categories[0].icon;
+
+              return {
+                id: cat.id,
+                name: cat.nombre,
+                icon: fallbackIcon,
+                subcategories: Array.isArray(cat.subcategorias)
+                  ? cat.subcategorias.map((sub: any) => sub.nombre)
+                  : [],
+              };
+            },
+          );
+
+          setApiCategories(mapped);
+        }
+      } catch (error) {
+        console.error("Error cargando categorías:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const filteredCategories = allCategories
     .map((category) => {
       const subcategories = category.subcategories ?? [];
       const matchesCategory = normalizedTerm
@@ -52,7 +92,7 @@ export default function Inicio() {
     .filter(Boolean) as typeof categories;
 
   const selectedCategoryData = selectedCategory
-    ? categories.find((category) => category.id === selectedCategory)
+    ? allCategories.find((category) => category.id === selectedCategory)
     : null;
   const productsInCategory = selectedCategory
     ? getProductsForCategory(selectedCategory)

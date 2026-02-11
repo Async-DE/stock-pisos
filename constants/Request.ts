@@ -50,7 +50,7 @@ else if (response.status >= 400) {
     });
   }
 
-  return { status: response.status, ...data };
+  return { status: response.status, data };
 };
 
 const uploadRequest = async (url: string, formData: FormData) => {
@@ -100,7 +100,7 @@ const uploadRequest = async (url: string, formData: FormData) => {
     });
   }
 
-  return { status: response.status, ...data };
+  return { status: response.status, data };
 };
 
 export { request, uploadRequest };
