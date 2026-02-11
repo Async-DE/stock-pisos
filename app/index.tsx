@@ -11,6 +11,8 @@ import { useRouter } from "expo-router";
 import { Center } from "@/components/ui/center";
 import { Image } from "react-native";
 import { Dimensions } from "react-native";
+import { request } from "@/constants/Request";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -19,6 +21,7 @@ export default function Home() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({
     username: "",
@@ -45,9 +48,34 @@ export default function Home() {
     return !newErrors.username && !newErrors.password;
   };
 
-  const handleLogin = () => {
-    if (validateForm()) {
-      router.push("/tabs/(tabs)/inicio");
+  const handleLogin = async () => {
+    if (!validateForm() || isLoading) return;
+
+    try {
+      setIsLoading(true);
+
+      const response = await request("/stock/auth/login", "POST", {
+        usuario_email: username,
+        password,
+      });
+
+      if (response.status === 200 && response.token && response.usuario) {
+        const { token, usuario } = response;
+
+        await AsyncStorage.multiSet([
+          ["token", token],
+          ["user_id", String(usuario.id)],
+          ["user_usuario", usuario.usuario ?? ""],
+          ["user_nombre", usuario.nombre ?? ""],
+        ]);
+
+        router.push("/tabs/(tabs)/inicio");
+      }
+    } catch (error) {
+      // El toast de request ya maneja mensajes de error
+      console.error("Error en login:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -156,10 +184,11 @@ export default function Home() {
               action="primary"
               className="bg-[#FFD700] rounded-lg mt-4"
               onPress={handleLogin}
+              isDisabled={isLoading}
             >
               <ButtonIcon as={ArrowRightIcon} className="text-black" />
               <ButtonText className="text-black font-medium text-base">
-                Iniciar Sesión
+                {isLoading ? "Ingresando..." : "Iniciar Sesión"}
               </ButtonText>
             </Button>
           </VStack>
