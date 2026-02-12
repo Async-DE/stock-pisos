@@ -20,9 +20,13 @@ interface CategoriesGridProps {
     id: number;
     name: string;
     icon: LucideIcon;
-    subcategories: string[];
+    subcategories: Array<{ id: number; name: string }>;
   }>;
-  onSubcategoryPress: (categoryId: number, subcategory: string) => void;
+  onSubcategoryPress: (
+    categoryId: number,
+    subcategoryId: number,
+    subcategoryName: string,
+  ) => void;
 }
 
 export function CategoriesGrid({
@@ -63,14 +67,14 @@ export function CategoriesGrid({
                     reversed={false}
                     className="items-center flex-1"
                   >
-                    <Box className="bg-secondary-500 rounded-lg border border-yellow-400 items-center justify-center w-11 h-11">
+                    <Box className="items-center justify-center w-11 h-11">
                       <IconComponent
-                        size={20}
+                        size={40}
                         color="#fff112"
                         strokeWidth={2}
                       />
                     </Box>
-                    <AccordionTitleText className="text-white flex-1 text-base font-semibold">
+                    <AccordionTitleText className="text-white flex-1 text-2xl font-semibold">
                       {category.name}
                     </AccordionTitleText>
                   </HStack>
@@ -78,21 +82,25 @@ export function CategoriesGrid({
                 </AccordionTrigger>
               </AccordionHeader>
               <AccordionContent className="pt-0">
-                <Box className="bg-secondary-400/40 rounded-md px-3 py-2">
+                <Box className="px-3 py-2">
                   {category.subcategories.length === 0 ? (
                     <Text className="text-gray-400 text-sm">
                       Sin subcategorias
                     </Text>
                   ) : (
-                    category.subcategories.map((subcategory) => (
+                    category.subcategories.map((subcategory, index) => (
                       <Pressable
-                        key={`${category.id}-${subcategory}`}
+                        key={`${category.id}-${subcategory.id}-${index}`}
                         onPress={() =>
-                          onSubcategoryPress(category.id, subcategory)
+                          onSubcategoryPress(
+                            category.id,
+                            subcategory.id,
+                            subcategory.name,
+                          )
                         }
                       >
-                        <Text className="text-white text-base py-1">
-                          {subcategory}
+                        <Text className="text-white text-xl py-4 mt-2 bg-secondary-500/50 rounded-md px-2 border-2 border-yellow-200">
+                          {subcategory.name}
                         </Text>
                       </Pressable>
                     ))
