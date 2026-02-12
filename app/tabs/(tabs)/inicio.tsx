@@ -118,7 +118,8 @@ export default function Inicio() {
             if (Array.isArray(producto.variantes) && producto.variantes.length > 0) {
               producto.variantes.forEach((variante: any, index: number) => {
                 mappedProducts.push({
-                  id: producto.id * 1000 + index, // ID único para cada variante
+                  id: producto.id * 1000 + index, // ID único para cada variante (para la tarjeta)
+                  productId: producto.id, // ID real del producto para consultar detalles
                   name: variante.nombre || `Producto ${producto.id}`,
                   price: variante.precio_publico || 0,
                   image: variante.foto,
@@ -143,6 +144,7 @@ export default function Inicio() {
               // Si no hay variantes, crear un producto básico
               mappedProducts.push({
                 id: producto.id,
+                productId: producto.id,
                 name: `Producto ${producto.id}`,
                 price: 0,
               });
@@ -216,8 +218,11 @@ export default function Inicio() {
   };
 
   const handleProductPress = (productId: number) => {
-    console.log("Navegando a producto:", productId);
-    router.push(`/tabs/(tabs)/producto/${productId}`);
+    // Buscar el producto para obtener el productId real
+    const product = products.find((p) => p.id === productId);
+    const realProductId = product?.productId || productId;
+    console.log("Navegando a producto:", realProductId);
+    router.push(`/tabs/(tabs)/producto/${realProductId}`);
   };
 
   return (

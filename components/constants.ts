@@ -153,6 +153,7 @@ export type Product = {
   image?: string;
   description?: string;
   variants?: ProductVariant[];
+  productId?: number; // ID real del producto del API (para consultar detalles)
 };
 
 export const productsByCategory: Record<number, Product[]> = {
