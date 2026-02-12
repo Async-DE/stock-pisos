@@ -7,6 +7,7 @@ import { ScrollView } from "@/components/ui/scroll-view";
 import { Center } from "@/components/ui/center";
 import { Text } from "@/components/ui/text";
 import { Dimensions } from "react-native";
+import { useRouter } from "expo-router";
 
 // Importación de componentes nativos de React Native
 import { Alert, Image } from "react-native";
@@ -31,6 +32,7 @@ interface Establecimiento {
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Establecimientos() {
+  const router = useRouter();
   const [establecimientos, setEstablecimientos] = useState<Establecimiento[]>([
     {
       id: "1",
@@ -208,7 +210,7 @@ export default function Establecimientos() {
                   variant="outline"
                   action="secondary"
                   className="border-2 border-[#FFD700] bg-[#121212] rounded-3xl"
-                  onPress={() => {}}
+                  onPress={() => router.push("/tabs/(tabs)/estantes/nuevo")}
                 >
                   <Layers size={24} color="#FFD700" strokeWidth={2} />
                   <ButtonText className="text-[30px] font-bold text-[#FFD700] text-left w-full">

@@ -14,7 +14,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: useClientOnlyValue(false,false),
+        headerShown: useClientOnlyValue(false, false),
         tabBarActiveTintColor: "#FFD700",
         tabBarInactiveTintColor: "#B8860B",
         tabBarStyle: {
@@ -72,6 +72,14 @@ export default function TabLayout() {
 
       <Tabs.Screen
         name="producto/[id]/variante/nuevo"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="estantes/nuevo"
         options={{
           href: null,
           headerShown: false,
