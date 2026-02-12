@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ProductDetailView } from "@/components/ProductDetailView";
 import { Box } from "@/components/ui/box";
 import { Center } from "@/components/ui/center";
@@ -11,6 +11,7 @@ import type { Product } from "@/components/constants";
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const productId = id ? parseInt(id, 10) : null;
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,7 +141,12 @@ export default function ProductDetailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000000" }}>
-      <ProductDetailView product={product} />
+      <ProductDetailView
+        product={product}
+        onAddVariant={() =>
+          router.push(`/tabs/(tabs)/producto/${productId}/variante/nuevo`)
+        }
+      />
     </View>
   );
 }

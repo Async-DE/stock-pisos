@@ -8,18 +8,26 @@ import { ShoppingBag, ArrowLeft, Package, Check } from "lucide-react-native";
 import type { Product, ProductVariant } from "./constants";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, ButtonText, ButtonIcon } from "@/components/ui/button";
+import { Plus } from "lucide-react-native";
 
 interface ProductDetailViewProps {
   product: Product;
+  onAddVariant?: () => void;
 }
 
-export function ProductDetailView({ product }: ProductDetailViewProps) {
+export function ProductDetailView({
+  product,
+  onAddVariant,
+}: ProductDetailViewProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  
+
   // Estado para la variante seleccionada (por defecto la primera)
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-    product.variants && product.variants.length > 0 ? product.variants[0] : null,
+    product.variants && product.variants.length > 0
+      ? product.variants[0]
+      : null,
   );
 
   console.log("ProductDetailView - product:", product);
@@ -152,7 +160,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
               <Text className="text-white font-bold text-2xl mb-2">
                 {selectedVariant.name}
               </Text>
-              
+
               {/* Detalles de la variante */}
               <Box className="mb-4 space-y-2">
                 {selectedVariant.attributes?.codigo && (
@@ -203,7 +211,9 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                   <HStack space="sm" className="items-center">
                     <Text className="text-gray-400 font-semibold text-lg">
                       {formatPrice(
-                        parseFloat(selectedVariant.attributes.precio_contratista),
+                        parseFloat(
+                          selectedVariant.attributes.precio_contratista,
+                        ),
                       )}
                     </Text>
                     <Text className="text-gray-500 text-sm ml-2">
@@ -213,7 +223,9 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                 )}
                 {selectedVariant.stock !== undefined && (
                   <HStack space="sm" className="items-center mt-2">
-                    <Text className="text-gray-400 text-sm">Stock disponible:</Text>
+                    <Text className="text-gray-400 text-sm">
+                      Stock disponible:
+                    </Text>
                     <Text className="text-white text-sm font-semibold">
                       {selectedVariant.stock} unidades
                     </Text>
@@ -226,12 +238,32 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
           {/* Selector de variantes */}
           {product.variants && product.variants.length > 0 ? (
             <Box>
-              <Text className="text-white font-bold text-xl mb-2">
-                Seleccionar variante
-              </Text>
-              <Text className="text-gray-400 text-sm mb-4">
-                {product.variants.length} variante{product.variants.length !== 1 ? "s" : ""} disponible{product.variants.length !== 1 ? "s" : ""}
-              </Text>
+              <HStack space="md" className="items-center justify-between mb-3">
+                <Box>
+                  <Text className="text-white font-bold text-xl">
+                    Seleccionar variante
+                  </Text>
+                  <Text className="text-gray-400 text-sm mt-1">
+                    {product.variants.length} variante
+                    {product.variants.length !== 1 ? "s" : ""} disponible
+                    {product.variants.length !== 1 ? "s" : ""}
+                  </Text>
+                </Box>
+                {onAddVariant && (
+                  <Button
+                    size="md"
+                    action="primary"
+                    className="bg-[#FFD700] rounded-full px-4"
+                    onPress={onAddVariant}
+                  >
+                    <ButtonIcon as={Plus} className="text-black" />
+                    <ButtonText className="text-black font-semibold">
+                      Agregar
+                    </ButtonText>
+                  </Button>
+                )}
+              </HStack>
+
               {product.variants.map(renderVariantOption)}
             </Box>
           ) : (
@@ -249,4 +281,3 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
     </Box>
   );
 }
-
