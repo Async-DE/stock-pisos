@@ -4,7 +4,7 @@ import { ScrollView } from "@/components/ui/scroll-view";
 import { Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 import {
-  categories,
+  categoryIcons,
   type Product,
 } from "../../../components/constants";
 import { request } from "@/constants/Request";
@@ -22,7 +22,7 @@ type Subcategory = {
 type Category = {
   id: number;
   name: string;
-  icon: (typeof categories)[number]["icon"];
+  icon: (typeof categoryIcons)[number];
   subcategories: Subcategory[];
 };
 
@@ -42,19 +42,7 @@ export default function Inicio() {
 
   const normalizedTerm = searchTerm.trim().toLowerCase();
 
-  // Convert fallback categories to match the expected structure
-  const fallbackCategories: Category[] = categories.map((cat) => ({
-    id: cat.id,
-    name: cat.name,
-    icon: cat.icon,
-    subcategories: cat.subcategories.map((sub, index) => ({
-      id: cat.id * 100 + index, // Generate temporary IDs for fallback
-      name: sub,
-    })),
-  }));
-
-  const allCategories =
-    apiCategories.length > 0 ? apiCategories : fallbackCategories;
+  const allCategories = apiCategories;
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -66,8 +54,8 @@ export default function Inicio() {
           const mapped: Category[] = response.data.map(
             (cat: any, index: number) => {
               const fallbackIcon =
-                categories[index % categories.length]?.icon ??
-                categories[0].icon;
+                categoryIcons[index % categoryIcons.length] ??
+                categoryIcons[0];
 
               return {
                 id: cat.id,
