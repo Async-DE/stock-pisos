@@ -5,7 +5,7 @@ import { Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 import {
   categories,
-  getProductsForCategory,
+  type Product,
 } from "../../../components/constants";
 import { request } from "@/constants/Request";
 import { SearchHeader } from "@/components/SearchHeader";
@@ -14,7 +14,17 @@ import { ProductsView } from "@/components/ProductsView";
 
 const { width: screenWidth } = Dimensions.get("window");
 
-type Category = (typeof categories)[number];
+type Subcategory = {
+  id: number;
+  name: string;
+};
+
+type Category = {
+  id: number;
+  name: string;
+  icon: (typeof categories)[number]["icon"];
+  subcategories: Subcategory[];
+};
 
 export default function Inicio() {
   const router = useRouter();
@@ -24,10 +34,27 @@ export default function Inicio() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
     null,
   );
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<
+    number | null
+  >(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   const normalizedTerm = searchTerm.trim().toLowerCase();
 
-  const allCategories = apiCategories.length > 0 ? apiCategories : categories;
+  // Convert fallback categories to match the expected structure
+  const fallbackCategories: Category[] = categories.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    icon: cat.icon,
+    subcategories: cat.subcategories.map((sub, index) => ({
+      id: cat.id * 100 + index, // Generate temporary IDs for fallback
+      name: sub,
+    })),
+  }));
+
+  const allCategories =
+    apiCategories.length > 0 ? apiCategories : fallbackCategories;
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -47,7 +74,10 @@ export default function Inicio() {
                 name: cat.nombre,
                 icon: fallbackIcon,
                 subcategories: Array.isArray(cat.subcategorias)
-                  ? cat.subcategorias.map((sub: any) => sub.nombre)
+                  ? cat.subcategorias.map((sub: any) => ({
+                      id: sub.id,
+                      name: sub.nombre,
+                    }))
                   : [],
               };
             },
@@ -63,6 +93,77 @@ export default function Inicio() {
     fetchCategories();
   }, []);
 
+  // Fetch products when subcategory is selected
+  useEffect(() => {
+    const fetchProductsBySubcategory = async () => {
+      if (!selectedSubcategoryId) {
+        setProducts([]);
+        return;
+      }
+
+      setLoadingProducts(true);
+      try {
+        const response = await request(
+          `/stock/productos/ver/subcategoria/${selectedSubcategoryId}`,
+          "GET",
+        );
+
+        if (response.status === 200 && Array.isArray(response.data)) {
+          // Mapear respuesta del API al formato Product
+          // Cada producto del API puede tener múltiples variantes
+          // Vamos a crear un Product por cada variante
+          const mappedProducts: Product[] = [];
+
+          response.data.forEach((producto: any) => {
+            if (Array.isArray(producto.variantes) && producto.variantes.length > 0) {
+              producto.variantes.forEach((variante: any, index: number) => {
+                mappedProducts.push({
+                  id: producto.id * 1000 + index, // ID único para cada variante
+                  name: variante.nombre || `Producto ${producto.id}`,
+                  price: variante.precio_publico || 0,
+                  image: variante.foto,
+                  description: `${variante.color || ""} - ${variante.medidas || ""}`.trim(),
+                  variants: [
+                    {
+                      id: producto.id * 1000 + index,
+                      name: variante.nombre || "",
+                      price: variante.precio_publico || 0,
+                      stock: variante.cantidad,
+                      attributes: {
+                        color: variante.color || "",
+                        medidas: variante.medidas || "",
+                        precio_contratista: variante.precio_contratista?.toString() || "",
+                        cantidad: variante.cantidad?.toString() || "",
+                      },
+                    },
+                  ],
+                });
+              });
+            } else {
+              // Si no hay variantes, crear un producto básico
+              mappedProducts.push({
+                id: producto.id,
+                name: `Producto ${producto.id}`,
+                price: 0,
+              });
+            }
+          });
+
+          setProducts(mappedProducts);
+        } else {
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error("Error cargando productos por subcategoría:", error);
+        setProducts([]);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProductsBySubcategory();
+  }, [selectedSubcategoryId]);
+
   const filteredCategories = allCategories
     .map((category) => {
       const subcategories = category.subcategories ?? [];
@@ -71,7 +172,7 @@ export default function Inicio() {
         : true;
       const matchingSubcategories = normalizedTerm
         ? subcategories.filter((subcategory) =>
-            subcategory.toLowerCase().includes(normalizedTerm),
+            subcategory.name.toLowerCase().includes(normalizedTerm),
           )
         : subcategories;
 
@@ -89,24 +190,28 @@ export default function Inicio() {
 
       return null;
     })
-    .filter(Boolean) as typeof categories;
+    .filter(Boolean) as Category[];
 
   const selectedCategoryData = selectedCategory
     ? allCategories.find((category) => category.id === selectedCategory)
     : null;
-  const productsInCategory = selectedCategory
-    ? getProductsForCategory(selectedCategory)
-    : [];
 
-  const handleSubcategoryPress = (categoryId: number, subcategory: string) => {
+  const handleSubcategoryPress = (
+    categoryId: number,
+    subcategoryId: number,
+    subcategoryName: string,
+  ) => {
     setSelectedCategory(categoryId);
-    setSelectedSubcategory(subcategory);
+    setSelectedSubcategory(subcategoryName);
+    setSelectedSubcategoryId(subcategoryId);
     setSearchTerm("");
   };
 
   const handleBack = () => {
     setSelectedCategory(null);
     setSelectedSubcategory(null);
+    setSelectedSubcategoryId(null);
+    setProducts([]);
     setSearchTerm("");
   };
 
@@ -138,7 +243,7 @@ export default function Inicio() {
         {/* Contenido: Categorías o Productos */}
         {selectedCategory ? (
           <ProductsView
-            products={productsInCategory}
+            products={products}
             onProductPress={handleProductPress}
             categoryName={
               selectedSubcategory

@@ -1,7 +1,7 @@
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
-import { Pressable } from "react-native";
+import { Pressable, Image } from "react-native";
 import { ShoppingBag, Star } from "lucide-react-native";
 import type { Product } from "./constants";
 
@@ -23,12 +23,23 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
         className="bg-secondary-500 rounded-xl overflow-hidden border border-yellow-400 shadow-hard-2"
         style={{ width }}
       >
-        {/* Imagen placeholder */}
+        {/* Imagen del producto */}
         <Box
-          className="bg-secondary-600 justify-center items-center border-b border-yellow-400"
+          className="bg-secondary-600 justify-center items-center border-b border-yellow-400 overflow-hidden"
           style={{ width: "100%", height: 160 }}
         >
-          <ShoppingBag size={48} color="#FFD700" strokeWidth={1.5} />
+          {product.image ? (
+            <Image
+              source={{ uri: product.image }}
+              style={{
+                width: "100%",
+                height: "100%",
+                resizeMode: "cover",
+              }}
+            />
+          ) : (
+            <ShoppingBag size={48} color="#FFD700" strokeWidth={1.5} />
+          )}
         </Box>
 
         {/* Info del producto */}

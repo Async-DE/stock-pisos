@@ -20,9 +20,13 @@ interface CategoriesGridProps {
     id: number;
     name: string;
     icon: LucideIcon;
-    subcategories: string[];
+    subcategories: Array<{ id: number; name: string }>;
   }>;
-  onSubcategoryPress: (categoryId: number, subcategory: string) => void;
+  onSubcategoryPress: (
+    categoryId: number,
+    subcategoryId: number,
+    subcategoryName: string,
+  ) => void;
 }
 
 export function CategoriesGrid({
@@ -86,13 +90,17 @@ export function CategoriesGrid({
                   ) : (
                     category.subcategories.map((subcategory, index) => (
                       <Pressable
-                        key={`${category.id}-${subcategory}-${index}`}
+                        key={`${category.id}-${subcategory.id}-${index}`}
                         onPress={() =>
-                          onSubcategoryPress(category.id, subcategory)
+                          onSubcategoryPress(
+                            category.id,
+                            subcategory.id,
+                            subcategory.name,
+                          )
                         }
                       >
                         <Text className="text-white text-xl py-4 mt-2 bg-secondary-500/50 rounded-md px-2 border-2 border-yellow-200">
-                          {subcategory}
+                          {subcategory.name}
                         </Text>
                       </Pressable>
                     ))
