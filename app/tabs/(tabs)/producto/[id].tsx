@@ -17,8 +17,6 @@ export default function ProductDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log("ProductDetailScreen - id:", id, "productId:", productId);
-
   useEffect(() => {
     const fetchProduct = async () => {
       if (!productId || isNaN(productId)) {

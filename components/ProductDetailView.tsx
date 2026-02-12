@@ -30,8 +30,6 @@ export function ProductDetailView({
       : null,
   );
 
-  console.log("ProductDetailView - product:", product);
-
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-AR", {
       style: "currency",
