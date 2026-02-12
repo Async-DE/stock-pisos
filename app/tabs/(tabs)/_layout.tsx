@@ -61,6 +61,22 @@ export default function TabLayout() {
           // El tab bar se mostrará automáticamente porque está dentro de Tabs
         }}
       />
+
+      <Tabs.Screen
+        name="producto/nuevo"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="producto/[id]/variante/nuevo"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }
