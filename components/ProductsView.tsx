@@ -32,7 +32,11 @@ export function ProductsView({
         <Box className="mb-4">
           <HStack space="md" className="items-center justify-between">
             <Text className="text-white text-xl font-bold">{categoryName}</Text>
-
+          </HStack>
+          <HStack space="md" className="items-center justify-between">
+            <Text className="text-gray-400 text-base mt-1">
+              {products.length} productos disponibles
+            </Text>
             <Pressable
               onPress={onCreatePress}
               className="bg-yellow-400 px-3 py-2 rounded-full"
@@ -42,9 +46,6 @@ export function ProductsView({
               </Text>
             </Pressable>
           </HStack>
-          <Text className="text-gray-400 text-sm mt-1">
-            0 productos disponibles
-          </Text>
         </Box>
         <Center className="py-8">
           <Box className="items-center">
@@ -87,20 +88,21 @@ export function ProductsView({
       <Box className="mb-4">
         <HStack space="md" className="items-center justify-between">
           <Text className="text-white text-2xl font-bold">{categoryName}</Text>
-          {onCreatePress && (
-            <Pressable
-              onPress={onCreatePress}
-              className="bg-yellow-400 px-3 py-2 rounded-full"
-            >
-              <Text className="text-black text-sm font-semibold">
-                Crear producto
-              </Text>
-            </Pressable>
-          )}
         </HStack>
-        <Text className="text-gray-400 text-base mt-1">
-          {products.length} productos disponibles
-        </Text>
+
+        <HStack space="md" className="items-center justify-between">
+          <Text className="text-gray-400 text-base mt-1">
+            {products.length} productos disponibles
+          </Text>
+          <Pressable
+            onPress={onCreatePress}
+            className="bg-yellow-400 px-3 py-2 rounded-full"
+          >
+            <Text className="text-black text-sm font-semibold">
+              Crear producto
+            </Text>
+          </Pressable>
+        </HStack>
       </Box>
       <Box>{rows}</Box>
     </Box>
