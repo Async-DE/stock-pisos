@@ -3,10 +3,7 @@ import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Dimensions } from "react-native";
 import { useRouter } from "expo-router";
-import {
-  categoryIcons,
-  type Product,
-} from "../../../components/constants";
+import { categoryIcons, type Product } from "../../../components/constants";
 import { request } from "@/constants/Request";
 import { SearchHeader } from "@/components/SearchHeader";
 import { CategoriesGrid } from "@/components/CategoriesGrid";
@@ -54,8 +51,7 @@ export default function Inicio() {
           const mapped: Category[] = response.data.map(
             (cat: any, index: number) => {
               const fallbackIcon =
-                categoryIcons[index % categoryIcons.length] ??
-                categoryIcons[0];
+                categoryIcons[index % categoryIcons.length] ?? categoryIcons[0];
 
               return {
                 id: cat.id,
@@ -103,7 +99,10 @@ export default function Inicio() {
           const mappedProducts: Product[] = [];
 
           response.data.forEach((producto: any) => {
-            if (Array.isArray(producto.variantes) && producto.variantes.length > 0) {
+            if (
+              Array.isArray(producto.variantes) &&
+              producto.variantes.length > 0
+            ) {
               producto.variantes.forEach((variante: any, index: number) => {
                 mappedProducts.push({
                   id: producto.id * 1000 + index, // ID único para cada variante (para la tarjeta)
@@ -111,7 +110,8 @@ export default function Inicio() {
                   name: variante.nombre || `Producto ${producto.id}`,
                   price: variante.precio_publico || 0,
                   image: variante.foto,
-                  description: `${variante.color || ""} - ${variante.medidas || ""}`.trim(),
+                  description:
+                    `${variante.color || ""} - ${variante.medidas || ""}`.trim(),
                   variants: [
                     {
                       id: producto.id * 1000 + index,
@@ -121,7 +121,8 @@ export default function Inicio() {
                       attributes: {
                         color: variante.color || "",
                         medidas: variante.medidas || "",
-                        precio_contratista: variante.precio_contratista?.toString() || "",
+                        precio_contratista:
+                          variante.precio_contratista?.toString() || "",
                         cantidad: variante.cantidad?.toString() || "",
                       },
                     },
@@ -213,6 +214,10 @@ export default function Inicio() {
     router.push(`/tabs/(tabs)/producto/${realProductId}`);
   };
 
+  const handleCreateProduct = () => {
+    router.push("/tabs/(tabs)/producto/nuevo");
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-[#000000]"
@@ -238,6 +243,7 @@ export default function Inicio() {
           <ProductsView
             products={products}
             onProductPress={handleProductPress}
+            onCreatePress={handleCreateProduct}
             categoryName={
               selectedSubcategory
                 ? `${selectedCategoryData?.name || ""} / ${selectedSubcategory}`

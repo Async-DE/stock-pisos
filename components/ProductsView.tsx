@@ -5,13 +5,14 @@ import { Text } from "@/components/ui/text";
 import { ShoppingBag } from "lucide-react-native";
 import { ProductCard } from "./ProductCard";
 import type { Product } from "@/components/constants";
-import { Dimensions } from "react-native";
+import { Dimensions, Pressable } from "react-native";
 
 interface ProductsViewProps {
   products: Product[];
   categoryName: string;
   screenWidth?: number;
   onProductPress?: (productId: number) => void;
+  onCreatePress?: () => void;
 }
 
 const defaultScreenWidth = Dimensions.get("window").width;
@@ -21,6 +22,7 @@ export function ProductsView({
   categoryName,
   screenWidth = defaultScreenWidth,
   onProductPress,
+  onCreatePress,
 }: ProductsViewProps) {
   const productWidth = (screenWidth - 40) / 2 - 8;
 
@@ -28,7 +30,18 @@ export function ProductsView({
     return (
       <Box className="pb-6">
         <Box className="mb-4">
-          <Text className="text-white text-xl font-bold">{categoryName}</Text>
+          <HStack space="md" className="items-center justify-between">
+            <Text className="text-white text-xl font-bold">{categoryName}</Text>
+
+            <Pressable
+              onPress={onCreatePress}
+              className="bg-yellow-400 px-3 py-2 rounded-full"
+            >
+              <Text className="text-black text-sm font-semibold">
+                Crear producto
+              </Text>
+            </Pressable>
+          </HStack>
           <Text className="text-gray-400 text-sm mt-1">
             0 productos disponibles
           </Text>
@@ -72,7 +85,19 @@ export function ProductsView({
   return (
     <Box className="pb-6">
       <Box className="mb-4">
-        <Text className="text-white text-2xl font-bold">{categoryName}</Text>
+        <HStack space="md" className="items-center justify-between">
+          <Text className="text-white text-2xl font-bold">{categoryName}</Text>
+          {onCreatePress && (
+            <Pressable
+              onPress={onCreatePress}
+              className="bg-yellow-400 px-3 py-2 rounded-full"
+            >
+              <Text className="text-black text-sm font-semibold">
+                Crear producto
+              </Text>
+            </Pressable>
+          )}
+        </HStack>
         <Text className="text-gray-400 text-base mt-1">
           {products.length} productos disponibles
         </Text>
