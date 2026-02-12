@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Dimensions } from "react-native";
+import { Dimensions, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { categoryIcons, type Product } from "../../../components/constants";
 import { request } from "@/constants/Request";
@@ -36,124 +36,132 @@ export default function Inicio() {
   >(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const normalizedTerm = searchTerm.trim().toLowerCase();
 
   const allCategories = apiCategories;
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await request("/stock/categorias/ver", "GET");
+  const fetchCategories = async () => {
+    try {
+      const response = await request("/stock/categorias/ver", "GET");
 
-        if (response.status === 200 && Array.isArray(response.data)) {
-          // Mapear respuesta del backend al formato esperado por CategoriesGrid
-          const mapped: Category[] = response.data.map(
-            (cat: any, index: number) => {
-              const fallbackIcon =
-                categoryIcons[index % categoryIcons.length] ?? categoryIcons[0];
+      if (response.status === 200 && Array.isArray(response.data)) {
+        // Mapear respuesta del backend al formato esperado por CategoriesGrid
+        const mapped: Category[] = response.data.map(
+          (cat: any, index: number) => {
+            const fallbackIcon =
+              categoryIcons[index % categoryIcons.length] ?? categoryIcons[0];
 
-              return {
-                id: cat.id,
-                name: cat.nombre,
-                icon: fallbackIcon,
-                subcategories: Array.isArray(cat.subcategorias)
-                  ? cat.subcategorias.map((sub: any) => ({
-                      id: sub.id,
-                      name: sub.nombre,
-                    }))
-                  : [],
-              };
-            },
-          );
+            return {
+              id: cat.id,
+              name: cat.nombre,
+              icon: fallbackIcon,
+              subcategories: Array.isArray(cat.subcategorias)
+                ? cat.subcategorias.map((sub: any) => ({
+                    id: sub.id,
+                    name: sub.nombre,
+                  }))
+                : [],
+            };
+          },
+        );
 
-          setApiCategories(mapped);
-        }
-      } catch (error) {
-        console.error("Error cargando categorías:", error);
+        setApiCategories(mapped);
       }
-    };
+    } catch (error) {
+      console.error("Error cargando categorías:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchCategories();
   }, []);
 
   // Fetch products when subcategory is selected
-  useEffect(() => {
-    const fetchProductsBySubcategory = async () => {
-      if (!selectedSubcategoryId) {
-        setProducts([]);
-        return;
-      }
+  const fetchProductsBySubcategory = async (subcategoryId: number | null) => {
+    if (!subcategoryId) {
+      setProducts([]);
+      return;
+    }
 
-      setLoadingProducts(true);
-      try {
-        const response = await request(
-          `/stock/productos/ver/subcategoria/${selectedSubcategoryId}`,
-          "GET",
-        );
+    setLoadingProducts(true);
+    try {
+      const response = await request(
+        `/stock/productos/ver/subcategoria/${subcategoryId}`,
+        "GET",
+      );
 
-        if (response.status === 200 && Array.isArray(response.data)) {
-          // Mapear respuesta del API al formato Product
-          // Cada producto del API puede tener múltiples variantes
-          // Vamos a crear un Product por cada variante
-          const mappedProducts: Product[] = [];
+      if (response.status === 200 && Array.isArray(response.data)) {
+        // Mapear respuesta del API al formato Product
+        // Cada producto del API puede tener múltiples variantes
+        // Vamos a crear un Product por cada variante
+        const mappedProducts: Product[] = [];
 
-          response.data.forEach((producto: any) => {
-            if (
-              Array.isArray(producto.variantes) &&
-              producto.variantes.length > 0
-            ) {
-              producto.variantes.forEach((variante: any, index: number) => {
-                mappedProducts.push({
-                  id: producto.id * 1000 + index, // ID único para cada variante (para la tarjeta)
-                  productId: producto.id, // ID real del producto para consultar detalles
-                  name: variante.nombre || `Producto ${producto.id}`,
-                  price: variante.precio_publico || 0,
-                  image: variante.foto,
-                  description:
-                    `${variante.color || ""} - ${variante.medidas || ""}`.trim(),
-                  variants: [
-                    {
-                      id: producto.id * 1000 + index,
-                      name: variante.nombre || "",
-                      price: variante.precio_publico || 0,
-                      stock: variante.cantidad,
-                      attributes: {
-                        color: variante.color || "",
-                        medidas: variante.medidas || "",
-                        precio_contratista:
-                          variante.precio_contratista?.toString() || "",
-                        cantidad: variante.cantidad?.toString() || "",
-                      },
-                    },
-                  ],
-                });
-              });
-            } else {
-              // Si no hay variantes, crear un producto básico
+        response.data.forEach((producto: any) => {
+          if (
+            Array.isArray(producto.variantes) &&
+            producto.variantes.length > 0
+          ) {
+            producto.variantes.forEach((variante: any, index: number) => {
               mappedProducts.push({
-                id: producto.id,
-                productId: producto.id,
-                name: `Producto ${producto.id}`,
-                price: 0,
+                id: producto.id * 1000 + index, // ID único para cada variante (para la tarjeta)
+                productId: producto.id, // ID real del producto para consultar detalles
+                name: variante.nombre || `Producto ${producto.id}`,
+                price: variante.precio_publico || 0,
+                image: variante.foto,
+                description:
+                  `${variante.color || ""} - ${variante.medidas || ""}`.trim(),
+                variants: [
+                  {
+                    id: producto.id * 1000 + index,
+                    name: variante.nombre || "",
+                    price: variante.precio_publico || 0,
+                    stock: variante.cantidad,
+                    attributes: {
+                      color: variante.color || "",
+                      medidas: variante.medidas || "",
+                      precio_contratista:
+                        variante.precio_contratista?.toString() || "",
+                      cantidad: variante.cantidad?.toString() || "",
+                    },
+                  },
+                ],
               });
-            }
-          });
+            });
+          } else {
+            // Si no hay variantes, crear un producto básico
+            mappedProducts.push({
+              id: producto.id,
+              productId: producto.id,
+              name: `Producto ${producto.id}`,
+              price: 0,
+            });
+          }
+        });
 
-          setProducts(mappedProducts);
-        } else {
-          setProducts([]);
-        }
-      } catch (error) {
-        console.error("Error cargando productos por subcategoría:", error);
+        setProducts(mappedProducts);
+      } else {
         setProducts([]);
-      } finally {
-        setLoadingProducts(false);
       }
-    };
+    } catch (error) {
+      console.error("Error cargando productos por subcategoría:", error);
+      setProducts([]);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
-    fetchProductsBySubcategory();
+  useEffect(() => {
+    fetchProductsBySubcategory(selectedSubcategoryId);
   }, [selectedSubcategoryId]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchCategories();
+    await fetchProductsBySubcategory(selectedSubcategoryId);
+    setRefreshing(false);
+  };
 
   const filteredCategories = allCategories
     .map((category) => {
@@ -221,6 +229,13 @@ export default function Inicio() {
   return (
     <ScrollView
       className="flex-1 bg-[#000000]"
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor="#FFD700"
+        />
+      }
       contentContainerStyle={{
         flexGrow: 1,
         paddingBottom: 16,
