@@ -3,22 +3,14 @@
     "version": ">= 5.0.0"
   },
   "build": {
-    "production": {
-      "android": {
-        "buildType": "apk"
-      }
-    },
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_URL": "api_url"
+        }
       }
-    }
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccount": "~/.android/keystore.jks"
-      }
+
     }
   }
 }
