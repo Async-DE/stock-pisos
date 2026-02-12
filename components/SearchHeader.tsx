@@ -30,14 +30,14 @@ export function SearchHeader({
   return (
     <>
       {/* Logo de la compañía */}
-      <Center className="mt-4 mb-5 rounded-full">
+      <Center className="mt-10 mb-5 rounded-full">
         <Box className="rounded-full">
           <Image
-            source={require("@/assets/images/Pisos-logo1.png")}
+            source={require("@/assets/images/Pisos-logo2.jpeg")}
             style={{
               width: screenWidth < 375 ? 300 : 350,
               height: screenWidth < 375 ? 90 : 105,
-              resizeMode: "contain",
+              borderRadius: 10,
             }}
           />
         </Box>

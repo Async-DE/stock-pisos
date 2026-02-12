@@ -5,7 +5,9 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { VStack } from "@/components/ui/vstack";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Center } from "@/components/ui/center";
+import { Text } from "@/components/ui/text";
 import { Dimensions } from "react-native";
+import { useRouter } from "expo-router";
 
 // Importación de componentes nativos de React Native
 import { Alert, Image } from "react-native";
@@ -30,6 +32,7 @@ interface Establecimiento {
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Establecimientos() {
+  const router = useRouter();
   const [establecimientos, setEstablecimientos] = useState<Establecimiento[]>([
     {
       id: "1",
@@ -183,58 +186,34 @@ export default function Establecimientos() {
   return (
     <>
       {/* Header con logo */}
-      <Center className="mt-4 mb-4 rounded-lg mx-4">
+      <Center className="mt-12 mb-4 rounded-lg mx-4">
         <Box className="rounded-full">
           <Image
-            source={require("@/assets/images/Pisos-logo1.png")}
+            source={require("@/assets/images/Pisos-logo2.jpeg")}
             style={{
-              width: screenWidth < 375 ? 260 : 320,
-              height: screenWidth < 375 ? 80 : 100,
-              resizeMode: "contain",
+              width: screenWidth < 375 ? 300 : 350,
+              height: screenWidth < 375 ? 90 : 105,
+              borderRadius: 10,
             }}
           />
         </Box>
       </Center>
 
-      <Box className="flex-1 bg-[#000000]">
-        <ScrollView className="flex-1">
-          <Box className="p-6">
+      <Box className="flex-1 bg-[#000000] mt-40">
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <Box className="px-6 pb-8">
             {/* Acciones principales */}
             <Box className="mb-6">
-              <VStack space="md">
+              <VStack space="2xl">
                 <Button
                   size="xl"
                   variant="outline"
                   action="secondary"
-                  className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                  className="border-2 border-[#FFD700] bg-[#121212] rounded-3xl"
+                  onPress={() => router.push("/tabs/(tabs)/estantes/nuevo")}
                 >
-                  <Warehouse size={20} color="#FFD700" strokeWidth={2} />
-                  <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
-                    Almacén
-                  </ButtonText>
-                </Button>
-
-                <Button
-                  size="xl"
-                  variant="outline"
-                  action="secondary"
-                  className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
-                  onPress={() => {}}
-                >
-                  <MapPin size={20} color="#FFD700" strokeWidth={2} />
-                  <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
-                    Ubicaciones
-                  </ButtonText>
-                </Button>
-                <Button
-                  size="xl"
-                  variant="outline"
-                  action="secondary"
-                  className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
-                  onPress={() => {}}
-                >
-                  <Layers size={20} color="#FFD700" strokeWidth={2} />
-                  <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                  <Layers size={24} color="#FFD700" strokeWidth={2} />
+                  <ButtonText className="text-[30px] font-bold text-[#FFD700] text-left w-full">
                     Estantes
                   </ButtonText>
                 </Button>
@@ -242,11 +221,11 @@ export default function Establecimientos() {
                   size="xl"
                   variant="outline"
                   action="secondary"
-                  className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                  className="border-2 border-[#FFD700] bg-[#121212] rounded-3xl"
                   onPress={() => {}}
                 >
-                  <ShoppingCart size={20} color="#FFD700" strokeWidth={2} />
-                  <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                  <ShoppingCart size={24} color="#FFD700" strokeWidth={2} />
+                  <ButtonText className="text-[30px] font-bold text-[#FFD700] text-left w-full">
                     Ventas
                   </ButtonText>
                 </Button>
@@ -254,11 +233,11 @@ export default function Establecimientos() {
                   size="xl"
                   variant="outline"
                   action="secondary"
-                  className="border-3 border-[#FFD700] bg-[#1a1a1a] rounded-2xl"
+                  className="border-2 border-[#FFD700] bg-[#121212] rounded-3xl"
                   onPress={() => {}}
                 >
-                  <ClipboardCheck size={20} color="#FFD700" strokeWidth={2} />
-                  <ButtonText className="text-xl font-bold text-[#FFD700] text-left w-full">
+                  <ClipboardCheck size={24} color="#FFD700" strokeWidth={2} />
+                  <ButtonText className="text-[30px] font-bold text-[#FFD700] text-left w-full">
                     Auditorias
                   </ButtonText>
                 </Button>

@@ -2,7 +2,7 @@ import { Box } from "@/components/ui/box";
 import { Center } from "@/components/ui/center";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
-import { Pressable } from "react-native";
+import { Pressable, Image } from "react-native";
 import {
   Accordion,
   AccordionContent,
@@ -13,13 +13,21 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Search, ChevronDown } from "lucide-react-native";
-import type { LucideIcon } from "lucide-react-native";
+
+// Mapeo de IDs de categoría a imágenes específicas
+const categoryImageMap: { [key: number]: any } = {
+  1: require("../assets/images/RED.jpeg"),
+  2: require("../assets/images/Green.jpeg"),
+  3: require("../assets/images/wine.jpeg"),
+  4: require("../assets/images/Orange.jpeg"),
+  5: require("../assets/images/Gray.jpeg"),
+};
 
 interface CategoriesGridProps {
   categories: Array<{
     id: number;
     name: string;
-    icon: LucideIcon;
+    icon?: any; // Ahora opcional ya que usamos el ID para determinar la imagen
     subcategories: Array<{ id: number; name: string }>;
   }>;
   onSubcategoryPress: (
@@ -53,7 +61,9 @@ export function CategoriesGrid({
     <Box className="pb-6">
       <Accordion type="multiple" variant="unfilled" className="gap-3">
         {categories.map((category) => {
-          const IconComponent = category.icon;
+          // Usar imagen específica según el ID de categoría
+          const imageSource = categoryImageMap[category.id];
+
           return (
             <AccordionItem
               key={category.id}
@@ -67,12 +77,16 @@ export function CategoriesGrid({
                     reversed={false}
                     className="items-center flex-1"
                   >
-                    <Box className="items-center justify-center w-11 h-11">
-                      <IconComponent
-                        size={40}
-                        color="#fff112"
-                        strokeWidth={2}
-                      />
+                    <Box className="items-center justify-center w-11 h-11 rounded-lg overflow-hidden">
+                      {imageSource ? (
+                        <Image
+                          source={imageSource}
+                          style={{ width: 44, height: 44 }}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <Search size={40} color="#fff112" strokeWidth={2} />
+                      )}
                     </Box>
                     <AccordionTitleText className="text-white flex-1 text-2xl font-semibold">
                       {category.name}
