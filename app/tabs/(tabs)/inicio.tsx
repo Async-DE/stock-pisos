@@ -259,6 +259,7 @@ export default function Inicio() {
             products={products}
             onProductPress={handleProductPress}
             onCreatePress={handleCreateProduct}
+            isLoading={loadingProducts}
             categoryName={
               selectedSubcategory
                 ? `${selectedCategoryData?.name || ""} / ${selectedSubcategory}`
