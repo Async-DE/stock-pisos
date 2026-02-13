@@ -19,12 +19,12 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
   return (
     <Pressable onPress={handlePress} className="mb-4">
       <Box
-        className="bg-secondary-500 rounded-xl overflow-hidden border border-yellow-400 shadow-hard-2"
+        className="bg-secondary-500 rounded-xl overflow-hidden border border-[#169500] shadow-hard-2"
         style={{ width }}
       >
         {/* Imagen del producto */}
         <Box
-          className="bg-secondary-600 justify-center items-center border-b border-yellow-400 overflow-hidden"
+          className="bg-secondary-600 justify-center items-center border-b border-[#169500] overflow-hidden"
           style={{ width: "100%", height: 160 }}
         >
           {product.image ? (
@@ -37,7 +37,7 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
               }}
             />
           ) : (
-            <ShoppingBag size={48} color="#FFD700" strokeWidth={1.5} />
+            <ShoppingBag size={48} color="#13E000" strokeWidth={1.5} />
           )}
         </Box>
 
@@ -54,7 +54,7 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
           {/* Precios */}
           <Box className="items-start mt-2">
             <HStack space="sm" className="items-center">
-              <Text className="text-yellow-400 font-semibold text-base">
+              <Text className="text-[#169500] font-semibold text-base">
                 Almacén del Lago
               </Text>
             </HStack>

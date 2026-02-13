@@ -44,7 +44,7 @@ export function ProductsView({
         {onCreatePress && (
           <Pressable
             onPress={onCreatePress}
-            className="bg-yellow-400 px-4 py-2 rounded-full"
+            className="bg-[#169500] px-4 py-2 rounded-full"
           >
             <Text className="text-black text-sm font-semibold">Crear</Text>
           </Pressable>
@@ -58,7 +58,7 @@ export function ProductsView({
       <Box className="pb-6">
         {Header}
         <Center className="py-10">
-          <ActivityIndicator size="large" color="#FFD700" />
+          <ActivityIndicator size="large" color="#13E000" />
           <Text className="text-gray-400 text-center text-base mt-3">
             Cargando productos...
           </Text>
@@ -80,7 +80,7 @@ export function ProductsView({
             {onCreatePress && (
               <Pressable
                 onPress={onCreatePress}
-                className="bg-yellow-400 px-4 py-2 rounded-full mt-4"
+                className="bg-[#169500] px-4 py-2 rounded-full mt-4"
               >
                 <Text className="text-black text-sm font-semibold">
                   Crear producto

@@ -20,7 +20,7 @@ import {
   SelectItem,
   SelectScrollView,
 } from "@/components/ui/select";
-import { ActivityIndicator, Image, Pressable } from "react-native";
+import { ActivityIndicator, Image, Pressable, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Camera, ChevronDown, ImagePlus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -266,7 +266,11 @@ export default function NuevoProducto() {
   };
 
   return (
-    <Box className="flex-1 bg-[#000000]">
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
       <ScrollView
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
@@ -274,8 +278,8 @@ export default function NuevoProducto() {
         <Box className="px-4 pt-6 mt-8">
           <Pressable onPress={() => router.back()}>
             <HStack space="sm" className="items-center">
-              <ArrowLeft size={22} color="#FFD700" strokeWidth={2} />
-              <Text className="text-yellow-400 text-base font-semibold">
+              <ArrowLeft size={22} color="#13E000" strokeWidth={2} />
+              <Text className="text-[#169500] text-base font-semibold">
                 Volver
               </Text>
             </HStack>
@@ -292,14 +296,14 @@ export default function NuevoProducto() {
 
           {loadingData ? (
             <Center className="py-12">
-              <ActivityIndicator size="large" color="#FFD700" />
+              <ActivityIndicator size="large" color="#13E000" />
               <Text className="text-gray-400 text-base mt-3">
                 Cargando datos...
               </Text>
             </Center>
           ) : (
             <VStack space="xl" className="mt-6">
-              <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+              <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
                   Categoría y subcategoría
                 </Text>
@@ -315,7 +319,7 @@ export default function NuevoProducto() {
                         resetSubcategory();
                       }}
                     >
-                      <SelectTrigger className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
                         <SelectInput
                           placeholder="Selecciona una categoría"
                           className="text-white"
@@ -351,7 +355,7 @@ export default function NuevoProducto() {
                       onValueChange={setSelectedSubcategoryId}
                       isDisabled={!selectedCategoryId}
                     >
-                      <SelectTrigger className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
                         <SelectInput
                           placeholder={
                             selectedCategoryId
@@ -384,7 +388,7 @@ export default function NuevoProducto() {
                 </VStack>
               </Box>
 
-              <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+              <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
                   Ubicación y nivel
                 </Text>
@@ -400,7 +404,7 @@ export default function NuevoProducto() {
                         resetUbicacionChain();
                       }}
                     >
-                      <SelectTrigger className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
                         <SelectInput
                           placeholder="Selecciona una ubicación"
                           className="text-white"
@@ -437,7 +441,7 @@ export default function NuevoProducto() {
                       }}
                       isDisabled={!selectedUbicacionId}
                     >
-                      <SelectTrigger className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
                         <SelectInput
                           placeholder={
                             selectedUbicacionId
@@ -475,7 +479,7 @@ export default function NuevoProducto() {
                       onValueChange={setSelectedNivelId}
                       isDisabled={!selectedEstanteId}
                     >
-                      <SelectTrigger className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
                         <SelectInput
                           placeholder={
                             selectedEstanteId
@@ -508,14 +512,14 @@ export default function NuevoProducto() {
                 </VStack>
               </Box>
 
-              <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+              <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
                   Detalles del producto
                 </Text>
                 <VStack space="md">
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Nombre</Text>
-                    <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: Pisos Laminados Premium"
                         value={nombre}
@@ -527,7 +531,7 @@ export default function NuevoProducto() {
 
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Código</Text>
-                    <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: PL-102"
                         value={codigo}
@@ -539,7 +543,7 @@ export default function NuevoProducto() {
 
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Color</Text>
-                    <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: Nogal"
                         value={color}
@@ -553,7 +557,7 @@ export default function NuevoProducto() {
                     <Text className="text-gray-400 text-sm mb-2">
                       Descripción
                     </Text>
-                    <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: Acabado resistente, ideal para interiores"
                         value={descripcion}
@@ -568,7 +572,7 @@ export default function NuevoProducto() {
                       <Text className="text-gray-400 text-sm mb-2">
                         Cantidad
                       </Text>
-                      <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
                           placeholder="0"
                           keyboardType="numeric"
@@ -582,7 +586,7 @@ export default function NuevoProducto() {
                       <Text className="text-gray-400 text-sm mb-2">
                         Medidas
                       </Text>
-                      <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
                           placeholder="Ej: 15x16x35"
                           value={medidas}
@@ -595,7 +599,7 @@ export default function NuevoProducto() {
                 </VStack>
               </Box>
 
-              <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+              <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
                   Precios
                 </Text>
@@ -604,7 +608,7 @@ export default function NuevoProducto() {
                     <Text className="text-gray-400 text-sm mb-2">
                       Precio público
                     </Text>
-                    <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="0"
                         keyboardType="numeric"
@@ -618,7 +622,7 @@ export default function NuevoProducto() {
                     <Text className="text-gray-400 text-sm mb-2">
                       Precio contratista
                     </Text>
-                    <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="0"
                         keyboardType="numeric"
@@ -632,7 +636,7 @@ export default function NuevoProducto() {
                     <Text className="text-gray-400 text-sm mb-2">
                       Costo compra
                     </Text>
-                    <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="0"
                         keyboardType="numeric"
@@ -645,21 +649,21 @@ export default function NuevoProducto() {
                 </VStack>
               </Box>
 
-              <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+              <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
                   Foto del producto
                 </Text>
                 <VStack space="md">
                   {image ? (
-                    <Box className="border border-yellow-400/40 rounded-2xl overflow-hidden">
+                    <Box className="border border-[#169500]/40 rounded-2xl overflow-hidden">
                       <Image
                         source={{ uri: image.uri }}
                         style={{ width: "100%", height: 220 }}
                       />
                     </Box>
                   ) : (
-                    <Center className="border border-dashed border-yellow-400/40 rounded-2xl py-8">
-                      <ImagePlus size={36} color="#FFD700" strokeWidth={1.5} />
+                    <Center className="border border-dashed border-[#169500]/40 rounded-2xl py-8">
+                      <ImagePlus size={36} color="#13E000" strokeWidth={1.5} />
                       <Text className="text-gray-400 text-sm mt-2">
                         Agrega una foto (JPG, PNG o WEBP)
                       </Text>
@@ -670,22 +674,22 @@ export default function NuevoProducto() {
                     <Button
                       variant="outline"
                       action="secondary"
-                      className="flex-1 border-yellow-400"
+                      className="flex-1 border-[#169500]"
                       onPress={() => pickImage("camera")}
                     >
-                      <ButtonIcon as={Camera} className="text-yellow-400" />
-                      <ButtonText className="text-yellow-400">
+                      <ButtonIcon as={Camera} className="text-[#169500]" />
+                      <ButtonText className="text-[#169500]">
                         Tomar foto
                       </ButtonText>
                     </Button>
                     <Button
                       variant="outline"
                       action="secondary"
-                      className="flex-1 border-yellow-400"
+                      className="flex-1 border-[#169500]"
                       onPress={() => pickImage("library")}
                     >
-                      <ButtonIcon as={ImagePlus} className="text-yellow-400" />
-                      <ButtonText className="text-yellow-400">
+                      <ButtonIcon as={ImagePlus} className="text-[#169500]" />
+                      <ButtonText className="text-[#169500]">
                         Cargar
                       </ButtonText>
                     </Button>
@@ -703,7 +707,7 @@ export default function NuevoProducto() {
               <Button
                 size="lg"
                 action="primary"
-                className="bg-[#FFD700] rounded-xl"
+                className="bg-[#13E000] rounded-xl"
                 onPress={handleSubmit}
                 isDisabled={!isFormValid || isSubmitting}
               >
@@ -715,6 +719,6 @@ export default function NuevoProducto() {
           )}
         </Box>
       </ScrollView>
-    </Box>
+    </ImageBackground>
   );
 }

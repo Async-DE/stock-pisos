@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Dimensions, RefreshControl } from "react-native";
+import { Dimensions, RefreshControl, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
 import { categoryIcons, type Product } from "../../../components/constants";
 import { request } from "@/constants/Request";
@@ -215,34 +215,38 @@ export default function Inicio() {
   };
 
   const handleProductPress = (productId: number) => {
-    // Buscar el producto para obtener el productId real
     const product = products.find((p) => p.id === productId);
     const realProductId = product?.productId || productId;
-    router.push(`/tabs/(tabs)/producto/${realProductId}`);
+    router.push(`/tabs/(tabs)/producto/${realProductId}` as any);
   };
 
   const handleCreateProduct = () => {
-    router.push("/tabs/(tabs)/producto/nuevo");
+    router.push("/tabs/(tabs)/producto/nuevo" as any);
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-[#000000]"
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          tintColor="#FFD700"
-        />
-      }
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingBottom: 16,
-        paddingTop: 8,
-      }}
-      showsVerticalScrollIndicator={false}
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
     >
-      <Box className="flex-1 px-3">
+      <ScrollView
+        className="flex-1"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#13E000"
+          />
+        }
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: 16,
+          paddingTop: 8,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Box className="flex-1 px-3">
         {/* Header con búsqueda */}
         <SearchHeader
           searchTerm={searchTerm}
@@ -273,6 +277,7 @@ export default function Inicio() {
           />
         )}
       </Box>
-    </ScrollView>
+      </ScrollView>
+    </ImageBackground>
   );
 }

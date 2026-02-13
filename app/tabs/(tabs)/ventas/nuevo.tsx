@@ -20,7 +20,7 @@ import {
   SelectItem,
   SelectScrollView,
 } from "@/components/ui/select";
-import { ActivityIndicator, Pressable } from "react-native";
+import { ActivityIndicator, Pressable, ImageBackground } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, ChevronDown, Plus, Trash2 } from "lucide-react-native";
 import { request } from "@/constants/Request";
@@ -216,7 +216,11 @@ export default function NuevaVenta() {
   }
 
   return (
-    <Box className="flex-1 bg-[#000000]">
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
       <ScrollView
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
@@ -224,8 +228,8 @@ export default function NuevaVenta() {
         <Box className="px-4 pt-6 mt-10">
           <Pressable onPress={() => router.back()}>
             <HStack space="sm" className="items-center">
-              <ArrowLeft size={22} color="#FFD700" strokeWidth={2} />
-              <Text className="text-yellow-400 text-base font-semibold">
+              <ArrowLeft size={22} color="#13E000" strokeWidth={2} />
+              <Text className="text-[#169500] text-base font-semibold">
                 Volver
               </Text>
             </HStack>
@@ -241,14 +245,14 @@ export default function NuevaVenta() {
           </Box>
 
           <VStack space="xl" className="mt-6">
-            <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+            <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
               <Text className="text-white font-semibold text-lg mb-3">
                 Datos de la venta
               </Text>
               <VStack space="md">
                 <Box>
                   <Text className="text-gray-400 text-sm mb-2">Cantidad</Text>
-                  <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                     <InputField
                       placeholder="Cantidad"
                       value={cantidad}
@@ -268,7 +272,7 @@ export default function NuevaVenta() {
                   <Text className="text-gray-400 text-sm mb-2">
                     Nombre del cliente
                   </Text>
-                  <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                     <InputField
                       placeholder="Nombre y apellido"
                       value={nombreCliente}
@@ -287,7 +291,7 @@ export default function NuevaVenta() {
                   <Text className="text-gray-400 text-sm mb-2">
                     Contacto del cliente
                   </Text>
-                  <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                     <InputField
                       placeholder="Telefono o email"
                       value={contactoCliente}
@@ -310,7 +314,7 @@ export default function NuevaVenta() {
                     selectedValue={tipoVenta}
                     onValueChange={setTipoVenta}
                   >
-                    <SelectTrigger className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
                       <SelectInput
                         placeholder="Selecciona un tipo"
                         className="text-white"
@@ -337,7 +341,7 @@ export default function NuevaVenta() {
                   ) : null}
                 </Box>
 
-                <Box className="bg-secondary-600/70 rounded-xl p-3 border border-yellow-400/20">
+                <Box className="bg-secondary-600/70 rounded-xl p-3 border border-[#169500]">
                   <HStack space="sm" className="items-center justify-between">
                     <Text className="text-gray-300 text-sm">Precio base</Text>
                     <Text className="text-white font-semibold">
@@ -358,7 +362,7 @@ export default function NuevaVenta() {
                     className="items-center justify-between mt-2"
                   >
                     <Text className="text-gray-300 text-sm">Total</Text>
-                    <Text className="text-yellow-400 font-bold text-lg">
+                    <Text className="text-[#169500] font-bold text-lg">
                       {formatPrice(totalVenta)}
                     </Text>
                   </HStack>
@@ -366,7 +370,7 @@ export default function NuevaVenta() {
               </VStack>
             </Box>
 
-            <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+            <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
               <HStack space="sm" className="items-center justify-between mb-3">
                 <Text className="text-white font-semibold text-lg">
                   Costos extras
@@ -374,7 +378,7 @@ export default function NuevaVenta() {
                 <Button
                   size="sm"
                   action="primary"
-                  className="bg-[#FFD700] rounded-full px-3"
+                  className="bg-[#13E000] rounded-full px-3"
                   onPress={handleAddExtra}
                 >
                   <ButtonIcon as={Plus} className="text-black" />
@@ -393,14 +397,14 @@ export default function NuevaVenta() {
                   {costosExtras.map((item, index) => (
                     <Box
                       key={`extra-${index}`}
-                      className="bg-secondary-600 rounded-xl p-3 border border-yellow-400/20"
+                      className="bg-secondary-600 rounded-xl p-3 border border-[#169500]"
                     >
                       <VStack space="sm">
                         <Box>
                           <Text className="text-gray-400 text-sm mb-2">
                             Motivo
                           </Text>
-                          <Input className="bg-secondary-700 border-yellow-400/40 rounded-xl">
+                          <Input className="bg-secondary-700 border-[#169500] rounded-xl">
                             <InputField
                               placeholder="Envio, empaque..."
                               value={item.motivo}
@@ -415,7 +419,7 @@ export default function NuevaVenta() {
                           <Text className="text-gray-400 text-sm mb-2">
                             Costo
                           </Text>
-                          <Input className="bg-secondary-700 border-yellow-400/40 rounded-xl">
+                          <Input className="bg-secondary-700 border-[#169500] rounded-xl">
                             <InputField
                               placeholder="0.00"
                               value={item.costo}
@@ -430,7 +434,7 @@ export default function NuevaVenta() {
                         <Button
                           size="sm"
                           action="secondary"
-                          className="bg-secondary-700 rounded-full"
+                          className="bg-secondary-700 rounded-full border border-[#169500]"
                           onPress={() => handleRemoveExtra(index)}
                         >
                           <ButtonIcon as={Trash2} className="text-gray-300" />
@@ -454,7 +458,7 @@ export default function NuevaVenta() {
             <Button
               size="lg"
               action="primary"
-              className="bg-[#FFD700] rounded-2xl"
+              className="bg-[#13E000] rounded-2xl"
               onPress={handleSubmit}
               disabled={isSubmitting}
             >
@@ -474,6 +478,6 @@ export default function NuevaVenta() {
           </VStack>
         </Box>
       </ScrollView>
-    </Box>
+    </ImageBackground>
   );
 }

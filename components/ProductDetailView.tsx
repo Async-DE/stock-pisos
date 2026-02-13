@@ -3,7 +3,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Pressable, Image } from "react-native";
+import { Pressable, Image, ImageBackground } from "react-native";
 import { ShoppingBag, ArrowLeft, Package, Check } from "lucide-react-native";
 import type { Product, ProductVariant } from "./constants";
 import { useRouter } from "expo-router";
@@ -68,8 +68,8 @@ export function ProductDetailView({
         <Box
           className={`rounded-lg p-4 border-2 ${
             isSelected
-              ? "bg-secondary-500 border-yellow-400"
-              : "bg-secondary-600 border-yellow-400/50"
+              ? "bg-secondary-500 border-[#169500]"
+              : "bg-secondary-600 border-[#169500]/50"
           }`}
         >
           <HStack space="md" className="justify-between items-center">
@@ -79,7 +79,7 @@ export function ProductDetailView({
                   {variant.name}
                 </Text>
                 {isSelected && (
-                  <Check size={20} color="#FFD700" strokeWidth={2} />
+                  <Check size={20} color="#13E000" strokeWidth={2} />
                 )}
               </HStack>
               {(color || medidas) && (
@@ -88,7 +88,7 @@ export function ProductDetailView({
                 </Text>
               )}
               <HStack space="sm" className="items-center">
-                <Text className="text-yellow-400 font-bold text-lg">
+                <Text className="text-[#169500] font-bold text-lg">
                   {formatPrice(variant.price)}
                 </Text>
                 {variant.stock !== undefined && (
@@ -100,7 +100,7 @@ export function ProductDetailView({
             </Box>
             <Package
               size={24}
-              color={isSelected ? "#FFD700" : "#9CA3AF"}
+              color={isSelected ? "#13E000" : "#9CA3AF"}
               strokeWidth={1.5}
             />
           </HStack>
@@ -111,14 +111,24 @@ export function ProductDetailView({
 
   if (!product) {
     return (
-      <Box className="flex-1 bg-[#000000] items-center justify-center">
-        <Text className="text-white">Producto no disponible</Text>
-      </Box>
+      <ImageBackground
+        source={require("@/assets/images/madera.jpg")}
+        style={{ flex: 1 }}
+        resizeMode="cover"
+      >
+        <Box className="flex-1 items-center justify-center">
+          <Text className="text-white">Producto no disponible</Text>
+        </Box>
+      </ImageBackground>
     );
   }
 
   return (
-    <Box style={{ flex: 1, backgroundColor: "#000000" }}>
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
@@ -128,13 +138,13 @@ export function ProductDetailView({
       >
         {/* Header con botón de volver */}
         <Box
-          className="px-4 pb-3 bg-[#000000] border-b border-yellow-400/40"
+          className="px-4 pb-3 border-b border-[#169500]/0"
           style={{ paddingTop: Math.max(insets.top, 16) }}
         >
           <Pressable onPress={() => router.back()}>
             <HStack space="sm" className="items-center">
-              <ArrowLeft size={24} color="#FFD700" strokeWidth={2} />
-              <Text className="text-yellow-400 font-semibold text-base">
+              <ArrowLeft size={24} color="#13E000" strokeWidth={2} />
+              <Text className="text-[#169500] font-semibold text-base">
                 Volver
               </Text>
             </HStack>
@@ -151,7 +161,7 @@ export function ProductDetailView({
 
           {/* Imagen de la variante seleccionada */}
           <Box
-            className="bg-secondary-600 justify-center items-center rounded-lg border border-yellow-400 mb-4 overflow-hidden"
+            className="bg-secondary-600 justify-center items-center rounded-lg border border-[#169500] mb-4 overflow-hidden"
             style={{ width: "100%", height: 300 }}
           >
             {selectedVariant?.attributes?.foto ? (
@@ -164,7 +174,7 @@ export function ProductDetailView({
                 }}
               />
             ) : (
-              <ShoppingBag size={80} color="#FFD700" strokeWidth={1.5} />
+              <ShoppingBag size={80} color="#13E000" strokeWidth={1.5} />
             )}
           </Box>
 
@@ -212,9 +222,9 @@ export function ProductDetailView({
               </Box>
 
               {/* Precios */}
-              <Box className="mb-4 p-4 bg-secondary-500/50 rounded-lg border border-yellow-400/30">
+              <Box className="mb-4 p-4 bg-secondary-500/50 rounded-lg border border-[#169500]/30">
                 <HStack space="sm" className="items-center mb-2">
-                  <Text className="text-yellow-400 font-bold text-2xl">
+                  <Text className="text-[#169500] font-bold text-2xl">
                     {formatPrice(selectedVariant.price)}
                   </Text>
                   <Text className="text-gray-500 text-sm ml-2">
@@ -249,7 +259,7 @@ export function ProductDetailView({
                   <Button
                     size="md"
                     action="primary"
-                    className="bg-[#FFD700] rounded-full px-4"
+                    className="bg-[#13E000] rounded-full px-4"
                     onPress={handleSell}
                   >
                     <ButtonIcon as={ShoppingBag} className="text-black" />
@@ -280,7 +290,7 @@ export function ProductDetailView({
                   <Button
                     size="md"
                     action="primary"
-                    className="bg-[#FFD700] rounded-full px-4"
+                    className="bg-[#13E000] rounded-full px-4"
                     onPress={onAddVariant}
                   >
                     <ButtonIcon as={Plus} className="text-black" />
@@ -294,7 +304,7 @@ export function ProductDetailView({
               {product.variants.map(renderVariantOption)}
             </Box>
           ) : (
-            <Box className="bg-secondary-500 rounded-lg p-6 border border-yellow-400">
+            <Box className="bg-secondary-500 rounded-lg p-6 border border-[#169500]">
               <Box className="items-center">
                 <Package size={48} color="#9CA3AF" strokeWidth={1.5} />
                 <Text className="text-gray-400 text-center text-base mt-3 font-medium">
@@ -305,6 +315,6 @@ export function ProductDetailView({
           )}
         </Box>
       </ScrollView>
-    </Box>
+    </ImageBackground>
   );
 }
