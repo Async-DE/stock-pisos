@@ -30,13 +30,27 @@ export function ProductDetailView({
       : null,
   );
 
-  console.log("ProductDetailView - product:", product);
-
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-AR", {
       style: "currency",
       currency: "ARS",
     }).format(price);
+  };
+
+  const handleSell = () => {
+    if (!selectedVariant) {
+      return;
+    }
+
+    router.push({
+      pathname: "/tabs/(tabs)/ventas/nuevo",
+      params: {
+        varianteId: String(selectedVariant.id),
+        precioPublico: String(selectedVariant.price ?? 0),
+        precioContratista: selectedVariant.attributes?.precio_contratista ?? "",
+        nombreVariante: selectedVariant.name ?? "",
+      },
+    });
   };
 
   const renderVariantOption = (variant: ProductVariant) => {
@@ -231,6 +245,19 @@ export function ProductDetailView({
                     </Text>
                   </HStack>
                 )}
+                <HStack space="sm" className="items-center mt-4">
+                  <Button
+                    size="md"
+                    action="primary"
+                    className="bg-[#FFD700] rounded-full px-4"
+                    onPress={handleSell}
+                  >
+                    <ButtonIcon as={ShoppingBag} className="text-black" />
+                    <ButtonText className="text-black font-semibold">
+                      Vender
+                    </ButtonText>
+                  </Button>
+                </HStack>
               </Box>
             </Box>
           )}

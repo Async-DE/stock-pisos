@@ -222,7 +222,7 @@ export default function Establecimientos() {
                   variant="outline"
                   action="secondary"
                   className="border-2 border-[#FFD700] bg-[#121212] rounded-3xl"
-                  onPress={() => {}}
+                  onPress={() => router.push("/tabs/(tabs)/ventas/buscar")}
                 >
                   <ShoppingCart size={24} color="#FFD700" strokeWidth={2} />
                   <ButtonText className="text-[30px] font-bold text-[#FFD700] text-left w-full">

@@ -249,7 +249,7 @@ export default function NuevaVariante() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Box className="px-4 pt-6">
+        <Box className="px-4 pt-6 mt-10">
           <Pressable onPress={() => router.back()}>
             <HStack space="sm" className="items-center">
               <ArrowLeft size={22} color="#FFD700" strokeWidth={2} />

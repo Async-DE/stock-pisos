@@ -61,16 +61,11 @@ const uploadRequest = async (url: string, formData: FormData) => {
   });
     
     const rawText = await response.text();
-    console.log("RESPONSE_UPLOAD", {
-      status: response.status,
-      rawPreview: rawText.slice(0, 300),
-    });
 
     let data: any = {};
     try {
       data = rawText ? JSON.parse(rawText) : {};
     } catch (e) {
-      console.log("No es JSON en uploadRequest, probablemente HTML:", e);
       data = { message: rawText };
     }
 

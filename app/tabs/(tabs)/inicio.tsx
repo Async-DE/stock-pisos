@@ -218,7 +218,6 @@ export default function Inicio() {
     // Buscar el producto para obtener el productId real
     const product = products.find((p) => p.id === productId);
     const realProductId = product?.productId || productId;
-    console.log("Navegando a producto:", realProductId);
     router.push(`/tabs/(tabs)/producto/${realProductId}`);
   };
 

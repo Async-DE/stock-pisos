@@ -13,7 +13,6 @@ interface ProductCardProps {
 
 export function ProductCard({ product, width, onPress }: ProductCardProps) {
   const handlePress = () => {
-    console.log("ProductCard presionado - Product ID:", product.id);
     onPress?.(product.id);
   };
 
