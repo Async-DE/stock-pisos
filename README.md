@@ -71,8 +71,54 @@ Este proyecto está configurado para usar **EAS Update** de Expo, que permite pu
 - ✅ Configuración en `app.json` para updates
 - ✅ Perfiles de build en `eas.json` (development, preview, production)
 - ✅ Scripts de npm para publicar updates
+- ✅ Channels configurados por perfil (`development`, `preview`, `production`)
+- ✅ Runtime version fijo para compatibilidad
 
-**Nota**: No necesitas una sección `update` en `eas.json`. EAS Update funciona directamente con los branches/canales.
+### 🔧 Configuración de EAS Update
+
+El proyecto está configurado con:
+
+**app.json:**
+```json
+{
+  "updates": {
+    "url": "https://u.expo.dev/279eb238-0660-4b1a-a1d0-6222b8e3fc17",
+    "fallbackToCacheTimeout": 0,
+    "checkAutomatically": "ON_LOAD"
+  },
+  "runtimeVersion": "1.0.3"
+}
+```
+
+**eas.json:**
+```json
+{
+  "build": {
+    "development": {
+      "channel": "development",
+      ...
+    },
+    "preview": {
+      "channel": "preview",
+      ...
+    },
+    "production": {
+      "channel": "production",
+      ...
+    }
+  }
+}
+```
+
+**¿Por qué runtime version fijo?**
+- Garantiza que la versión calculada localmente coincida con la de EAS Build
+- Evita el error "Runtime version mismatch"
+- Debes actualizarlo manualmente cuando cambies la versión de la app
+
+**¿Por qué channels?**
+- Permite tener diferentes canales de actualización por entorno
+- Los builds de producción solo reciben updates publicados en el canal `production`
+- Los builds de desarrollo solo reciben updates del canal `development`
 
 ### 🎯 ¿Cómo Funcionan las Actualizaciones OTA?
 
