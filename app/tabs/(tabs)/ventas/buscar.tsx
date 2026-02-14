@@ -13,6 +13,21 @@ import { ArrowLeft, CalendarSearch, Search } from "lucide-react-native";
 import { request } from "@/constants/Request";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
+type Variante = {
+  nombre: string;
+  codigo: string;
+  color: string;
+  medidas: string;
+};
+
+type CostoExtra = {
+  id: number;
+  venta_id: number;
+  motivo: string;
+  costo: number;
+  createdAt: string;
+};
+
 type Venta = {
   id: number;
   variante_id: number;
@@ -21,10 +36,11 @@ type Venta = {
   fecha_venta: string;
   nombre_cliente: string;
   contacto_cliente: string;
-  precio_publico?: number;
-  precio_contratista?: number;
-  costo_compra?: number;
-  costosExtras?: Array<{ id: number; motivo: string; costo: number }>;
+  precio_publico: number;
+  precio_contratista: number;
+  costo_compra: number;
+  variante?: Variante;
+  costosExtras?: CostoExtra[];
 };
 
 type Errors = {
@@ -145,7 +161,37 @@ export default function BuscarVentas() {
       const response = await request("/stock/ventas/verRango", "POST", payload);
 
       if (response.status === 200 && Array.isArray(response.data)) {
-        setVentas(response.data);
+        // Mapear la respuesta incluyendo todos los campos
+        const ventasMapeadas = response.data.map((venta: any) => ({
+          id: venta.id,
+          variante_id: venta.variante_id,
+          cantidad: venta.cantidad,
+          total_venta: venta.total_venta || 0,
+          fecha_venta: venta.fecha_venta,
+          nombre_cliente: venta.nombre_cliente || "",
+          contacto_cliente: venta.contacto_cliente || "",
+          precio_publico: venta.precio_publico || 0,
+          precio_contratista: venta.precio_contratista || 0,
+          costo_compra: venta.costo_compra || 0,
+          variante: venta.variante
+            ? {
+                nombre: venta.variante.nombre || "",
+                codigo: venta.variante.codigo || "",
+                color: venta.variante.color || "",
+                medidas: venta.variante.medidas || "",
+              }
+            : undefined,
+          costosExtras: Array.isArray(venta.costosExtras)
+            ? venta.costosExtras.map((extra: any) => ({
+                id: extra.id,
+                venta_id: extra.venta_id,
+                motivo: extra.motivo || "",
+                costo: extra.costo || 0,
+                createdAt: extra.createdAt || "",
+              }))
+            : [],
+        }));
+        setVentas(ventasMapeadas);
       } else {
         setVentas([]);
       }
@@ -176,7 +222,37 @@ export default function BuscarVentas() {
       });
 
       if (response.status === 200 && Array.isArray(response.data)) {
-        setVentas(response.data);
+        // Mapear la respuesta incluyendo todos los campos
+        const ventasMapeadas = response.data.map((venta: any) => ({
+          id: venta.id,
+          variante_id: venta.variante_id,
+          cantidad: venta.cantidad,
+          total_venta: venta.total_venta || 0,
+          fecha_venta: venta.fecha_venta,
+          nombre_cliente: venta.nombre_cliente || "",
+          contacto_cliente: venta.contacto_cliente || "",
+          precio_publico: venta.precio_publico || 0,
+          precio_contratista: venta.precio_contratista || 0,
+          costo_compra: venta.costo_compra || 0,
+          variante: venta.variante
+            ? {
+                nombre: venta.variante.nombre || "",
+                codigo: venta.variante.codigo || "",
+                color: venta.variante.color || "",
+                medidas: venta.variante.medidas || "",
+              }
+            : undefined,
+          costosExtras: Array.isArray(venta.costosExtras)
+            ? venta.costosExtras.map((extra: any) => ({
+                id: extra.id,
+                venta_id: extra.venta_id,
+                motivo: extra.motivo || "",
+                costo: extra.costo || 0,
+                createdAt: extra.createdAt || "",
+              }))
+            : [],
+        }));
+        setVentas(ventasMapeadas);
       } else {
         setVentas([]);
       }
@@ -392,12 +468,55 @@ export default function BuscarVentas() {
                         Contacto: {venta.contacto_cliente}
                       </Text>
                       <Text className="text-gray-300 text-sm">
-                        Variante ID: {venta.variante_id}
-                      </Text>
-                      <Text className="text-gray-300 text-sm">
-                        Cantidad: {venta.cantidad}
+                        Cantidad: {venta.cantidad} unidades
                       </Text>
                     </VStack>
+
+                    {venta.variante && (
+                      <Box className="mt-3 bg-secondary-700/60 rounded-xl p-3">
+                        <Text className="text-gray-400 text-xs uppercase mb-2">
+                          Información de la Variante
+                        </Text>
+                        <VStack space="xs">
+                          <HStack
+                            space="sm"
+                            className="items-center justify-between"
+                          >
+                            <Text className="text-gray-300 text-sm">Nombre:</Text>
+                            <Text className="text-white text-sm font-semibold">
+                              {venta.variante.nombre}
+                            </Text>
+                          </HStack>
+                          <HStack
+                            space="sm"
+                            className="items-center justify-between"
+                          >
+                            <Text className="text-gray-300 text-sm">Código:</Text>
+                            <Text className="text-white text-sm font-semibold">
+                              {venta.variante.codigo}
+                            </Text>
+                          </HStack>
+                          <HStack
+                            space="sm"
+                            className="items-center justify-between"
+                          >
+                            <Text className="text-gray-300 text-sm">Color:</Text>
+                            <Text className="text-white text-sm font-semibold">
+                              {venta.variante.color}
+                            </Text>
+                          </HStack>
+                          <HStack
+                            space="sm"
+                            className="items-center justify-between"
+                          >
+                            <Text className="text-gray-300 text-sm">Medidas:</Text>
+                            <Text className="text-white text-sm font-semibold">
+                              {venta.variante.medidas}
+                            </Text>
+                          </HStack>
+                        </VStack>
+                      </Box>
+                    )}
 
                     <Box className="mt-3 bg-secondary-700/60 rounded-xl p-3">
                       <Text className="text-gray-400 text-xs uppercase mb-2">
@@ -436,26 +555,48 @@ export default function BuscarVentas() {
                       </HStack>
                     </Box>
 
-                    <Box className="mt-3">
+                    <Box className="mt-3 bg-secondary-700/60 rounded-xl p-3">
                       <Text className="text-gray-400 text-xs uppercase mb-2">
-                        Costos extras
+                        Costos Extras
                       </Text>
                       {venta.costosExtras && venta.costosExtras.length > 0 ? (
                         <VStack space="xs">
                           {venta.costosExtras.map((extra) => (
-                            <HStack
+                            <Box
                               key={extra.id}
+                              className="bg-secondary-800/50 rounded-lg p-2"
+                            >
+                              <HStack
+                                space="sm"
+                                className="items-center justify-between"
+                              >
+                                <Text className="text-gray-300 text-sm font-medium">
+                                  {extra.motivo}
+                                </Text>
+                                <Text className="text-[#13E000] text-sm font-bold">
+                                  {formatPrice(extra.costo)}
+                                </Text>
+                              </HStack>
+                            </Box>
+                          ))}
+                          <Box className="mt-2 pt-2 border-t border-gray-600">
+                            <HStack
                               space="sm"
                               className="items-center justify-between"
                             >
-                              <Text className="text-gray-300 text-sm">
-                                {extra.motivo}
-                              </Text>
                               <Text className="text-white text-sm font-semibold">
-                                {formatPrice(extra.costo)}
+                                Total Costos Extras:
+                              </Text>
+                              <Text className="text-[#169500] text-sm font-bold">
+                                {formatPrice(
+                                  venta.costosExtras.reduce(
+                                    (sum, extra) => sum + extra.costo,
+                                    0,
+                                  ),
+                                )}
                               </Text>
                             </HStack>
-                          ))}
+                          </Box>
                         </VStack>
                       ) : (
                         <Text className="text-gray-500 text-sm">
