@@ -14,6 +14,8 @@ const { width: screenWidth } = Dimensions.get("window");
 type Subcategory = {
   id: number;
   name: string;
+  gananciaVentas: number;
+  valorStock: number;
 };
 
 type Category = {
@@ -61,6 +63,8 @@ export default function Inicio() {
                 ? cat.subcategorias.map((sub: any) => ({
                     id: sub.id,
                     name: sub.nombre,
+                    gananciaVentas: sub.ganancias_ventas || 0,
+                    valorStock: sub.valor_stock || 0,
                   }))
                 : [],
             };

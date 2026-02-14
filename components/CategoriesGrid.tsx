@@ -28,7 +28,12 @@ interface CategoriesGridProps {
     id: number;
     name: string;
     icon?: any; // Ahora opcional ya que usamos el ID para determinar la imagen
-    subcategories: Array<{ id: number; name: string }>;
+    subcategories: Array<{
+      id: number;
+      name: string;
+      gananciaVentas?: number;
+      valorStock?: number;
+    }>;
   }>;
   onSubcategoryPress: (
     categoryId: number,
@@ -113,9 +118,31 @@ export function CategoriesGrid({
                           )
                         }
                       >
-                        <Text className="text-white text-xl py-4 mt-2 bg-secondary-500/50 rounded-md px-2 border-2 border-[#169500]">
-                          {subcategory.name}
-                        </Text>
+                        <Box className="bg-secondary-500/50 rounded-md px-3 py-3 mt-2 border-2 border-[#169500]">
+                          <Text className="text-white text-xl font-medium">
+                            {subcategory.name}
+                          </Text>
+                          <HStack space="md" className="mt-2 justify-between">
+                            <Box>
+                              <Text className="text-gray-400 text-xs">
+                                Ganancias
+                              </Text>
+                              <Text className="text-[#13E000] text-sm font-semibold">
+                                $
+                                {subcategory.gananciaVentas?.toLocaleString() ||
+                                  0}
+                              </Text>
+                            </Box>
+                            <Box>
+                              <Text className="text-gray-400 text-xs">
+                                Valor Stock
+                              </Text>
+                              <Text className="text-[#13E000] text-sm font-semibold">
+                                ${subcategory.valorStock?.toLocaleString() || 0}
+                              </Text>
+                            </Box>
+                          </HStack>
+                        </Box>
                       </Pressable>
                     ))
                   )}
