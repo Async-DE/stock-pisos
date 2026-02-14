@@ -24,7 +24,7 @@ export function CategoryCard({
     <Pressable onPress={onPress}>
       <Box className="items-center" style={{ width: itemSize }}>
         <Box
-          className="bg-secondary-500 rounded-lg justify-center items-center border-2 border-yellow-400"
+          className="bg-secondary-500 rounded-lg justify-center items-center border-2 border-[#169500]"
           style={{
             width: iconBoxSize,
             height: iconBoxSize,

@@ -110,7 +110,7 @@ export default function ProductDetailScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: "#000000" }}>
         <Center className="flex-1">
-          <ActivityIndicator size="large" color="#FFD700" />
+          <ActivityIndicator size="large" color="#13E000" />
           <Text className="text-gray-400 text-center text-base mt-3">
             Cargando producto...
           </Text>

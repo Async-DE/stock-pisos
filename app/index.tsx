@@ -5,7 +5,7 @@ import { Button, ButtonText, ButtonIcon } from "@/components/ui/button";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import { VStack } from "@/components/ui/vstack";
-import { Pressable } from "react-native";
+import { Pressable, ImageBackground } from "react-native";
 import { EyeIcon, EyeOffIcon, ArrowRightIcon } from "@/components/ui/icon";
 import { useRouter } from "expo-router";
 import { Center } from "@/components/ui/center";
@@ -80,9 +80,14 @@ export default function Home() {
   };
 
   return (
-    <Box className="flex-1 bg-black items-center justify-center px-5">
-      {/* White Card Container */}
-      <Box className="bg-gray-900 rounded-2xl p-8 w-full max-w-md shadow-lg border-2 border-[#FFD700]">
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <Box className="flex-1 items-center justify-center px-5">
+        {/* White Card Container */}
+        <Box className="bg-gray-900 rounded-2xl p-8 w-full max-w-md shadow-lg border-2 border-[#13E000]">
         <VStack space="xl" className="items-center">
       <Center className="mt-4 mb-5 rounded-full">
         <Box className="rounded-full">
@@ -99,7 +104,7 @@ export default function Home() {
 
           {/* Title */}
           <VStack space="sm" className="items-center w-full justify-center">
-            <Text className="text-base text-[#B8860B] text-center w-full">
+            <Text className="text-base text-[#169500] text-center w-full">
               Ingresa tus datos para acceder al sistema
             </Text>
           </VStack>
@@ -113,7 +118,7 @@ export default function Home() {
                 variant="outline"
                 size="lg"
                 className={`rounded-lg ${
-                  errors.username ? 'border-red-500' : 'border-[#B8860B]'
+                  errors.username ? 'border-red-500' : 'border-[#169500]'
                 }`}
               >
                 <InputField
@@ -142,7 +147,7 @@ export default function Home() {
                 variant="outline"
                 size="lg"
                 className={`rounded-lg ${
-                  errors.password ? 'border-red-500' : 'border-[#B8860B]'
+                  errors.password ? 'border-red-500' : 'border-[#169500]'
                 }`}
               >
                 <InputField
@@ -165,9 +170,9 @@ export default function Home() {
                     <Icon
                       as={showPassword ? EyeOffIcon : EyeIcon}
                       size="md"
-                      className="text-[#B8860B] mr-1"
+                      className="text-[#169500] mr-1"
                     />
-                    <Text className="text-[#B8860B] text-sm">Mostrar</Text>
+                    <Text className="text-[#169500] text-sm">Mostrar</Text>
                   </Pressable>
                 </InputSlot>
               </Input>
@@ -182,7 +187,7 @@ export default function Home() {
             <Button
               size="lg"
               action="primary"
-              className="bg-[#FFD700] rounded-lg mt-4"
+              className="bg-[#13E000] rounded-lg mt-4"
               onPress={handleLogin}
               isDisabled={isLoading}
             >
@@ -193,7 +198,8 @@ export default function Home() {
             </Button>
           </VStack>
         </VStack>
+        </Box>
       </Box>
-    </Box>
+    </ImageBackground>
   );
 }

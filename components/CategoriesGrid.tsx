@@ -68,7 +68,7 @@ export function CategoriesGrid({
             <AccordionItem
               key={category.id}
               value={`category-${category.id}`}
-              className="border border-yellow-400 rounded-xl bg-secondary-500/50 overflow-hidden"
+              className="border border-[#169500] rounded-xl bg-secondary-500/50 overflow-hidden"
             >
               <AccordionHeader>
                 <AccordionTrigger className="px-3 py-3">
@@ -92,7 +92,7 @@ export function CategoriesGrid({
                       {category.name}
                     </AccordionTitleText>
                   </HStack>
-                  <AccordionIcon as={ChevronDown} className="text-yellow-400" />
+                  <AccordionIcon as={ChevronDown} className="text-[#169500]" />
                 </AccordionTrigger>
               </AccordionHeader>
               <AccordionContent className="pt-0">
@@ -113,7 +113,7 @@ export function CategoriesGrid({
                           )
                         }
                       >
-                        <Text className="text-white text-xl py-4 mt-2 bg-secondary-500/50 rounded-md px-2 border-2 border-yellow-200">
+                        <Text className="text-white text-xl py-4 mt-2 bg-secondary-500/50 rounded-md px-2 border-2 border-[#169500]">
                           {subcategory.name}
                         </Text>
                       </Pressable>

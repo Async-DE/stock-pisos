@@ -10,7 +10,7 @@ import { Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 
 // Importación de componentes nativos de React Native
-import { Alert, Image } from "react-native";
+import { Alert, Image, ImageBackground } from "react-native";
 import {
   ClipboardCheck,
   Layers,
@@ -184,36 +184,39 @@ export default function Establecimientos() {
 
   // Renderizado del componente
   return (
-    <>
-      {/* Header con logo */}
-      <Center className="mt-12 mb-4 rounded-lg mx-4">
-        <Box className="rounded-full">
-          <Image
-            source={require("@/assets/images/Pisos-logo2.jpeg")}
-            style={{
-              width: screenWidth < 375 ? 300 : 350,
-              height: screenWidth < 375 ? 90 : 105,
-              borderRadius: 10,
-            }}
-          />
-        </Box>
-      </Center>
-
-      <Box className="flex-1 bg-[#000000] mt-40">
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <Box className="flex-1">
+        {/* Header con logo */}
+        <Center className="mt-12 mb-4 rounded-lg mx-4">
+          <Box className="rounded-full">
+            <Image
+              source={require("@/assets/images/Pisos-logo2.jpeg")}
+              style={{
+                width: screenWidth < 375 ? 300 : 350,
+                height: screenWidth < 375 ? 90 : 105,
+                borderRadius: 10,
+              }}
+            />
+          </Box>
+        </Center>
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <Box className="px-6 pb-8">
             {/* Acciones principales */}
-            <Box className="mb-6">
+            <Box className="mb-6 mt-12">
               <VStack space="2xl">
                 <Button
                   size="xl"
                   variant="outline"
                   action="secondary"
-                  className="border-2 border-[#FFD700] bg-[#121212] rounded-3xl"
+                  className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
                   onPress={() => router.push("/tabs/(tabs)/estantes/nuevo")}
                 >
-                  <Layers size={24} color="#FFD700" strokeWidth={2} />
-                  <ButtonText className="text-[30px] font-bold text-[#FFD700] text-left w-full">
+                  <Layers size={24} color="#13E000" strokeWidth={2} />
+                  <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
                     Estantes
                   </ButtonText>
                 </Button>
@@ -221,11 +224,11 @@ export default function Establecimientos() {
                   size="xl"
                   variant="outline"
                   action="secondary"
-                  className="border-2 border-[#FFD700] bg-[#121212] rounded-3xl"
+                  className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
                   onPress={() => router.push("/tabs/(tabs)/ventas/buscar")}
                 >
-                  <ShoppingCart size={24} color="#FFD700" strokeWidth={2} />
-                  <ButtonText className="text-[30px] font-bold text-[#FFD700] text-left w-full">
+                  <ShoppingCart size={24} color="#13E000" strokeWidth={2} />
+                  <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
                     Ventas
                   </ButtonText>
                 </Button>
@@ -233,11 +236,11 @@ export default function Establecimientos() {
                   size="xl"
                   variant="outline"
                   action="secondary"
-                  className="border-2 border-[#FFD700] bg-[#121212] rounded-3xl"
+                  className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
                   onPress={() => {}}
                 >
-                  <ClipboardCheck size={24} color="#FFD700" strokeWidth={2} />
-                  <ButtonText className="text-[30px] font-bold text-[#FFD700] text-left w-full">
+                  <ClipboardCheck size={24} color="#13E000" strokeWidth={2} />
+                  <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
                     Auditorias
                   </ButtonText>
                 </Button>
@@ -246,6 +249,6 @@ export default function Establecimientos() {
           </Box>
         </ScrollView>
       </Box>
-    </>
+    </ImageBackground>
   );
 }

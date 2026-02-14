@@ -5,7 +5,7 @@ import { Text } from "@/components/ui/text";
 import { SearchHeader } from "@/components/SearchHeader";
 import { Center } from "@/components/ui/center";
 import { ShoppingBag } from "lucide-react-native";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, ImageBackground } from "react-native";
 import { request } from "@/constants/Request";
 import type { Product } from "@/components/constants";
 import { ProductsView } from "@/components/ProductsView";
@@ -122,16 +122,21 @@ export default function Buscar() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-[#000000]"
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingBottom: 16,
-        paddingTop: 8,
-      }}
-      showsVerticalScrollIndicator={false}
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
     >
-      <Box className="flex-1 px-3">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: 16,
+          paddingTop: 8,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Box className="flex-1 px-3">
         {/* Header con búsqueda */}
         <SearchHeader
           searchTerm={searchTerm}
@@ -152,7 +157,7 @@ export default function Buscar() {
           </Center>
         ) : loading ? (
           <Center className="py-12">
-            <ActivityIndicator size="large" color="#FFD700" />
+            <ActivityIndicator size="large" color="#13E000" />
             <Text className="text-gray-400 text-center text-base mt-4 font-medium">
               Buscando productos...
             </Text>
@@ -182,7 +187,8 @@ export default function Buscar() {
             categoryName={`Resultados para "${trimmedTerm}"`}
           />
         )}
-      </Box>
-    </ScrollView>
+        </Box>
+      </ScrollView>
+    </ImageBackground>
   );
 }

@@ -20,7 +20,7 @@ import {
   SelectItem,
   SelectScrollView,
 } from "@/components/ui/select";
-import { ActivityIndicator, Pressable } from "react-native";
+import { ActivityIndicator, Pressable, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
 import { ArrowLeft, ChevronDown } from "lucide-react-native";
 import { request } from "@/constants/Request";
@@ -130,7 +130,11 @@ export default function NuevoEstante() {
   };
 
   return (
-    <Box className="flex-1 bg-[#000000]">
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
       <ScrollView
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
@@ -138,8 +142,8 @@ export default function NuevoEstante() {
         <Box className="px-4 pt-6 mt-10">
           <Pressable onPress={() => router.back()}>
             <HStack space="sm" className="items-center">
-              <ArrowLeft size={22} color="#FFD700" strokeWidth={2} />
-              <Text className="text-yellow-400 text-base font-semibold">
+              <ArrowLeft size={22} color="#13E000" strokeWidth={2} />
+              <Text className="text-[#169500] text-base font-semibold">
                 Volver
               </Text>
             </HStack>
@@ -154,14 +158,14 @@ export default function NuevoEstante() {
 
           {loadingData ? (
             <Center className="py-12">
-              <ActivityIndicator size="large" color="#FFD700" />
+              <ActivityIndicator size="large" color="#13E000" />
               <Text className="text-gray-400 text-base mt-3">
                 Cargando ubicaciones...
               </Text>
             </Center>
           ) : (
             <VStack space="xl" className="mt-6">
-              <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+              <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
                   Ubicacion
                 </Text>
@@ -169,7 +173,7 @@ export default function NuevoEstante() {
                   selectedValue={ubicacionId}
                   onValueChange={setUbicacionId}
                 >
-                  <SelectTrigger className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                  <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
                     <SelectInput
                       placeholder="Selecciona una ubicacion"
                       className="text-white"
@@ -206,14 +210,14 @@ export default function NuevoEstante() {
                 ) : null}
               </Box>
 
-              <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+              <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
                   Detalles del estante
                 </Text>
                 <VStack space="md">
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Seccion</Text>
-                    <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: A"
                         value={seccion}
@@ -232,7 +236,7 @@ export default function NuevoEstante() {
                       <Text className="text-gray-400 text-sm mb-2">
                         Pasillo
                       </Text>
-                      <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
                           placeholder="Ej: 1"
                           keyboardType="numeric"
@@ -251,7 +255,7 @@ export default function NuevoEstante() {
                       <Text className="text-gray-400 text-sm mb-2">
                         Niveles
                       </Text>
-                      <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                      <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
                           placeholder="Ej: 4"
                           keyboardType="numeric"
@@ -273,7 +277,7 @@ export default function NuevoEstante() {
               <Button
                 size="lg"
                 action="primary"
-                className="bg-[#FFD700] rounded-xl"
+                className="bg-[#13E000] rounded-xl"
                 onPress={handleSubmit}
                 isDisabled={isSubmitting}
               >
@@ -285,6 +289,6 @@ export default function NuevoEstante() {
           )}
         </Box>
       </ScrollView>
-    </Box>
+    </ImageBackground>
   );
 }

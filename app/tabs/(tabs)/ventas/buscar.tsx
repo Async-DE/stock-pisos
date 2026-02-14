@@ -7,7 +7,7 @@ import { VStack } from "@/components/ui/vstack";
 import { Center } from "@/components/ui/center";
 import { Input, InputField } from "@/components/ui/input";
 import { Button, ButtonText } from "@/components/ui/button";
-import { ActivityIndicator, Pressable } from "react-native";
+import { ActivityIndicator, Pressable, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
 import { ArrowLeft, CalendarSearch, Search } from "lucide-react-native";
 import { request } from "@/constants/Request";
@@ -192,7 +192,11 @@ export default function BuscarVentas() {
   }, [ventas]);
 
   return (
-    <Box className="flex-1 bg-[#000000]">
+    <ImageBackground
+      source={require("@/assets/images/madera.jpg")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
       <ScrollView
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
@@ -200,8 +204,8 @@ export default function BuscarVentas() {
         <Box className="px-4 pt-6 mt-10">
           <Pressable onPress={() => router.back()}>
             <HStack space="sm" className="items-center">
-              <ArrowLeft size={22} color="#FFD700" strokeWidth={2} />
-              <Text className="text-yellow-400 text-base font-semibold">
+              <ArrowLeft size={22} color="#13E000" strokeWidth={2} />
+              <Text className="text-[#169500] text-base font-semibold">
                 Volver
               </Text>
             </HStack>
@@ -215,9 +219,9 @@ export default function BuscarVentas() {
           </Box>
 
           <VStack space="xl" className="mt-6">
-            <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+            <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
               <HStack space="sm" className="items-center mb-3">
-                <CalendarSearch size={18} color="#FFD700" strokeWidth={2} />
+                <CalendarSearch size={18} color="#13E000" strokeWidth={2} />
                 <Text className="text-white font-semibold text-lg">
                   Rango de fechas
                 </Text>
@@ -228,7 +232,7 @@ export default function BuscarVentas() {
                   <Text className="text-gray-400 text-sm mb-2">
                     Fecha inicio
                   </Text>
-                  <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                     <InputField
                       placeholder="Selecciona la fecha"
                       value={formatDateInput(startDateValue)}
@@ -247,7 +251,7 @@ export default function BuscarVentas() {
 
                 <Box>
                   <Text className="text-gray-400 text-sm mb-2">Fecha fin</Text>
-                  <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                     <InputField
                       placeholder="Selecciona la fecha"
                       value={formatDateInput(endDateValue)}
@@ -281,7 +285,7 @@ export default function BuscarVentas() {
                 <Button
                   size="md"
                   action="primary"
-                  className="bg-[#FFD700] rounded-full"
+                  className="bg-[#13E000] rounded-full"
                   onPress={handleSearchByRange}
                   disabled={loading}
                 >
@@ -293,9 +297,9 @@ export default function BuscarVentas() {
               </VStack>
             </Box>
 
-            <Box className="bg-secondary-500/50 border border-yellow-400/30 rounded-2xl p-4">
+            <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
               <HStack space="sm" className="items-center mb-3">
-                <Search size={18} color="#FFD700" strokeWidth={2} />
+                <Search size={18} color="#13E000" strokeWidth={2} />
                 <Text className="text-white font-semibold text-lg">
                   Busqueda por parametro
                 </Text>
@@ -306,7 +310,7 @@ export default function BuscarVentas() {
                   <Text className="text-gray-400 text-sm mb-2">
                     Parametro de busqueda
                   </Text>
-                  <Input className="bg-secondary-600 border-yellow-400/40 rounded-xl">
+                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                     <InputField
                       placeholder="Cliente, contacto, variante..."
                       value={searchTerm}
@@ -324,7 +328,7 @@ export default function BuscarVentas() {
                 <Button
                   size="md"
                   action="primary"
-                  className="bg-[#FFD700] rounded-full"
+                  className="bg-[#13E000] rounded-full"
                   onPress={handleSearchByParam}
                   disabled={loading}
                 >
@@ -336,12 +340,12 @@ export default function BuscarVentas() {
               </VStack>
             </Box>
 
-            <Box className="bg-secondary-500/30 border border-yellow-400/20 rounded-2xl p-4">
+            <Box className="bg-secondary-500/30 border border-[#169500]/20 rounded-2xl p-4">
               <HStack space="sm" className="items-center justify-between">
                 <Text className="text-white font-semibold text-lg">
                   Resultados ({ventas.length})
                 </Text>
-                <Text className="text-yellow-400 font-semibold">
+                <Text className="text-[#169500] font-semibold">
                   {formatPrice(totalVentas)}
                 </Text>
               </HStack>
@@ -349,7 +353,7 @@ export default function BuscarVentas() {
 
             {loading ? (
               <Center className="py-10">
-                <ActivityIndicator size="large" color="#FFD700" />
+                <ActivityIndicator size="large" color="#13E000" />
                 <Text className="text-gray-400 text-base mt-3">
                   Cargando ventas...
                 </Text>
@@ -365,13 +369,13 @@ export default function BuscarVentas() {
                 {ventas.map((venta) => (
                   <Box
                     key={venta.id}
-                    className="bg-secondary-600/70 border border-yellow-400/30 rounded-2xl p-4"
+                    className="bg-secondary-600/70 border border-[#169500]/30 rounded-2xl p-4"
                   >
                     <HStack space="sm" className="items-center justify-between">
                       <Text className="text-white font-semibold text-lg">
                         Venta #{venta.id}
                       </Text>
-                      <Text className="text-yellow-400 font-bold">
+                      <Text className="text-[#169500] font-bold">
                         {formatPrice(venta.total_venta)}
                       </Text>
                     </HStack>
@@ -466,6 +470,6 @@ export default function BuscarVentas() {
           </VStack>
         </Box>
       </ScrollView>
-    </Box>
+    </ImageBackground>
   );
 }

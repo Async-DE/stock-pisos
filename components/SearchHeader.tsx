@@ -48,7 +48,7 @@ export function SearchHeader({
         <HStack
           space="sm"
           reversed={false}
-          className="items-center bg-secondary-500/70 py-2 px-3 rounded-full border border-yellow-400"
+          className="items-center bg-secondary-500/70 py-2 px-3 rounded-full border border-[#169500]"
         >
           {showBack ? (
             <Pressable onPress={onBack}>
