@@ -392,6 +392,7 @@ export default function NuevoProducto() {
                       Subcategoría
                     </Text>
                     <Select
+                      key={selectedCategoryId || "no-category"} // Forzar re-render cuando cambia la categoría
                       selectedValue={selectedSubcategoryId}
                       onValueChange={setSelectedSubcategoryId}
                       isDisabled={!selectedCategoryId}
@@ -414,13 +415,21 @@ export default function NuevoProducto() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableSubcategories.map((subcategory) => (
+                            {availableSubcategories.length > 0 ? (
+                              availableSubcategories.map((subcategory) => (
+                                <SelectItem
+                                  key={subcategory.id}
+                                  label={subcategory.nombre}
+                                  value={String(subcategory.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={subcategory.id}
-                                label={subcategory.nombre}
-                                value={String(subcategory.id)}
+                                label="No hay subcategorías disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>
@@ -475,6 +484,7 @@ export default function NuevoProducto() {
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Estante</Text>
                     <Select
+                      key={selectedUbicacionId || "no-ubicacion"} // Forzar re-render cuando cambia la ubicación
                       selectedValue={selectedEstanteId}
                       onValueChange={(value) => {
                         setSelectedEstanteId(value);
@@ -500,13 +510,21 @@ export default function NuevoProducto() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableEstantes.map((estante) => (
+                            {availableEstantes.length > 0 ? (
+                              availableEstantes.map((estante) => (
+                                <SelectItem
+                                  key={estante.id}
+                                  label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
+                                  value={String(estante.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={estante.id}
-                                label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
-                                value={String(estante.id)}
+                                label="No hay estantes disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>
@@ -516,6 +534,7 @@ export default function NuevoProducto() {
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Nivel</Text>
                     <Select
+                      key={selectedEstanteId || "no-estante"} // Forzar re-render cuando cambia el estante
                       selectedValue={selectedNivelId}
                       onValueChange={setSelectedNivelId}
                       isDisabled={!selectedEstanteId}
@@ -538,13 +557,21 @@ export default function NuevoProducto() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableNiveles.map((nivel) => (
+                            {availableNiveles.length > 0 ? (
+                              availableNiveles.map((nivel) => (
+                                <SelectItem
+                                  key={nivel.id}
+                                  label={`Nivel ${nivel.niveles}`}
+                                  value={String(nivel.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={nivel.id}
-                                label={`Nivel ${nivel.niveles}`}
-                                value={String(nivel.id)}
+                                label="No hay niveles disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>
