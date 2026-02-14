@@ -4,7 +4,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Pressable, Image, ImageBackground } from "react-native";
-import { ShoppingBag, ArrowLeft, Package, Check } from "lucide-react-native";
+import { ShoppingBag, ArrowLeft, Package, Check, ChevronDown, ChevronUp } from "lucide-react-native";
 import type { Product, ProductVariant } from "./constants";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -29,6 +29,9 @@ export function ProductDetailView({
       ? product.variants[0]
       : null,
   );
+
+  // Estado para mostrar/ocultar la sección de ganancias
+  const [showGanancias, setShowGanancias] = useState(false);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-AR", {
@@ -268,6 +271,76 @@ export function ProductDetailView({
                     </ButtonText>
                   </Button>
                 </HStack>
+              </Box>
+
+              {/* Ganancias - Sección colapsable */}
+              <Box className="mb-4 bg-secondary-600 rounded-lg border border-[#13E000]/50 overflow-hidden">
+                <Pressable onPress={() => setShowGanancias(!showGanancias)}>
+                  <Box className="p-4">
+                    <HStack space="sm" className="items-center justify-between">
+                      <Text className="text-[#13E000] font-bold text-lg">
+                        Ganancias
+                      </Text>
+                      {showGanancias ? (
+                        <ChevronUp size={20} color="#13E000" />
+                      ) : (
+                        <ChevronDown size={20} color="#13E000" />
+                      )}
+                    </HStack>
+                  </Box>
+                </Pressable>
+                {showGanancias && (
+                  <Box className="px-4 pb-4 space-y-2">
+                    <HStack space="sm" className="items-center justify-between">
+                      <Text className="text-gray-400 text-sm">
+                        Ganancia público:
+                      </Text>
+                      <Text className="text-white text-sm font-semibold">
+                        {formatPrice(
+                          parseFloat(
+                            selectedVariant.attributes?.ganacia_publico || "0",
+                          ),
+                        )}
+                      </Text>
+                    </HStack>
+                    <HStack space="sm" className="items-center justify-between">
+                      <Text className="text-gray-400 text-sm">
+                        Ganancia contratista:
+                      </Text>
+                      <Text className="text-white text-sm font-semibold">
+                        {formatPrice(
+                          parseFloat(
+                            selectedVariant.attributes?.ganacia_contratista || "0",
+                          ),
+                        )}
+                      </Text>
+                    </HStack>
+                    <HStack space="sm" className="items-center justify-between">
+                      <Text className="text-gray-400 text-sm">
+                        Ganancias stock:
+                      </Text>
+                      <Text className="text-[#13E000] text-sm font-bold">
+                        {formatPrice(
+                          parseFloat(
+                            selectedVariant.attributes?.ganancias_stock || "0",
+                          ),
+                        )}
+                      </Text>
+                    </HStack>
+                    <HStack space="sm" className="items-center justify-between">
+                      <Text className="text-gray-400 text-sm">
+                        Valor stock:
+                      </Text>
+                      <Text className="text-white text-sm font-semibold">
+                        {formatPrice(
+                          parseFloat(
+                            selectedVariant.attributes?.valor_stock || "0",
+                          ),
+                        )}
+                      </Text>
+                    </HStack>
+                  </Box>
+                )}
               </Box>
             </Box>
           )}
