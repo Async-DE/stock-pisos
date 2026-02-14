@@ -40,6 +40,7 @@ export default function NuevoEstante() {
   const [pasillo, setPasillo] = useState("");
   const [seccion, setSeccion] = useState("");
   const [niveles, setNiveles] = useState("");
+  const [formResetKey, setFormResetKey] = useState(0);
 
   const [errors, setErrors] = useState({
     ubicacionId: "",
@@ -70,6 +71,26 @@ export default function NuevoEstante() {
     () => ubicaciones.find((item) => String(item.id) === ubicacionId),
     [ubicaciones, ubicacionId],
   );
+
+  const clearForm = () => {
+    setUbicacionId("");
+    setPasillo("");
+    setSeccion("");
+    setNiveles("");
+    setErrors({
+      ubicacionId: "",
+      pasillo: "",
+      seccion: "",
+      niveles: "",
+    });
+    // Incrementar la key para forzar re-render del select
+    setFormResetKey((prev) => prev + 1);
+  };
+
+  const handleBack = () => {
+    clearForm();
+    router.back();
+  };
 
   const validateForm = () => {
     const newErrors = {
@@ -120,6 +141,7 @@ export default function NuevoEstante() {
       const response = await request("/stock/estantes/crear", "POST", payload);
 
       if (response.status === 200 || response.status === 201) {
+        clearForm();
         router.back();
       }
     } catch (error) {
@@ -140,7 +162,7 @@ export default function NuevoEstante() {
         showsVerticalScrollIndicator={false}
       >
         <Box className="px-4 pt-6 mt-10">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={handleBack}>
             <HStack space="sm" className="items-center">
               <ArrowLeft size={22} color="#13E000" strokeWidth={2} />
               <Text className="text-[#169500] text-base font-semibold">
@@ -170,6 +192,7 @@ export default function NuevoEstante() {
                   Ubicacion
                 </Text>
                 <Select
+                  key={`ubicacion-${formResetKey}`}
                   selectedValue={ubicacionId}
                   onValueChange={setUbicacionId}
                 >
