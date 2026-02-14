@@ -83,10 +83,32 @@ export default function NuevaVariante() {
         const response = await request("/stock/ubicaciones/ver", "GET");
 
         if (response.status === 200 && Array.isArray(response.data)) {
-          setUbicaciones(response.data);
+          console.log(`[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`, response.data.length);
+          // Validar y mapear la estructura anidada
+          const ubicacionesValidadas = response.data.map((ubicacion: any) => ({
+            id: ubicacion.id,
+            nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+            estantes: Array.isArray(ubicacion.estantes)
+              ? ubicacion.estantes.map((estante: any) => ({
+                  id: estante.id,
+                  Seccion: estante.Seccion || "N/A",
+                  pasillo: estante.pasillo || 0,
+                  niveles: Array.isArray(estante.niveles)
+                    ? estante.niveles.map((nivel: any) => ({
+                        id: nivel.id,
+                        niveles: nivel.niveles || 0,
+                      }))
+                    : [],
+                }))
+              : [],
+          }));
+          setUbicaciones(ubicacionesValidadas);
+        } else {
+          console.warn("Respuesta no válida del endpoint de ubicaciones");
+          toast.error("Formato de respuesta inválido");
         }
       } catch (error) {
-        console.error("Error cargando ubicaciones:", error);
+        console.error(`[${new Date().toLocaleTimeString()}] Error cargando ubicaciones:`, error);
         toast.error("No se pudieron cargar las ubicaciones");
       } finally {
         setLoadingData(false);
@@ -356,13 +378,21 @@ export default function NuevaVariante() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableEstantes.map((estante) => (
+                            {availableEstantes.length > 0 ? (
+                              availableEstantes.map((estante) => (
+                                <SelectItem
+                                  key={estante.id}
+                                  label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
+                                  value={String(estante.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={estante.id}
-                                label={`Seccion ${estante.Seccion} • Pasillo ${estante.pasillo}`}
-                                value={String(estante.id)}
+                                label="No hay estantes disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>
@@ -394,13 +424,21 @@ export default function NuevaVariante() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableNiveles.map((nivel) => (
+                            {availableNiveles.length > 0 ? (
+                              availableNiveles.map((nivel) => (
+                                <SelectItem
+                                  key={nivel.id}
+                                  label={`Nivel ${nivel.niveles}`}
+                                  value={String(nivel.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={nivel.id}
-                                label={`Nivel ${nivel.niveles}`}
-                                value={String(nivel.id)}
+                                label="No hay niveles disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>

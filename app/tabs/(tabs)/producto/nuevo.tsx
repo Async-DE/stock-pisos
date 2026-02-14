@@ -96,21 +96,62 @@ export default function NuevoProducto() {
           request("/stock/ubicaciones/ver", "GET"),
         ]);
 
-        if (
-          categoriesResponse.status === 200 &&
-          Array.isArray(categoriesResponse.data)
-        ) {
-          setCategories(categoriesResponse.data);
+        // Procesar categorías: response.data tiene { message, categorias: [...] }
+        if (categoriesResponse.status === 200) {
+          const categoriasData = categoriesResponse.data?.categorias || categoriesResponse.data;
+          
+          if (Array.isArray(categoriasData)) {
+            // Mapear la estructura de categorías
+            const categoriasMapeadas = categoriasData.map((cat: any) => ({
+              id: cat.id,
+              nombre: cat.nombre || `Categoría ${cat.id}`,
+              subcategorias: Array.isArray(cat.subcategorias)
+                ? cat.subcategorias.map((sub: any) => ({
+                    id: sub.id,
+                    nombre: sub.nombre || `Subcategoría ${sub.id}`,
+                  }))
+                : [],
+            }));
+            
+            console.log(`[${new Date().toLocaleTimeString()}] Categorías cargadas:`, categoriasMapeadas.length);
+            setCategories(categoriasMapeadas);
+          } else {
+            console.warn("Formato de categorías no válido");
+          }
         }
 
-        if (
-          ubicacionesResponse.status === 200 &&
-          Array.isArray(ubicacionesResponse.data)
-        ) {
-          setUbicaciones(ubicacionesResponse.data);
+        // Procesar ubicaciones: response.data es directamente un array
+        if (ubicacionesResponse.status === 200) {
+          const ubicacionesData = ubicacionesResponse.data;
+          
+          if (Array.isArray(ubicacionesData)) {
+            // Validar y mapear la estructura anidada de ubicaciones
+            const ubicacionesMapeadas = ubicacionesData.map((ubicacion: any) => ({
+              id: ubicacion.id,
+              nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+              estantes: Array.isArray(ubicacion.estantes)
+                ? ubicacion.estantes.map((estante: any) => ({
+                    id: estante.id,
+                    Seccion: estante.Seccion || "N/A",
+                    pasillo: estante.pasillo || 0,
+                    niveles: Array.isArray(estante.niveles)
+                      ? estante.niveles.map((nivel: any) => ({
+                          id: nivel.id,
+                          niveles: nivel.niveles || 0,
+                        }))
+                      : [],
+                  }))
+                : [],
+            }));
+            
+            console.log(`[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`, ubicacionesMapeadas.length);
+            setUbicaciones(ubicacionesMapeadas);
+          } else {
+            console.warn("Formato de ubicaciones no válido");
+          }
         }
       } catch (error) {
-        console.error("Error cargando datos del formulario:", error);
+        console.error(`[${new Date().toLocaleTimeString()}] Error cargando datos del formulario:`, error);
         toast.error("No se pudieron cargar los datos iniciales");
       } finally {
         setLoadingData(false);
