@@ -86,6 +86,7 @@ export default function NuevoProducto() {
   const [costoCompra, setCostoCompra] = useState("");
   const [image, setImage] = useState<SelectedImage | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formResetKey, setFormResetKey] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -196,6 +197,31 @@ export default function NuevoProducto() {
     setSelectedNivelId("");
   };
 
+  const clearForm = () => {
+    setSelectedCategoryId("");
+    setSelectedSubcategoryId("");
+    setSelectedUbicacionId("");
+    setSelectedEstanteId("");
+    setSelectedNivelId("");
+    setNombre("");
+    setCodigo("");
+    setColor("");
+    setDescripcion("");
+    setCantidad("");
+    setMedidas("");
+    setPrecioPublico("");
+    setPrecioContratista("");
+    setCostoCompra("");
+    setImage(null);
+    // Incrementar la key para forzar re-render de todos los selects
+    setFormResetKey((prev) => prev + 1);
+  };
+
+  const handleBack = () => {
+    clearForm();
+    router.back();
+  };
+
   const isFormValid =
     selectedSubcategoryId &&
     selectedNivelId &&
@@ -291,6 +317,7 @@ export default function NuevoProducto() {
 
       if (response.ok) {
         toast.success("Producto creado correctamente");
+        clearForm();
         router.back();
       } else {
         const errorText = await response.text();
@@ -317,7 +344,7 @@ export default function NuevoProducto() {
         showsVerticalScrollIndicator={false}
       >
         <Box className="px-4 pt-6 mt-8">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={handleBack}>
             <HStack space="sm" className="items-center">
               <ArrowLeft size={22} color="#13E000" strokeWidth={2} />
               <Text className="text-[#169500] text-base font-semibold">
@@ -354,6 +381,7 @@ export default function NuevoProducto() {
                       Categoría
                     </Text>
                     <Select
+                      key={`category-${formResetKey}`}
                       selectedValue={selectedCategoryId}
                       onValueChange={(value) => {
                         setSelectedCategoryId(value);
@@ -392,7 +420,7 @@ export default function NuevoProducto() {
                       Subcategoría
                     </Text>
                     <Select
-                      key={selectedCategoryId || "no-category"} // Forzar re-render cuando cambia la categoría
+                      key={`subcategory-${formResetKey}-${selectedCategoryId || "no-category"}`}
                       selectedValue={selectedSubcategoryId}
                       onValueChange={setSelectedSubcategoryId}
                       isDisabled={!selectedCategoryId}
@@ -448,6 +476,7 @@ export default function NuevoProducto() {
                       Ubicación
                     </Text>
                     <Select
+                      key={`ubicacion-${formResetKey}`}
                       selectedValue={selectedUbicacionId}
                       onValueChange={(value) => {
                         setSelectedUbicacionId(value);
@@ -484,7 +513,7 @@ export default function NuevoProducto() {
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Estante</Text>
                     <Select
-                      key={selectedUbicacionId || "no-ubicacion"} // Forzar re-render cuando cambia la ubicación
+                      key={`estante-${formResetKey}-${selectedUbicacionId || "no-ubicacion"}`}
                       selectedValue={selectedEstanteId}
                       onValueChange={(value) => {
                         setSelectedEstanteId(value);
@@ -534,7 +563,7 @@ export default function NuevoProducto() {
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Nivel</Text>
                     <Select
-                      key={selectedEstanteId || "no-estante"} // Forzar re-render cuando cambia el estante
+                      key={`nivel-${formResetKey}-${selectedEstanteId || "no-estante"}`}
                       selectedValue={selectedNivelId}
                       onValueChange={setSelectedNivelId}
                       isDisabled={!selectedEstanteId}
