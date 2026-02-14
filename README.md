@@ -210,7 +210,7 @@ eas build --platform all --profile development
 #### Crear Build de Producción
 
 ```bash
-# Android
+# Android (APK con distribución interna)
 eas build --platform android --profile production
 
 # iOS
@@ -218,9 +218,11 @@ eas build --platform ios --profile production
 ```
 
 **Resultado:**
-- ✅ Build listo para publicar en tiendas
+- ✅ Obtienes un APK (Android) o IPA (iOS) con distribución interna
+- ✅ Puedes instalarlo directamente en dispositivos (sin pasar por tiendas)
 - ✅ Configurado para recibir updates del canal `production`
-- ✅ Puedes seguir actualizándolo con OTA después de publicarlo
+- ✅ Puedes seguir actualizándolo con OTA
+- ✅ Si necesitas subirlo a tiendas más adelante, puedes crear un nuevo build con `distribution: "store"` o cambiar la configuración
 
 ### 📋 Requisitos Previos para Updates
 
