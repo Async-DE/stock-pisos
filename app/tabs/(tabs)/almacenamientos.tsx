@@ -237,7 +237,7 @@ export default function Establecimientos() {
                   variant="outline"
                   action="secondary"
                   className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
-                  onPress={() => {}}
+                  onPress={() => router.push("/tabs/(tabs)/auditorias" as any)}
                 >
                   <ClipboardCheck size={24} color="#13E000" strokeWidth={2} />
                   <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
