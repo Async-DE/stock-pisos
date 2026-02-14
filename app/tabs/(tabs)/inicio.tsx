@@ -46,9 +46,9 @@ export default function Inicio() {
     try {
       const response = await request("/stock/categorias/ver", "GET");
 
-      if (response.status === 200 && Array.isArray(response.data)) {
+      if (response.status === 200 && Array.isArray(response.data?.categorias)) {
         // Mapear respuesta del backend al formato esperado por CategoriesGrid
-        const mapped: Category[] = response.data.map(
+        const mapped: Category[] = response.data.categorias.map(
           (cat: any, index: number) => {
             const fallbackIcon =
               categoryIcons[index % categoryIcons.length] ?? categoryIcons[0];
@@ -247,36 +247,36 @@ export default function Inicio() {
         showsVerticalScrollIndicator={false}
       >
         <Box className="flex-1 px-3">
-        {/* Header con búsqueda */}
-        <SearchHeader
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedCategory={selectedCategory}
-          selectedCategoryName={selectedCategoryData?.name}
-          onBack={handleBack}
-        />
+          {/* Header con búsqueda */}
+          <SearchHeader
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedCategory={selectedCategory}
+            selectedCategoryName={selectedCategoryData?.name}
+            onBack={handleBack}
+          />
 
-        {/* Contenido: Categorías o Productos */}
-        {selectedCategory ? (
-          <ProductsView
-            products={products}
-            onProductPress={handleProductPress}
-            onCreatePress={handleCreateProduct}
-            isLoading={loadingProducts}
-            categoryName={
-              selectedSubcategory
-                ? `${selectedCategoryData?.name || ""} / ${selectedSubcategory}`
-                : selectedCategoryData?.name || ""
-            }
-            screenWidth={screenWidth}
-          />
-        ) : (
-          <CategoriesGrid
-            categories={filteredCategories}
-            onSubcategoryPress={handleSubcategoryPress}
-          />
-        )}
-      </Box>
+          {/* Contenido: Categorías o Productos */}
+          {selectedCategory ? (
+            <ProductsView
+              products={products}
+              onProductPress={handleProductPress}
+              onCreatePress={handleCreateProduct}
+              isLoading={loadingProducts}
+              categoryName={
+                selectedSubcategory
+                  ? `${selectedCategoryData?.name || ""} / ${selectedSubcategory}`
+                  : selectedCategoryData?.name || ""
+              }
+              screenWidth={screenWidth}
+            />
+          ) : (
+            <CategoriesGrid
+              categories={filteredCategories}
+              onSubcategoryPress={handleSubcategoryPress}
+            />
+          )}
+        </Box>
       </ScrollView>
     </ImageBackground>
   );
