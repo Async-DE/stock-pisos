@@ -9,13 +9,13 @@
       "android": {
         "buildType": "apk",
         "env": {
-          "EXPO_PUBLIC_URL": "https://stock-b-production.up.railway.app"
+          "EXPO_PUBLIC_URL": "https://backend-production-3acd.up.railway.app"
         }
       },
       "ios": {
         "simulator": false,
         "env": {
-          "EXPO_PUBLIC_URL": "https://stock-b-production.up.railway.app"
+          "EXPO_PUBLIC_URL": "https://backend-production-3acd.up.railway.app"
         }
       }
     },
@@ -23,7 +23,7 @@
       "android": {
         "buildType": "apk",
         "env": {
-          "EXPO_PUBLIC_URL": "https://stock-b-production.up.railway.app"
+          "EXPO_PUBLIC_URL": "https://backend-production-3acd.up.railway.app"
         }
       }
     },
@@ -32,13 +32,13 @@
       "android": {
         "buildType": "apk",
         "env": {
-          "EXPO_PUBLIC_URL": "https://stock-b-production.up.railway.app"
+          "EXPO_PUBLIC_URL": "https://backend-production-3acd.up.railway.app"
         }
       },
       "ios": {
         "simulator": false,
         "env": {
-          "EXPO_PUBLIC_URL": "https://stock-b-production.up.railway.app"
+          "EXPO_PUBLIC_URL": "https://backend-production-3acd.up.railway.app"
         }
       }
     }
