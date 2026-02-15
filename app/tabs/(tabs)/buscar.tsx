@@ -10,13 +10,7 @@ import { request } from "@/constants/Request";
 import type { Product } from "@/components/constants";
 import { ProductsView } from "@/components/ProductsView";
 import { useRouter } from "expo-router";
-// Lazy load BarcodeScanner para evitar crashes si hay problemas de permisos
-let BarcodeScanner: any = null;
-try {
-  BarcodeScanner = require("@/components/BarcodeScanner").BarcodeScanner;
-} catch (error) {
-  console.warn("BarcodeScanner no disponible:", error);
-}
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 
 // Componente de fallback para errores
 function ErrorFallback({ error, resetErrorBoundary }: any) {
@@ -282,17 +276,15 @@ function BuscarContent() {
           />
 
           {/* Botón de escáner */}
-          {BarcodeScanner && (
-            <Pressable
-              onPress={() => setScannerVisible(true)}
-              className="bg-[#13E000] rounded-full py-3 px-6 mb-4 flex-row items-center justify-center"
-            >
-              <ScanLine size={20} color="#FFFFFF" strokeWidth={2} />
-              <Text className="text-white font-semibold ml-2 text-base">
-                Escanear código de barras
-              </Text>
-            </Pressable>
-          )}
+          <Pressable
+            onPress={() => setScannerVisible(true)}
+            className="bg-[#13E000] rounded-full py-3 px-6 mb-4 flex-row items-center justify-center"
+          >
+            <ScanLine size={20} color="#FFFFFF" strokeWidth={2} />
+            <Text className="text-white font-semibold ml-2 text-base">
+              Escanear código de barras
+            </Text>
+          </Pressable>
 
           {/* Contenido: Resultados o mensajes */}
           {!trimmedTerm ? (
@@ -340,13 +332,11 @@ function BuscarContent() {
       </ScrollView>
 
       {/* Escáner de códigos de barras */}
-      {BarcodeScanner && (
-        <BarcodeScanner
-          visible={scannerVisible}
-          onClose={() => setScannerVisible(false)}
-          onScan={handleBarcodeScan}
-        />
-      )}
+      <BarcodeScanner
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onScan={handleBarcodeScan}
+      />
     </ImageBackground>
   );
 }
