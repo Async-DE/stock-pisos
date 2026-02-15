@@ -54,8 +54,17 @@ export default function NuevoEstante() {
       setLoadingData(true);
       try {
         const response = await request("/stock/ubicaciones/ver", "GET");
-        if (response.status === 200 && Array.isArray(response.data)) {
-          setUbicaciones(response.data);
+        
+        // La respuesta del servidor es: { message: "...", data: [...] }
+        const ubicacionesData = response.data?.data || response.data;
+        
+        if (response.status === 200 && Array.isArray(ubicacionesData)) {
+          // Mapear solo los campos necesarios (id y nombre)
+          const ubicacionesMapeadas = ubicacionesData.map((ubicacion: any) => ({
+            id: ubicacion.id,
+            nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+          }));
+          setUbicaciones(ubicacionesMapeadas);
         }
       } catch (error) {
         console.error("Error cargando ubicaciones:", error);

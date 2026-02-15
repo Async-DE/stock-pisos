@@ -82,10 +82,13 @@ export default function NuevaVariante() {
       try {
         const response = await request("/stock/ubicaciones/ver", "GET");
 
-        if (response.status === 200 && Array.isArray(response.data)) {
-          console.log(`[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`, response.data.length);
+        // La respuesta del servidor es: { message: "...", data: [...] }
+        const ubicacionesData = response.data?.data || response.data;
+
+        if (response.status === 200 && Array.isArray(ubicacionesData)) {
+          console.log(`[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`, ubicacionesData.length);
           // Validar y mapear la estructura anidada
-          const ubicacionesValidadas = response.data.map((ubicacion: any) => ({
+          const ubicacionesValidadas = ubicacionesData.map((ubicacion: any) => ({
             id: ubicacion.id,
             nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
             estantes: Array.isArray(ubicacion.estantes)
