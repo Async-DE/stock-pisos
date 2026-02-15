@@ -120,13 +120,16 @@ export default function Inicio() {
         "GET",
       );
 
-      if (response.status === 200 && Array.isArray(response.data)) {
+      // La respuesta del servidor es: { message: "...", data: [...] }
+      const productosData = response.data?.data || response.data;
+
+      if (response.status === 200 && Array.isArray(productosData)) {
         // Mapear respuesta del API al formato Product
         // Cada producto del API puede tener múltiples variantes
         // Vamos a crear un Product por cada variante
         const mappedProducts: Product[] = [];
 
-        response.data.forEach((producto: any) => {
+        productosData.forEach((producto: any) => {
           if (
             Array.isArray(producto.variantes) &&
             producto.variantes.length > 0
