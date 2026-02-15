@@ -11,12 +11,16 @@ import { useRouter } from "expo-router";
 
 // Importación de componentes nativos de React Native
 import { Alert, Image, ImageBackground } from "react-native";
+import { request } from "@/constants/Request";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { toast } from "sonner";
 import {
   ClipboardCheck,
   Layers,
   MapPin,
   ShoppingCart,
   Warehouse,
+  LogOut,
 } from "lucide-react-native";
 
 // Interface que define la estructura de un establecimiento/almacén
@@ -182,6 +186,64 @@ export default function Establecimientos() {
     });
   };
 
+  // Función para cerrar sesión
+  const handleLogout = async () => {
+    Alert.alert(
+      "Cerrar Sesión",
+      "¿Estás seguro de que deseas cerrar sesión?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Cerrar Sesión",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Llamar al endpoint de logout
+              await request("/stock/auth/logout", "POST");
+              
+              // Limpiar todos los datos del AsyncStorage
+              await AsyncStorage.multiRemove([
+                "token",
+                "user_id",
+                "user_usuario",
+                "user_nombre",
+                "user_email_phone",
+                "user_estado",
+                "user_createdAt",
+                "user_updatedAt",
+              ]);
+
+              // Redirigir al login
+              router.replace("/");
+            } catch (error) {
+              console.error("Error al cerrar sesión:", error);
+              // Aún así, limpiar el storage y redirigir
+              try {
+                await AsyncStorage.multiRemove([
+                  "token",
+                  "user_id",
+                  "user_usuario",
+                  "user_nombre",
+                  "user_email_phone",
+                  "user_estado",
+                  "user_createdAt",
+                  "user_updatedAt",
+                ]);
+                router.replace("/");
+              } catch (clearError) {
+                console.error("Error limpiando storage:", clearError);
+                toast.error("Error al cerrar sesión");
+              }
+            }
+          },
+        },
+      ],
+    );
+  };
+
   // Renderizado del componente
   return (
     <ImageBackground
@@ -242,6 +304,18 @@ export default function Establecimientos() {
                   <ClipboardCheck size={24} color="#13E000" strokeWidth={2} />
                   <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
                     Auditorias
+                  </ButtonText>
+                </Button>
+                <Button
+                  size="xl"
+                  variant="outline"
+                  action="secondary"
+                  className="border-2 border-red-500 bg-[#121212] rounded-3xl mt-4"
+                  onPress={handleLogout}
+                >
+                  <LogOut size={24} color="#ef4444" strokeWidth={2} />
+                  <ButtonText className="text-[30px] font-bold text-red-500 text-left w-full">
+                    Cerrar Sesión
                   </ButtonText>
                 </Button>
               </VStack>
