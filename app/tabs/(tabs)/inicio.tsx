@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Dimensions, RefreshControl, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { categoryIcons, type Product } from "../../../components/constants";
 import { request } from "@/constants/Request";
 import { SearchHeader } from "@/components/SearchHeader";
@@ -44,43 +45,66 @@ export default function Inicio() {
 
   const allCategories = apiCategories;
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await request("/stock/categorias/ver", "GET");
 
-      if (response.status === 200 && Array.isArray(response.data?.categorias)) {
-        // Mapear respuesta del backend al formato esperado por CategoriesGrid
-        const mapped: Category[] = response.data.categorias.map(
-          (cat: any, index: number) => {
-            const fallbackIcon =
-              categoryIcons[index % categoryIcons.length] ?? categoryIcons[0];
+      if (response.status === 200) {
+        // Manejar diferentes estructuras de respuesta
+        // Estructura 1: response.data.categorias
+        // Estructura 2: response.data.data (array directo)
+        let categoriasArray: any[] = [];
 
-            return {
-              id: cat.id,
-              name: cat.nombre,
-              icon: fallbackIcon,
-              subcategories: Array.isArray(cat.subcategorias)
-                ? cat.subcategorias.map((sub: any) => ({
-                    id: sub.id,
-                    name: sub.nombre,
-                    gananciaVentas: sub.ganancias_ventas || 0,
-                    valorStock: sub.valor_stock || 0,
-                  }))
-                : [],
-            };
-          },
-        );
+        if (Array.isArray(response.data?.categorias)) {
+          categoriasArray = response.data.categorias;
+        } else if (Array.isArray(response.data?.data)) {
+          categoriasArray = response.data.data;
+        } else if (Array.isArray(response.data)) {
+          categoriasArray = response.data;
+        }
 
-        setApiCategories(mapped);
+        if (categoriasArray.length > 0) {
+          // Mapear respuesta del backend al formato esperado por CategoriesGrid
+          const mapped: Category[] = categoriasArray.map(
+            (cat: any, index: number) => {
+              const fallbackIcon =
+                categoryIcons[index % categoryIcons.length] ?? categoryIcons[0];
+
+              return {
+                id: cat.id,
+                name: cat.nombre,
+                icon: fallbackIcon,
+                subcategories: Array.isArray(cat.subcategorias)
+                  ? cat.subcategorias.map((sub: any) => ({
+                      id: sub.id,
+                      name: sub.nombre,
+                      gananciaVentas: sub.ganancias_ventas || 0,
+                      valorStock: sub.valor_stock || 0,
+                    }))
+                  : [],
+              };
+            },
+          );
+
+          setApiCategories(mapped);
+        } else {
+          console.warn("No se encontraron categorías en la respuesta:", response);
+        }
+      } else {
+        console.warn("Respuesta inesperada al cargar categorías:", response);
       }
     } catch (error) {
       console.error("Error cargando categorías:", error);
+      // Mantener las categorías existentes en caso de error
     }
-  };
-
-  useEffect(() => {
-    fetchCategories();
   }, []);
+
+  // Ejecutar siempre que la pantalla reciba foco (al abrir la app o navegar a esta pantalla)
+  useFocusEffect(
+    useCallback(() => {
+      fetchCategories();
+    }, [fetchCategories])
+  );
 
   // Fetch products when subcategory is selected
   const fetchProductsBySubcategory = async (subcategoryId: number | null) => {
