@@ -104,9 +104,10 @@ export default function NuevoProducto() {
           request("/stock/ubicaciones/ver", "GET"),
         ]);
 
-        // Procesar categorías: response.data tiene { message, categorias: [...] }
+        // Procesar categorías: response.data tiene { message, data: [...] }
         if (categoriesResponse.status === 200) {
-          const categoriasData = categoriesResponse.data?.categorias || categoriesResponse.data;
+          // La respuesta del servidor es: { message: "...", data: [...] }
+          const categoriasData = categoriesResponse.data?.data || categoriesResponse.data;
           
           if (Array.isArray(categoriasData)) {
             // Mapear la estructura de categorías
@@ -124,13 +125,14 @@ export default function NuevoProducto() {
             console.log(`[${new Date().toLocaleTimeString()}] Categorías cargadas:`, categoriasMapeadas.length);
             setCategories(categoriasMapeadas);
           } else {
-            console.warn("Formato de categorías no válido");
+            console.warn("Formato de categorías no válido:", categoriasData);
           }
         }
 
-        // Procesar ubicaciones: response.data es directamente un array
+        // Procesar ubicaciones: response.data tiene { message, data: [...] }
         if (ubicacionesResponse.status === 200) {
-          const ubicacionesData = ubicacionesResponse.data;
+          // La respuesta del servidor es: { message: "...", data: [...] }
+          const ubicacionesData = ubicacionesResponse.data?.data || ubicacionesResponse.data;
           
           if (Array.isArray(ubicacionesData)) {
             // Validar y mapear la estructura anidada de ubicaciones
@@ -155,7 +157,7 @@ export default function NuevoProducto() {
             console.log(`[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`, ubicacionesMapeadas.length);
             setUbicaciones(ubicacionesMapeadas);
           } else {
-            console.warn("Formato de ubicaciones no válido");
+            console.warn("Formato de ubicaciones no válido:", ubicacionesData);
           }
         }
       } catch (error) {
@@ -213,7 +215,8 @@ export default function NuevoProducto() {
       const ubicacionesResponse = await request("/stock/ubicaciones/ver", "GET");
       
       if (ubicacionesResponse.status === 200) {
-        const ubicacionesData = ubicacionesResponse.data;
+        // La respuesta del servidor es: { message: "...", data: [...] }
+        const ubicacionesData = ubicacionesResponse.data?.data || ubicacionesResponse.data;
         
         if (Array.isArray(ubicacionesData)) {
           const ubicacionesMapeadas = ubicacionesData.map((ubicacion: any) => ({

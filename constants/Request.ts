@@ -1,5 +1,4 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Alert } from "react-native";
 import { toast } from "sonner";
 
 export const baseUrl = `${process.env.EXPO_PUBLIC_URL}`;
