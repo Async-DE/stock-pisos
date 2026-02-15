@@ -47,10 +47,16 @@ export default function Buscar() {
           return;
         }
 
-        if (response.status === 200 && Array.isArray(response.data)) {
+        if (response.status === 200) {
+          const productosArray = Array.isArray(response.data?.data)
+            ? response.data.data
+            : Array.isArray(response.data)
+            ? response.data
+            : [];
+
           const mappedProducts: Product[] = [];
 
-          response.data.forEach((producto: any) => {
+          productosArray.forEach((producto: any) => {
             if (
               Array.isArray(producto.variantes) &&
               producto.variantes.length > 0
