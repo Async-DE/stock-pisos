@@ -24,11 +24,23 @@ export default function Buscar() {
 
   useEffect(() => {
     let isActive = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
+    // Si no hay término de búsqueda, limpiar estado y salir
     if (!trimmedTerm) {
       setResults([]);
       setLoading(false);
       setError(null);
+      return () => {
+        isActive = false;
+        if (timer) {
+          clearTimeout(timer);
+        }
+      };
+    }
+
+    // Validar que trimmedTerm no esté vacío antes de continuar
+    if (trimmedTerm.length === 0) {
       return () => {
         isActive = false;
       };
@@ -37,8 +49,17 @@ export default function Buscar() {
     setLoading(true);
     setError(null);
 
-    const timer = setTimeout(async () => {
+    timer = setTimeout(async () => {
       try {
+        // Validar que trimmedTerm aún existe y no está vacío
+        if (!trimmedTerm || trimmedTerm.trim().length === 0) {
+          if (isActive) {
+            setLoading(false);
+            setResults([]);
+          }
+          return;
+        }
+
         const response = await request("/stock/productos/verbuscar", "POST", {
           search: trimmedTerm,
         });
@@ -47,61 +68,121 @@ export default function Buscar() {
           return;
         }
 
+        // Validar que response existe
+        if (!response || typeof response.status !== "number") {
+          console.error("Respuesta inválida:", response);
+          if (isActive) {
+            setError("Error en la respuesta del servidor");
+            setResults([]);
+            setLoading(false);
+          }
+          return;
+        }
+
         if (response.status === 200) {
-          const productosArray = Array.isArray(response.data?.data)
-            ? response.data.data
-            : Array.isArray(response.data)
-            ? response.data
-            : [];
+          // Manejar diferentes estructuras de respuesta de forma segura
+          let productosArray: any[] = [];
+          
+          try {
+            if (Array.isArray(response.data?.data)) {
+              productosArray = response.data.data;
+            } else if (Array.isArray(response.data)) {
+              productosArray = response.data;
+            }
+          } catch (parseError) {
+            console.error("Error parseando respuesta:", parseError);
+            if (isActive) {
+              setError("Error procesando los resultados");
+              setResults([]);
+              setLoading(false);
+            }
+            return;
+          }
 
           const mappedProducts: Product[] = [];
 
           productosArray.forEach((producto: any) => {
-            if (
-              Array.isArray(producto.variantes) &&
-              producto.variantes.length > 0
-            ) {
-              producto.variantes.forEach((variante: any, index: number) => {
-                mappedProducts.push({
-                  id: producto.id * 1000 + index,
-                  productId: producto.id,
-                  name: variante.nombre || `Producto ${producto.id}`,
-                  price: variante.precio_publico || 0,
-                  image: variante.foto,
-                  description: `${variante.color || ""} - ${
-                    variante.medidas || ""
-                  }`.trim(),
-                  variants: [
-                    {
-                      id: producto.id * 1000 + index,
-                      name: variante.nombre || "",
-                      price: variante.precio_publico || 0,
-                      stock: variante.cantidad,
-                      attributes: {
-                        color: variante.color || "",
-                        medidas: variante.medidas || "",
-                        precio_contratista:
-                          variante.precio_contratista?.toString() || "",
-                        cantidad: variante.cantidad?.toString() || "",
-                        foto: variante.foto || "",
-                      },
-                    },
-                  ],
+            try {
+              // Validar que producto tiene id válido
+              if (!producto || typeof producto.id !== "number") {
+                console.warn("Producto sin ID válido:", producto);
+                return;
+              }
+
+              const productId = producto.id;
+
+              if (
+                Array.isArray(producto.variantes) &&
+                producto.variantes.length > 0
+              ) {
+                producto.variantes.forEach((variante: any, index: number) => {
+                  try {
+                    const variantId = productId * 1000 + index;
+                    mappedProducts.push({
+                      id: variantId,
+                      productId: productId,
+                      name: variante?.nombre || `Producto ${productId}`,
+                      price: typeof variante?.precio_publico === "number"
+                        ? variante.precio_publico
+                        : 0,
+                      image: variante?.foto || undefined,
+                      description: `${variante?.color || ""} - ${
+                        variante?.medidas || ""
+                      }`.trim() || undefined,
+                      variants: [
+                        {
+                          id: variantId,
+                          name: variante?.nombre || "",
+                          price: typeof variante?.precio_publico === "number"
+                            ? variante.precio_publico
+                            : 0,
+                          stock: typeof variante?.cantidad === "number"
+                            ? variante.cantidad
+                            : 0,
+                          attributes: {
+                            color: variante?.color || "",
+                            medidas: variante?.medidas || "",
+                            precio_contratista:
+                              variante?.precio_contratista != null
+                                ? String(variante.precio_contratista)
+                                : "",
+                            cantidad:
+                              variante?.cantidad != null
+                                ? String(variante.cantidad)
+                                : "",
+                            foto: variante?.foto || "",
+                          },
+                        },
+                      ],
+                    });
+                  } catch (variantError) {
+                    console.error("Error procesando variante:", variantError);
+                  }
                 });
-              });
-            } else {
-              mappedProducts.push({
-                id: producto.id,
-                productId: producto.id,
-                name: `Producto ${producto.id}`,
-                price: 0,
-              });
+              } else {
+                // Producto sin variantes
+                mappedProducts.push({
+                  id: productId,
+                  productId: productId,
+                  name: `Producto ${productId}`,
+                  price: 0,
+                });
+              }
+            } catch (productError) {
+              console.error("Error procesando producto:", productError);
             }
           });
 
-          setResults(mappedProducts);
+          if (isActive) {
+            setResults(mappedProducts);
+          }
         } else {
-          setResults([]);
+          if (isActive) {
+            setResults([]);
+            if (response.status >= 400) {
+              setError("Error en la búsqueda");
+            }
+          }
         }
       } catch (err) {
         if (!isActive) {
@@ -119,7 +200,9 @@ export default function Buscar() {
 
     return () => {
       isActive = false;
-      clearTimeout(timer);
+      if (timer) {
+        clearTimeout(timer);
+      }
     };
   }, [trimmedTerm]);
 
