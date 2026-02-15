@@ -41,6 +41,15 @@ type Producto = {
   createdAt: string;
 };
 
+type Subcategoria = {
+  id: number;
+  nombre: string;
+  ganancias_ventas: number;
+  valor_stock: number;
+  createdAt: string;
+  categoriaId: number;
+};
+
 type Venta = {
   id: number;
   variante_id: number;
@@ -62,12 +71,14 @@ type Auditoria = {
   productoId?: number;
   varianteId?: number;
   ventaId?: number;
+  subcategoriaId?: number;
   createdAt: string;
   usuario: Usuario;
   estante?: Estante;
   producto?: Producto;
   variante?: Variante;
   venta?: Venta;
+  subcategoria?: Subcategoria;
 };
 
 const ITEMS_PER_PAGE = 8;
@@ -94,8 +105,11 @@ export default function Auditorias() {
         "GET",
       );
 
-      if (response.status === 200 && Array.isArray(response.data)) {
-        const auditoriasMapeadas = response.data.map((audit: any) => ({
+      // La respuesta del servidor es: { message: "...", data: [...] }
+      const auditoriasData = response.data?.data || response.data;
+
+      if (response.status === 200 && Array.isArray(auditoriasData)) {
+        const auditoriasMapeadas = auditoriasData.map((audit: any) => ({
           id: audit.id,
           usuario_id: audit.usuario_id,
           accion: audit.accion || "",
@@ -103,6 +117,7 @@ export default function Auditorias() {
           productoId: audit.productoId,
           varianteId: audit.varianteId,
           ventaId: audit.ventaId,
+          subcategoriaId: audit.subcategoriaId,
           createdAt: audit.createdAt,
           usuario: audit.usuario
             ? {
@@ -149,6 +164,16 @@ export default function Auditorias() {
                 precio_publico: audit.venta.precio_publico || 0,
                 precio_contratista: audit.venta.precio_contratista || 0,
                 costo_compra: audit.venta.costo_compra || 0,
+              }
+            : undefined,
+          subcategoria: audit.subcategoria
+            ? {
+                id: audit.subcategoria.id,
+                nombre: audit.subcategoria.nombre || "",
+                ganancias_ventas: audit.subcategoria.ganancias_ventas || 0,
+                valor_stock: audit.subcategoria.valor_stock || 0,
+                createdAt: audit.subcategoria.createdAt,
+                categoriaId: audit.subcategoria.categoriaId,
               }
             : undefined,
         }));
