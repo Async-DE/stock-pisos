@@ -35,7 +35,8 @@ export default function Home() {
         const token = await AsyncStorage.getItem("token");
         if (token) {
           // Hay sesión guardada, ir directamente al inicio
-          router.push("/tabs/(tabs)/inicio");
+          console.log("Sesión encontrada, redirigiendo a inicio...");
+          router.replace("/tabs/(tabs)/inicio");
         }
       } catch (error) {
         console.error("Error al verificar sesión:", error);
@@ -78,25 +79,51 @@ export default function Home() {
         password,
       });
 
-      if (
-        response.status === 200 &&
-        response.data?.token &&
-        response.data?.usuario
-      ) {
-        const { token, usuario } = response.data;
+      console.log("Login response:", JSON.stringify(response, null, 2));
+
+      // Manejar diferentes estructuras de respuesta
+      let token: string | null = null;
+      let usuario: any = null;
+
+      // Estructura 1: response.data.token y response.data.usuario
+      if (response.data?.token && response.data?.usuario) {
+        token = response.data.token;
+        usuario = response.data.usuario;
+      }
+      // Estructura 2: response.data.data.token y response.data.data.usuario
+      else if (response.data?.data?.token && response.data?.data?.usuario) {
+        token = response.data.data.token;
+        usuario = response.data.data.usuario;
+      }
+      // Estructura 3: token y usuario directamente en data
+      else if (response.data?.token || response.data?.usuario) {
+        token = response.data.token || null;
+        usuario = response.data.usuario || null;
+      }
+
+      if (response.status === 200 && token && usuario) {
+        console.log("Token recibido:", token ? "Sí" : "No");
+        console.log("Usuario recibido:", usuario ? "Sí" : "No");
 
         await AsyncStorage.multiSet([
           ["token", token],
-          ["user_id", String(usuario.id)],
+          ["user_id", String(usuario.id || "")],
           ["user_usuario", usuario.usuario ?? ""],
           ["user_nombre", usuario.nombre ?? ""],
           ["user_email_phone", usuario.email_phone ?? ""],
-          ["user_estado", String(usuario.estado)],
+          ["user_estado", String(usuario.estado || "")],
           ["user_createdAt", usuario.createdAt ?? ""],
           ["user_updatedAt", usuario.updatedAt ?? ""],
         ]);
 
-        router.push("/tabs/(tabs)/inicio");
+        console.log("Navegando a inicio...");
+        // Usar replace en lugar de push para evitar que el usuario pueda volver al login
+        router.replace("/tabs/(tabs)/inicio");
+      } else {
+        console.error("Login fallido - Status:", response.status);
+        console.error("Token:", token ? "Presente" : "Ausente");
+        console.error("Usuario:", usuario ? "Presente" : "Ausente");
+        console.error("Response data:", response.data);
       }
     } catch (error) {
       // El toast de request ya maneja mensajes de error
