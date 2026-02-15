@@ -160,9 +160,12 @@ export default function BuscarVentas() {
 
       const response = await request("/stock/ventas/verRango", "POST", payload);
 
-      if (response.status === 200 && Array.isArray(response.data)) {
+      // La respuesta del servidor es: { message: "...", data: [...] }
+      const ventasData = response.data?.data || response.data;
+
+      if (response.status === 200 && Array.isArray(ventasData)) {
         // Mapear la respuesta incluyendo todos los campos
-        const ventasMapeadas = response.data.map((venta: any) => ({
+        const ventasMapeadas = ventasData.map((venta: any) => ({
           id: venta.id,
           variante_id: venta.variante_id,
           cantidad: venta.cantidad,
@@ -221,9 +224,12 @@ export default function BuscarVentas() {
         search: searchTerm.trim(),
       });
 
-      if (response.status === 200 && Array.isArray(response.data)) {
+      // La respuesta del servidor es: { message: "...", data: [...] }
+      const ventasData = response.data?.data || response.data;
+
+      if (response.status === 200 && Array.isArray(ventasData)) {
         // Mapear la respuesta incluyendo todos los campos
-        const ventasMapeadas = response.data.map((venta: any) => ({
+        const ventasMapeadas = ventasData.map((venta: any) => ({
           id: venta.id,
           variante_id: venta.variante_id,
           cantidad: venta.cantidad,
