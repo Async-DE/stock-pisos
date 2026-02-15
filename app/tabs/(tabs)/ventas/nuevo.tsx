@@ -80,19 +80,22 @@ export default function NuevaVenta() {
   const cantidadNumber = useMemo(() => Number(cantidad || 0), [cantidad]);
 
   const extrasTotal = useMemo(() => {
-    return costosExtras.reduce((acc, item) => {
-      const costo = Number(item.costo || 0);
-      if (!Number.isNaN(costo)) {
+    const total = costosExtras.reduce((acc, item) => {
+      // Limpiar el string y convertir a número
+      const costoStr = (item.costo || "").trim().replace(/[^\d.-]/g, "");
+      const costo = parseFloat(costoStr) || 0;
+      if (!Number.isNaN(costo) && costo > 0) {
         return acc + costo;
       }
       return acc;
     }, 0);
+    return total;
   }, [costosExtras]);
 
   const totalVenta = useMemo(() => {
-    const subtotal =
-      basePrice * (Number.isNaN(cantidadNumber) ? 0 : cantidadNumber);
-    return subtotal + extrasTotal;
+    const cantidad = Number.isNaN(cantidadNumber) || cantidadNumber <= 0 ? 0 : cantidadNumber;
+    const total = basePrice * cantidad;
+    return Math.max(0, total);
   }, [basePrice, cantidadNumber, extrasTotal]);
 
   const formatPrice = (price: number) => {
@@ -346,15 +349,6 @@ export default function NuevaVenta() {
                     <Text className="text-gray-300 text-sm">Precio base</Text>
                     <Text className="text-white font-semibold">
                       {formatPrice(basePrice)}
-                    </Text>
-                  </HStack>
-                  <HStack
-                    space="sm"
-                    className="items-center justify-between mt-2"
-                  >
-                    <Text className="text-gray-300 text-sm">Extras</Text>
-                    <Text className="text-white font-semibold">
-                      {formatPrice(extrasTotal)}
                     </Text>
                   </HStack>
                   <HStack
