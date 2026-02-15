@@ -10,7 +10,37 @@ import { request } from "@/constants/Request";
 import type { Product } from "@/components/constants";
 import { ProductsView } from "@/components/ProductsView";
 import { useRouter } from "expo-router";
-import { BarcodeScanner } from "@/components/BarcodeScanner";
+
+// Componente wrapper para BarcodeScanner que se carga de forma segura
+function SafeBarcodeScanner({ visible, onClose, onScan }: any) {
+  const [ScannerComponent, setScannerComponent] = useState<any>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    if (visible && !ScannerComponent && !loadError) {
+      // Cargar el componente solo cuando se necesita
+      try {
+        const module = require("@/components/BarcodeScanner");
+        setScannerComponent(() => module.BarcodeScanner);
+      } catch (error) {
+        console.error("Error cargando BarcodeScanner:", error);
+        setLoadError(true);
+      }
+    }
+  }, [visible, ScannerComponent, loadError]);
+
+  if (!visible) return null;
+  if (loadError) return null;
+  if (!ScannerComponent) return null;
+
+  return (
+    <ScannerComponent
+      visible={visible}
+      onClose={onClose}
+      onScan={onScan}
+    />
+  );
+}
 
 // Componente de fallback para errores
 function ErrorFallback({ error, resetErrorBoundary }: any) {
@@ -332,7 +362,7 @@ function BuscarContent() {
       </ScrollView>
 
       {/* Escáner de códigos de barras */}
-      <BarcodeScanner
+      <SafeBarcodeScanner
         visible={scannerVisible}
         onClose={() => setScannerVisible(false)}
         onScan={handleBarcodeScan}
