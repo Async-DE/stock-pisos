@@ -5,14 +5,38 @@ import { Text } from "@/components/ui/text";
 import { SearchHeader } from "@/components/SearchHeader";
 import { Center } from "@/components/ui/center";
 import { ShoppingBag, ScanLine } from "lucide-react-native";
-import { ActivityIndicator, ImageBackground, Pressable } from "react-native";
+import { ActivityIndicator, ImageBackground, Pressable, View } from "react-native";
 import { request } from "@/constants/Request";
 import type { Product } from "@/components/constants";
 import { ProductsView } from "@/components/ProductsView";
 import { useRouter } from "expo-router";
-import { BarcodeScanner } from "@/components/BarcodeScanner";
+// Lazy load BarcodeScanner para evitar crashes si hay problemas de permisos
+let BarcodeScanner: any = null;
+try {
+  BarcodeScanner = require("@/components/BarcodeScanner").BarcodeScanner;
+} catch (error) {
+  console.warn("BarcodeScanner no disponible:", error);
+}
 
-export default function Buscar() {
+// Componente de fallback para errores
+function ErrorFallback({ error, resetErrorBoundary }: any) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#000000" }}>
+      <Text className="text-white text-lg font-semibold mb-4">Error al cargar la búsqueda</Text>
+      <Text className="text-gray-400 text-sm mb-4">{error?.message || "Error desconocido"}</Text>
+      {resetErrorBoundary && (
+        <Pressable
+          onPress={resetErrorBoundary}
+          className="bg-[#13E000] rounded-full py-3 px-6"
+        >
+          <Text className="text-white font-semibold">Reintentar</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+function BuscarContent() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState<Product[]>([]);
@@ -207,19 +231,35 @@ export default function Buscar() {
   }, [trimmedTerm]);
 
   const handleProductPress = (productId: number) => {
-    const product = results.find((p) => p.id === productId);
-    const realProductId = product?.productId || productId;
-    router.push(`/tabs/(tabs)/producto/${realProductId}`);
+    try {
+      const product = results.find((p) => p.id === productId);
+      const realProductId = product?.productId || productId;
+      router.push(`/tabs/(tabs)/producto/${realProductId}`);
+    } catch (error) {
+      console.error("Error navegando a producto:", error);
+    }
   };
 
   const handleBarcodeScan = (barcode: string) => {
-    setSearchTerm(barcode);
-    setScannerVisible(false);
+    try {
+      setSearchTerm(barcode);
+      setScannerVisible(false);
+    } catch (error) {
+      console.error("Error procesando código de barras:", error);
+    }
   };
+
+  // Intentar cargar la imagen de forma segura
+  let backgroundImage;
+  try {
+    backgroundImage = require("@/assets/images/madera.jpg");
+  } catch (error) {
+    console.warn("Imagen de fondo no disponible:", error);
+  }
 
   return (
     <ImageBackground
-      source={require("@/assets/images/madera.jpg")}
+      source={backgroundImage || { uri: "" }}
       style={{ flex: 1 }}
       resizeMode="cover"
     >
@@ -233,76 +273,89 @@ export default function Buscar() {
         showsVerticalScrollIndicator={false}
       >
         <Box className="flex-1 px-3">
-        {/* Header con búsqueda */}
-        <SearchHeader
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedCategory={null}
-          onBack={() => {}}
-        />
-
-        {/* Botón de escáner */}
-        <Pressable
-          onPress={() => setScannerVisible(true)}
-          className="bg-[#13E000] rounded-full py-3 px-6 mb-4 flex-row items-center justify-center"
-        >
-          <ScanLine size={20} color="#FFFFFF" strokeWidth={2} />
-          <Text className="text-white font-semibold ml-2 text-base">
-            Escanear código de barras
-          </Text>
-        </Pressable>
-
-        {/* Contenido: Resultados o mensajes */}
-        {!trimmedTerm ? (
-          <Center className="py-12">
-            <Box className="items-center">
-              <ShoppingBag size={48} color="#9CA3AF" strokeWidth={1.5} />
-              <Text className="text-gray-400 text-center text-base mt-4 font-medium">
-                Escribe para buscar productos
-              </Text>
-            </Box>
-          </Center>
-        ) : loading ? (
-          <Center className="py-12">
-            <ActivityIndicator size="large" color="#13E000" />
-            <Text className="text-gray-400 text-center text-base mt-4 font-medium">
-              Buscando productos...
-            </Text>
-          </Center>
-        ) : error ? (
-          <Center className="py-12">
-            <Box className="items-center">
-              <ShoppingBag size={48} color="#9CA3AF" strokeWidth={1.5} />
-              <Text className="text-gray-400 text-center text-base mt-4 font-medium">
-                {error}
-              </Text>
-            </Box>
-          </Center>
-        ) : results.length === 0 ? (
-          <Center className="py-12">
-            <Box className="items-center">
-              <ShoppingBag size={48} color="#9CA3AF" strokeWidth={1.5} />
-              <Text className="text-gray-400 text-center text-base mt-4 font-medium">
-                Sin resultados para "{trimmedTerm}"
-              </Text>
-            </Box>
-          </Center>
-        ) : (
-          <ProductsView
-            products={results}
-            onProductPress={handleProductPress}
-            categoryName={`Resultados para "${trimmedTerm}"`}
+          {/* Header con búsqueda */}
+          <SearchHeader
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedCategory={null}
+            onBack={() => {}}
           />
-        )}
+
+          {/* Botón de escáner */}
+          {BarcodeScanner && (
+            <Pressable
+              onPress={() => setScannerVisible(true)}
+              className="bg-[#13E000] rounded-full py-3 px-6 mb-4 flex-row items-center justify-center"
+            >
+              <ScanLine size={20} color="#FFFFFF" strokeWidth={2} />
+              <Text className="text-white font-semibold ml-2 text-base">
+                Escanear código de barras
+              </Text>
+            </Pressable>
+          )}
+
+          {/* Contenido: Resultados o mensajes */}
+          {!trimmedTerm ? (
+            <Center className="py-12">
+              <Box className="items-center">
+                <ShoppingBag size={48} color="#9CA3AF" strokeWidth={1.5} />
+                <Text className="text-gray-400 text-center text-base mt-4 font-medium">
+                  Escribe para buscar productos
+                </Text>
+              </Box>
+            </Center>
+          ) : loading ? (
+            <Center className="py-12">
+              <ActivityIndicator size="large" color="#13E000" />
+              <Text className="text-gray-400 text-center text-base mt-4 font-medium">
+                Buscando productos...
+              </Text>
+            </Center>
+          ) : error ? (
+            <Center className="py-12">
+              <Box className="items-center">
+                <ShoppingBag size={48} color="#9CA3AF" strokeWidth={1.5} />
+                <Text className="text-gray-400 text-center text-base mt-4 font-medium">
+                  {error}
+                </Text>
+              </Box>
+            </Center>
+          ) : results.length === 0 ? (
+            <Center className="py-12">
+              <Box className="items-center">
+                <ShoppingBag size={48} color="#9CA3AF" strokeWidth={1.5} />
+                <Text className="text-gray-400 text-center text-base mt-4 font-medium">
+                  Sin resultados para "{trimmedTerm}"
+                </Text>
+              </Box>
+            </Center>
+          ) : (
+            <ProductsView
+              products={results}
+              onProductPress={handleProductPress}
+              categoryName={`Resultados para "${trimmedTerm}"`}
+            />
+          )}
         </Box>
       </ScrollView>
 
       {/* Escáner de códigos de barras */}
-      <BarcodeScanner
-        visible={scannerVisible}
-        onClose={() => setScannerVisible(false)}
-        onScan={handleBarcodeScan}
-      />
+      {BarcodeScanner && (
+        <BarcodeScanner
+          visible={scannerVisible}
+          onClose={() => setScannerVisible(false)}
+          onScan={handleBarcodeScan}
+        />
+      )}
     </ImageBackground>
   );
+}
+
+export default function Buscar() {
+  try {
+    return <BuscarContent />;
+  } catch (error) {
+    console.error("Error crítico en Buscar:", error);
+    return <ErrorFallback error={error} />;
+  }
 }
