@@ -41,8 +41,10 @@ export default function ProductDetailScreen() {
 
       console.log(`[${new Date().toLocaleTimeString()}] Respuesta recibida para producto ${productId}`);
 
-      if (response.status === 200 && response.data) {
-        const productoData = response.data;
+      // La respuesta del servidor es: { message: "...", data: {...} }
+      const productoData = response.data?.data || response.data;
+
+      if (response.status === 200 && productoData) {
 
         // Mapear respuesta del API al formato Product
         const mappedProduct: Product = {
