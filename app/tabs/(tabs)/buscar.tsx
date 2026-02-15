@@ -4,12 +4,13 @@ import { ScrollView } from "@/components/ui/scroll-view";
 import { Text } from "@/components/ui/text";
 import { SearchHeader } from "@/components/SearchHeader";
 import { Center } from "@/components/ui/center";
-import { ShoppingBag } from "lucide-react-native";
-import { ActivityIndicator, ImageBackground } from "react-native";
+import { ShoppingBag, ScanLine } from "lucide-react-native";
+import { ActivityIndicator, ImageBackground, Pressable } from "react-native";
 import { request } from "@/constants/Request";
 import type { Product } from "@/components/constants";
 import { ProductsView } from "@/components/ProductsView";
 import { useRouter } from "expo-router";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 
 export default function Buscar() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function Buscar() {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scannerVisible, setScannerVisible] = useState(false);
 
   const trimmedTerm = searchTerm.trim();
 
@@ -121,6 +123,11 @@ export default function Buscar() {
     router.push(`/tabs/(tabs)/producto/${realProductId}`);
   };
 
+  const handleBarcodeScan = (barcode: string) => {
+    setSearchTerm(barcode);
+    setScannerVisible(false);
+  };
+
   return (
     <ImageBackground
       source={require("@/assets/images/madera.jpg")}
@@ -144,6 +151,17 @@ export default function Buscar() {
           selectedCategory={null}
           onBack={() => {}}
         />
+
+        {/* Botón de escáner */}
+        <Pressable
+          onPress={() => setScannerVisible(true)}
+          className="bg-[#13E000] rounded-full py-3 px-6 mb-4 flex-row items-center justify-center"
+        >
+          <ScanLine size={20} color="#FFFFFF" strokeWidth={2} />
+          <Text className="text-white font-semibold ml-2 text-base">
+            Escanear código de barras
+          </Text>
+        </Pressable>
 
         {/* Contenido: Resultados o mensajes */}
         {!trimmedTerm ? (
@@ -189,6 +207,13 @@ export default function Buscar() {
         )}
         </Box>
       </ScrollView>
+
+      {/* Escáner de códigos de barras */}
+      <BarcodeScanner
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onScan={handleBarcodeScan}
+      />
     </ImageBackground>
   );
 }
