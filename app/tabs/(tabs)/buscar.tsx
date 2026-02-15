@@ -4,43 +4,12 @@ import { ScrollView } from "@/components/ui/scroll-view";
 import { Text } from "@/components/ui/text";
 import { SearchHeader } from "@/components/SearchHeader";
 import { Center } from "@/components/ui/center";
-import { ShoppingBag, ScanLine } from "lucide-react-native";
+import { ShoppingBag } from "lucide-react-native";
 import { ActivityIndicator, ImageBackground, Pressable, View } from "react-native";
 import { request } from "@/constants/Request";
 import type { Product } from "@/components/constants";
 import { ProductsView } from "@/components/ProductsView";
 import { useRouter } from "expo-router";
-
-// Componente wrapper para BarcodeScanner que se carga de forma segura
-function SafeBarcodeScanner({ visible, onClose, onScan }: any) {
-  const [ScannerComponent, setScannerComponent] = useState<any>(null);
-  const [loadError, setLoadError] = useState(false);
-
-  useEffect(() => {
-    if (visible && !ScannerComponent && !loadError) {
-      // Cargar el componente solo cuando se necesita
-      try {
-        const module = require("@/components/BarcodeScanner");
-        setScannerComponent(() => module.BarcodeScanner);
-      } catch (error) {
-        console.error("Error cargando BarcodeScanner:", error);
-        setLoadError(true);
-      }
-    }
-  }, [visible, ScannerComponent, loadError]);
-
-  if (!visible) return null;
-  if (loadError) return null;
-  if (!ScannerComponent) return null;
-
-  return (
-    <ScannerComponent
-      visible={visible}
-      onClose={onClose}
-      onScan={onScan}
-    />
-  );
-}
 
 // Componente de fallback para errores
 function ErrorFallback({ error, resetErrorBoundary }: any) {
@@ -66,7 +35,6 @@ function BuscarContent() {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [scannerVisible, setScannerVisible] = useState(false);
 
   const trimmedTerm = searchTerm.trim();
 
@@ -264,15 +232,6 @@ function BuscarContent() {
     }
   };
 
-  const handleBarcodeScan = (barcode: string) => {
-    try {
-      setSearchTerm(barcode);
-      setScannerVisible(false);
-    } catch (error) {
-      console.error("Error procesando código de barras:", error);
-    }
-  };
-
   // Intentar cargar la imagen de forma segura
   let backgroundImage;
   try {
@@ -304,17 +263,6 @@ function BuscarContent() {
             selectedCategory={null}
             onBack={() => {}}
           />
-
-          {/* Botón de escáner */}
-          <Pressable
-            onPress={() => setScannerVisible(true)}
-            className="bg-[#13E000] rounded-full py-3 px-6 mb-4 flex-row items-center justify-center"
-          >
-            <ScanLine size={20} color="#FFFFFF" strokeWidth={2} />
-            <Text className="text-white font-semibold ml-2 text-base">
-              Escanear código de barras
-            </Text>
-          </Pressable>
 
           {/* Contenido: Resultados o mensajes */}
           {!trimmedTerm ? (
@@ -360,13 +308,6 @@ function BuscarContent() {
           )}
         </Box>
       </ScrollView>
-
-      {/* Escáner de códigos de barras */}
-      <SafeBarcodeScanner
-        visible={scannerVisible}
-        onClose={() => setScannerVisible(false)}
-        onScan={handleBarcodeScan}
-      />
     </ImageBackground>
   );
 }
