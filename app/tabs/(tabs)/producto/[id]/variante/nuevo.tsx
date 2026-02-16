@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { ActivityIndicator, Image, Pressable, ImageBackground } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Camera, ChevronDown, ImagePlus } from "lucide-react-native";
+import { ArrowLeft, Camera, ChevronDown, ImagePlus, Plus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
@@ -80,6 +80,13 @@ export default function NuevaVariante() {
   const [selectedUbicacionId, setSelectedUbicacionId] = useState("");
   const [selectedEstanteId, setSelectedEstanteId] = useState("");
   const [selectedNivelId, setSelectedNivelId] = useState("");
+
+  // Estados para crear estante
+  const [showCreateEstante, setShowCreateEstante] = useState(false);
+  const [pasillo, setPasillo] = useState("");
+  const [seccion, setSeccion] = useState("");
+  const [niveles, setNiveles] = useState("");
+  const [isCreatingEstante, setIsCreatingEstante] = useState(false);
 
   const [nombre, setNombre] = useState("");
   const [codigo, setCodigo] = useState("");
@@ -156,10 +163,92 @@ export default function NuevaVariante() {
   const resetUbicacionChain = () => {
     setSelectedEstanteId("");
     setSelectedNivelId("");
+    setShowCreateEstante(false);
+    setPasillo("");
+    setSeccion("");
+    setNiveles("");
   };
 
   const resetEstanteChain = () => {
     setSelectedNivelId("");
+  };
+
+  const reloadUbicaciones = async () => {
+    try {
+      const ubicacionesResponse = await request("/stock/ubicaciones/ver", "GET");
+      
+      if (ubicacionesResponse.status === 200) {
+        // La respuesta del servidor es: { message: "...", data: [...] }
+        const ubicacionesData = ubicacionesResponse.data?.data || ubicacionesResponse.data;
+        
+        if (Array.isArray(ubicacionesData)) {
+          const ubicacionesMapeadas = ubicacionesData.map((ubicacion: any) => ({
+            id: ubicacion.id,
+            nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+            estantes: Array.isArray(ubicacion.estantes)
+              ? ubicacion.estantes.map((estante: any) => ({
+                  id: estante.id,
+                  Seccion: estante.Seccion || "N/A",
+                  pasillo: estante.pasillo || 0,
+                  niveles: Array.isArray(estante.niveles)
+                    ? estante.niveles.map((nivel: any) => ({
+                        id: nivel.id,
+                        niveles: nivel.niveles || 0,
+                      }))
+                    : [],
+                }))
+              : [],
+          }));
+          
+          setUbicaciones(ubicacionesMapeadas);
+        }
+      }
+    } catch (error) {
+      console.error("Error recargando ubicaciones:", error);
+    }
+  };
+
+  const handleCreateEstante = async () => {
+    if (!selectedUbicacionId || !pasillo.trim() || !seccion.trim() || !niveles.trim()) {
+      showError("Completa todos los campos para crear el estante");
+      return;
+    }
+
+    const pasilloNum = parseInt(pasillo);
+    const nivelesNum = parseInt(niveles);
+
+    if (isNaN(pasilloNum) || isNaN(nivelesNum) || pasilloNum <= 0 || nivelesNum <= 0) {
+      showError("El pasillo y niveles deben ser números válidos mayores a 0");
+      return;
+    }
+
+    setIsCreatingEstante(true);
+    try {
+      const response = await request("/stock/estantes/crear", "POST", {
+        pasillo: pasilloNum,
+        seccion: seccion.trim().toUpperCase(),
+        niveles: nivelesNum,
+        ubicacionId: parseInt(selectedUbicacionId),
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        showSuccess("Estante creado correctamente");
+        // Limpiar formulario de creación
+        setPasillo("");
+        setSeccion("");
+        setNiveles("");
+        setShowCreateEstante(false);
+        // Recargar ubicaciones para mostrar el nuevo estante
+        await reloadUbicaciones();
+      } else {
+        showError("No se pudo crear el estante");
+      }
+    } catch (error) {
+      console.error("Error creando estante:", error);
+      showError("Error al crear el estante");
+    } finally {
+      setIsCreatingEstante(false);
+    }
   };
 
   const isFormValid =
@@ -369,52 +458,144 @@ export default function NuevaVariante() {
                   </Box>
 
                   <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Estante</Text>
-                    <Select
-                      selectedValue={selectedEstanteId}
-                      onValueChange={(value) => {
-                        setSelectedEstanteId(value);
-                        resetEstanteChain();
-                      }}
-                      isDisabled={!selectedUbicacionId}
-                    >
-                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
-                        <SelectInput
-                          placeholder={
-                            selectedUbicacionId
-                              ? "Selecciona un estante"
-                              : "Selecciona una ubicacion primero"
-                          }
-                          className="text-white"
-                        />
-                        <SelectIcon className="mr-3" as={ChevronDown} />
-                      </SelectTrigger>
-                      <SelectPortal>
-                        <SelectBackdrop />
-                        <SelectContent>
-                          <SelectDragIndicatorWrapper>
-                            <SelectDragIndicator />
-                          </SelectDragIndicatorWrapper>
-                          <SelectScrollView>
-                            {availableEstantes.length > 0 ? (
-                              availableEstantes.map((estante) => (
-                                <SelectItem
-                                  key={estante.id}
-                                  label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
-                                  value={String(estante.id)}
+                    <HStack className="items-center justify-between mb-2">
+                      <Text className="text-gray-400 text-sm">Estante</Text>
+                      {selectedUbicacionId && availableEstantes.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-[#169500]"
+                          onPress={() => setShowCreateEstante(!showCreateEstante)}
+                        >
+                          <ButtonIcon as={Plus} className="text-[#169500]" />
+                          <ButtonText className="text-[#169500] text-xs">
+                            {showCreateEstante ? "Seleccionar" : "Crear"}
+                          </ButtonText>
+                        </Button>
+                      )}
+                    </HStack>
+                    
+                    {selectedUbicacionId && (
+                      availableEstantes.length === 0 || showCreateEstante ? (
+                        // Vista para crear estante
+                        <Box className="bg-secondary-600/50 border border-[#169500]/50 rounded-xl p-4">
+                          <Text className="text-white font-semibold text-sm mb-3">
+                            Crear nuevo estante
+                          </Text>
+                          <VStack space="md">
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">Pasillo</Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: 1"
+                                  keyboardType="numeric"
+                                  value={pasillo}
+                                  onChangeText={setPasillo}
+                                  className="text-white"
                                 />
-                              ))
-                            ) : (
-                              <SelectItem
-                                label="No hay estantes disponibles"
-                                value=""
-                                isDisabled
-                              />
+                              </Input>
+                            </Box>
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">Sección</Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: A"
+                                  value={seccion}
+                                  onChangeText={setSeccion}
+                                  className="text-white"
+                                  maxLength={1}
+                                />
+                              </Input>
+                            </Box>
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">Niveles</Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: 4"
+                                  keyboardType="numeric"
+                                  value={niveles}
+                                  onChangeText={setNiveles}
+                                  className="text-white"
+                                />
+                              </Input>
+                            </Box>
+                            <Button
+                              size="sm"
+                              action="primary"
+                              className="bg-[#13E000] rounded-lg mt-2"
+                              onPress={handleCreateEstante}
+                              isDisabled={isCreatingEstante || !pasillo.trim() || !seccion.trim() || !niveles.trim()}
+                            >
+                              <ButtonText className="text-black font-semibold text-sm">
+                                {isCreatingEstante ? "Creando..." : "Crear estante"}
+                              </ButtonText>
+                            </Button>
+                            {availableEstantes.length > 0 && (
+                              <Pressable onPress={() => setShowCreateEstante(false)}>
+                                <Text className="text-gray-400 text-xs text-center mt-2">
+                                  Cancelar
+                                </Text>
+                              </Pressable>
                             )}
-                          </SelectScrollView>
-                        </SelectContent>
-                      </SelectPortal>
-                    </Select>
+                          </VStack>
+                        </Box>
+                      ) : (
+                        // Vista para seleccionar estante
+                        <Select
+                          selectedValue={selectedEstanteId}
+                          onValueChange={(value) => {
+                            setSelectedEstanteId(value);
+                            resetEstanteChain();
+                          }}
+                          isDisabled={!selectedUbicacionId}
+                        >
+                          <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
+                            <SelectInput
+                              placeholder={
+                                selectedUbicacionId
+                                  ? "Selecciona un estante"
+                                  : "Selecciona una ubicacion primero"
+                              }
+                              className="text-white"
+                            />
+                            <SelectIcon className="mr-3" as={ChevronDown} />
+                          </SelectTrigger>
+                          <SelectPortal>
+                            <SelectBackdrop />
+                            <SelectContent>
+                              <SelectDragIndicatorWrapper>
+                                <SelectDragIndicator />
+                              </SelectDragIndicatorWrapper>
+                              <SelectScrollView>
+                                {availableEstantes.length > 0 ? (
+                                  availableEstantes.map((estante) => (
+                                    <SelectItem
+                                      key={estante.id}
+                                      label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
+                                      value={String(estante.id)}
+                                    />
+                                  ))
+                                ) : (
+                                  <SelectItem
+                                    label="No hay estantes disponibles"
+                                    value=""
+                                    isDisabled
+                                  />
+                                )}
+                              </SelectScrollView>
+                            </SelectContent>
+                          </SelectPortal>
+                        </Select>
+                      )
+                    )}
+                    
+                    {!selectedUbicacionId && (
+                      <Box className="bg-secondary-600/50 border border-[#169500]/30 rounded-xl p-4">
+                        <Text className="text-gray-500 text-sm text-center">
+                          Selecciona una ubicación primero
+                        </Text>
+                      </Box>
+                    )}
                   </Box>
 
                   <Box>
