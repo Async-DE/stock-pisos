@@ -5,13 +5,28 @@ import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Center } from "@/components/ui/center";
-import { Input, InputField } from "@/components/ui/input";
+import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Button, ButtonText } from "@/components/ui/button";
 import { ActivityIndicator, Pressable, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, CalendarSearch, Search } from "lucide-react-native";
+import { ArrowLeft, CalendarSearch, Search, Calendar } from "lucide-react-native";
 import { request } from "@/constants/Request";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+
+type Variante = {
+  nombre: string;
+  codigo: string;
+  color: string;
+  medidas: string;
+};
+
+type CostoExtra = {
+  id: number;
+  venta_id: number;
+  motivo: string;
+  costo: number;
+  createdAt: string;
+};
 
 type Venta = {
   id: number;
@@ -21,10 +36,11 @@ type Venta = {
   fecha_venta: string;
   nombre_cliente: string;
   contacto_cliente: string;
-  precio_publico?: number;
-  precio_contratista?: number;
-  costo_compra?: number;
-  costosExtras?: Array<{ id: number; motivo: string; costo: number }>;
+  precio_publico: number;
+  precio_contratista: number;
+  costo_compra: number;
+  variante?: Variante;
+  costosExtras?: CostoExtra[];
 };
 
 type Errors = {
@@ -144,8 +160,41 @@ export default function BuscarVentas() {
 
       const response = await request("/stock/ventas/verRango", "POST", payload);
 
-      if (response.status === 200 && Array.isArray(response.data)) {
-        setVentas(response.data);
+      // La respuesta del servidor es: { message: "...", data: [...] }
+      const ventasData = response.data?.data || response.data;
+
+      if (response.status === 200 && Array.isArray(ventasData)) {
+        // Mapear la respuesta incluyendo todos los campos
+        const ventasMapeadas = ventasData.map((venta: any) => ({
+          id: venta.id,
+          variante_id: venta.variante_id,
+          cantidad: venta.cantidad,
+          total_venta: venta.total_venta || 0,
+          fecha_venta: venta.fecha_venta,
+          nombre_cliente: venta.nombre_cliente || "",
+          contacto_cliente: venta.contacto_cliente || "",
+          precio_publico: venta.precio_publico || 0,
+          precio_contratista: venta.precio_contratista || 0,
+          costo_compra: venta.costo_compra || 0,
+          variante: venta.variante
+            ? {
+                nombre: venta.variante.nombre || "",
+                codigo: venta.variante.codigo || "",
+                color: venta.variante.color || "",
+                medidas: venta.variante.medidas || "",
+              }
+            : undefined,
+          costosExtras: Array.isArray(venta.costosExtras)
+            ? venta.costosExtras.map((extra: any) => ({
+                id: extra.id,
+                venta_id: extra.venta_id,
+                motivo: extra.motivo || "",
+                costo: extra.costo || 0,
+                createdAt: extra.createdAt || "",
+              }))
+            : [],
+        }));
+        setVentas(ventasMapeadas);
       } else {
         setVentas([]);
       }
@@ -175,8 +224,41 @@ export default function BuscarVentas() {
         search: searchTerm.trim(),
       });
 
-      if (response.status === 200 && Array.isArray(response.data)) {
-        setVentas(response.data);
+      // La respuesta del servidor es: { message: "...", data: [...] }
+      const ventasData = response.data?.data || response.data;
+
+      if (response.status === 200 && Array.isArray(ventasData)) {
+        // Mapear la respuesta incluyendo todos los campos
+        const ventasMapeadas = ventasData.map((venta: any) => ({
+          id: venta.id,
+          variante_id: venta.variante_id,
+          cantidad: venta.cantidad,
+          total_venta: venta.total_venta || 0,
+          fecha_venta: venta.fecha_venta,
+          nombre_cliente: venta.nombre_cliente || "",
+          contacto_cliente: venta.contacto_cliente || "",
+          precio_publico: venta.precio_publico || 0,
+          precio_contratista: venta.precio_contratista || 0,
+          costo_compra: venta.costo_compra || 0,
+          variante: venta.variante
+            ? {
+                nombre: venta.variante.nombre || "",
+                codigo: venta.variante.codigo || "",
+                color: venta.variante.color || "",
+                medidas: venta.variante.medidas || "",
+              }
+            : undefined,
+          costosExtras: Array.isArray(venta.costosExtras)
+            ? venta.costosExtras.map((extra: any) => ({
+                id: extra.id,
+                venta_id: extra.venta_id,
+                motivo: extra.motivo || "",
+                costo: extra.costo || 0,
+                createdAt: extra.createdAt || "",
+              }))
+            : [],
+        }));
+        setVentas(ventasMapeadas);
       } else {
         setVentas([]);
       }
@@ -232,16 +314,30 @@ export default function BuscarVentas() {
                   <Text className="text-gray-400 text-sm mb-2">
                     Fecha inicio
                   </Text>
-                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
-                    <InputField
-                      placeholder="Selecciona la fecha"
-                      value={formatDateInput(startDateValue)}
-                      editable={false}
-                      showSoftInputOnFocus={false}
-                      onPressIn={openStartPicker}
-                      className="text-white"
-                    />
-                  </Input>
+                  <HStack space="sm" className="items-center">
+                    <Pressable
+                      onPress={openStartPicker}
+                      className="bg-secondary-600 border border-[#169500] rounded-xl p-3"
+                    >
+                      <HStack space="xs" className="items-center">
+                        <Calendar size={20} color="#13E000" strokeWidth={2} />
+                        <Text className="text-gray-200 text-xs">Calendario</Text>
+                      </HStack>
+                    </Pressable>
+                    {startDateValue ? (
+                      <Box className="flex-1 bg-secondary-600 border border-[#169500] rounded-xl p-3">
+                        <Text className="text-white font-semibold text-base">
+                          {formatDateInput(startDateValue)}
+                        </Text>
+                      </Box>
+                    ) : (
+                      <Box className="flex-1 bg-secondary-600 border border-[#169500] rounded-xl p-3">
+                        <Text className="text-gray-400 text-sm">
+                          Selecciona una fecha
+                        </Text>
+                      </Box>
+                    )}
+                  </HStack>
                   {errors.startDate ? (
                     <Text className="text-red-500 text-sm mt-2">
                       {errors.startDate}
@@ -251,16 +347,30 @@ export default function BuscarVentas() {
 
                 <Box>
                   <Text className="text-gray-400 text-sm mb-2">Fecha fin</Text>
-                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
-                    <InputField
-                      placeholder="Selecciona la fecha"
-                      value={formatDateInput(endDateValue)}
-                      editable={false}
-                      showSoftInputOnFocus={false}
-                      onPressIn={openEndPicker}
-                      className="text-white"
-                    />
-                  </Input>
+                  <HStack space="sm" className="items-center">
+                    <Pressable
+                      onPress={openEndPicker}
+                      className="bg-secondary-600 border border-[#169500] rounded-xl p-3"
+                    >
+                      <HStack space="xs" className="items-center">
+                        <Calendar size={20} color="#13E000" strokeWidth={2} />
+                        <Text className="text-gray-200 text-xs">Calendario</Text>
+                      </HStack>
+                    </Pressable>
+                    {endDateValue ? (
+                      <Box className="flex-1 bg-secondary-600 border border-[#169500] rounded-xl p-3">
+                        <Text className="text-white font-semibold text-base">
+                          {formatDateInput(endDateValue)}
+                        </Text>
+                      </Box>
+                    ) : (
+                      <Box className="flex-1 bg-secondary-600 border border-[#169500] rounded-xl p-3">
+                        <Text className="text-gray-400 text-sm">
+                          Selecciona una fecha
+                        </Text>
+                      </Box>
+                    )}
+                  </HStack>
                   {errors.endDate ? (
                     <Text className="text-red-500 text-sm mt-2">
                       {errors.endDate}
@@ -291,7 +401,7 @@ export default function BuscarVentas() {
                 >
                   <Search size={16} color="#000000" strokeWidth={2} />
                   <ButtonText className="text-black font-semibold">
-                    Buscar por fechas
+                    Buscar
                   </ButtonText>
                 </Button>
               </VStack>
@@ -301,14 +411,14 @@ export default function BuscarVentas() {
               <HStack space="sm" className="items-center mb-3">
                 <Search size={18} color="#13E000" strokeWidth={2} />
                 <Text className="text-white font-semibold text-lg">
-                  Busqueda por parametro
+                  Busqueda por Nombre / contacto cliente
                 </Text>
               </HStack>
 
               <VStack space="md">
                 <Box>
                   <Text className="text-gray-400 text-sm mb-2">
-                    Parametro de busqueda
+                    Nombre o contacto del cliente
                   </Text>
                   <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                     <InputField
@@ -334,7 +444,7 @@ export default function BuscarVentas() {
                 >
                   <Search size={16} color="#000000" strokeWidth={2} />
                   <ButtonText className="text-black font-semibold">
-                    Buscar por parametro
+                    Buscar
                   </ButtonText>
                 </Button>
               </VStack>
@@ -392,12 +502,55 @@ export default function BuscarVentas() {
                         Contacto: {venta.contacto_cliente}
                       </Text>
                       <Text className="text-gray-300 text-sm">
-                        Variante ID: {venta.variante_id}
-                      </Text>
-                      <Text className="text-gray-300 text-sm">
-                        Cantidad: {venta.cantidad}
+                        Cantidad: {venta.cantidad} unidades
                       </Text>
                     </VStack>
+
+                    {venta.variante && (
+                      <Box className="mt-3 bg-secondary-700/60 rounded-xl p-3">
+                        <Text className="text-gray-400 text-xs uppercase mb-2">
+                          Información de la Variante
+                        </Text>
+                        <VStack space="xs">
+                          <HStack
+                            space="sm"
+                            className="items-center justify-between"
+                          >
+                            <Text className="text-gray-300 text-sm">Nombre:</Text>
+                            <Text className="text-white text-sm font-semibold">
+                              {venta.variante.nombre}
+                            </Text>
+                          </HStack>
+                          <HStack
+                            space="sm"
+                            className="items-center justify-between"
+                          >
+                            <Text className="text-gray-300 text-sm">Código:</Text>
+                            <Text className="text-white text-sm font-semibold">
+                              {venta.variante.codigo}
+                            </Text>
+                          </HStack>
+                          <HStack
+                            space="sm"
+                            className="items-center justify-between"
+                          >
+                            <Text className="text-gray-300 text-sm">Color:</Text>
+                            <Text className="text-white text-sm font-semibold">
+                              {venta.variante.color}
+                            </Text>
+                          </HStack>
+                          <HStack
+                            space="sm"
+                            className="items-center justify-between"
+                          >
+                            <Text className="text-gray-300 text-sm">Medidas:</Text>
+                            <Text className="text-white text-sm font-semibold">
+                              {venta.variante.medidas}
+                            </Text>
+                          </HStack>
+                        </VStack>
+                      </Box>
+                    )}
 
                     <Box className="mt-3 bg-secondary-700/60 rounded-xl p-3">
                       <Text className="text-gray-400 text-xs uppercase mb-2">
@@ -436,26 +589,48 @@ export default function BuscarVentas() {
                       </HStack>
                     </Box>
 
-                    <Box className="mt-3">
+                    <Box className="mt-3 bg-secondary-700/60 rounded-xl p-3">
                       <Text className="text-gray-400 text-xs uppercase mb-2">
-                        Costos extras
+                        Costos Extras
                       </Text>
                       {venta.costosExtras && venta.costosExtras.length > 0 ? (
                         <VStack space="xs">
                           {venta.costosExtras.map((extra) => (
-                            <HStack
+                            <Box
                               key={extra.id}
+                              className="bg-secondary-800/50 rounded-lg p-2"
+                            >
+                              <HStack
+                                space="sm"
+                                className="items-center justify-between"
+                              >
+                                <Text className="text-gray-300 text-sm font-medium">
+                                  {extra.motivo}
+                                </Text>
+                                <Text className="text-[#13E000] text-sm font-bold">
+                                  {formatPrice(extra.costo)}
+                                </Text>
+                              </HStack>
+                            </Box>
+                          ))}
+                          <Box className="mt-2 pt-2 border-t border-gray-600">
+                            <HStack
                               space="sm"
                               className="items-center justify-between"
                             >
-                              <Text className="text-gray-300 text-sm">
-                                {extra.motivo}
-                              </Text>
                               <Text className="text-white text-sm font-semibold">
-                                {formatPrice(extra.costo)}
+                                Total Costos Extras:
+                              </Text>
+                              <Text className="text-[#169500] text-sm font-bold">
+                                {formatPrice(
+                                  venta.costosExtras.reduce(
+                                    (sum, extra) => sum + extra.costo,
+                                    0,
+                                  ),
+                                )}
                               </Text>
                             </HStack>
-                          ))}
+                          </Box>
                         </VStack>
                       ) : (
                         <Text className="text-gray-500 text-sm">

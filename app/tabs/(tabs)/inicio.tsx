@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Dimensions, RefreshControl, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { categoryIcons, type Product } from "../../../components/constants";
 import { request } from "@/constants/Request";
 import { SearchHeader } from "@/components/SearchHeader";
@@ -14,6 +15,8 @@ const { width: screenWidth } = Dimensions.get("window");
 type Subcategory = {
   id: number;
   name: string;
+  gananciaVentas: number;
+  valorStock: number;
 };
 
 type Category = {
@@ -42,41 +45,66 @@ export default function Inicio() {
 
   const allCategories = apiCategories;
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await request("/stock/categorias/ver", "GET");
 
-      if (response.status === 200 && Array.isArray(response.data)) {
-        // Mapear respuesta del backend al formato esperado por CategoriesGrid
-        const mapped: Category[] = response.data.map(
-          (cat: any, index: number) => {
-            const fallbackIcon =
-              categoryIcons[index % categoryIcons.length] ?? categoryIcons[0];
+      if (response.status === 200) {
+        // Manejar diferentes estructuras de respuesta
+        // Estructura 1: response.data.categorias
+        // Estructura 2: response.data.data (array directo)
+        let categoriasArray: any[] = [];
 
-            return {
-              id: cat.id,
-              name: cat.nombre,
-              icon: fallbackIcon,
-              subcategories: Array.isArray(cat.subcategorias)
-                ? cat.subcategorias.map((sub: any) => ({
-                    id: sub.id,
-                    name: sub.nombre,
-                  }))
-                : [],
-            };
-          },
-        );
+        if (Array.isArray(response.data?.categorias)) {
+          categoriasArray = response.data.categorias;
+        } else if (Array.isArray(response.data?.data)) {
+          categoriasArray = response.data.data;
+        } else if (Array.isArray(response.data)) {
+          categoriasArray = response.data;
+        }
 
-        setApiCategories(mapped);
+        if (categoriasArray.length > 0) {
+          // Mapear respuesta del backend al formato esperado por CategoriesGrid
+          const mapped: Category[] = categoriasArray.map(
+            (cat: any, index: number) => {
+              const fallbackIcon =
+                categoryIcons[index % categoryIcons.length] ?? categoryIcons[0];
+
+              return {
+                id: cat.id,
+                name: cat.nombre,
+                icon: fallbackIcon,
+                subcategories: Array.isArray(cat.subcategorias)
+                  ? cat.subcategorias.map((sub: any) => ({
+                      id: sub.id,
+                      name: sub.nombre,
+                      gananciaVentas: sub.ganancias_ventas || 0,
+                      valorStock: sub.valor_stock || 0,
+                    }))
+                  : [],
+              };
+            },
+          );
+
+          setApiCategories(mapped);
+        } else {
+          console.warn("No se encontraron categorías en la respuesta:", response);
+        }
+      } else {
+        console.warn("Respuesta inesperada al cargar categorías:", response);
       }
     } catch (error) {
       console.error("Error cargando categorías:", error);
+      // Mantener las categorías existentes en caso de error
     }
-  };
-
-  useEffect(() => {
-    fetchCategories();
   }, []);
+
+  // Ejecutar siempre que la pantalla reciba foco (al abrir la app o navegar a esta pantalla)
+  useFocusEffect(
+    useCallback(() => {
+      fetchCategories();
+    }, [fetchCategories])
+  );
 
   // Fetch products when subcategory is selected
   const fetchProductsBySubcategory = async (subcategoryId: number | null) => {
@@ -92,13 +120,16 @@ export default function Inicio() {
         "GET",
       );
 
-      if (response.status === 200 && Array.isArray(response.data)) {
+      // La respuesta del servidor es: { message: "...", data: [...] }
+      const productosData = response.data?.data || response.data;
+
+      if (response.status === 200 && Array.isArray(productosData)) {
         // Mapear respuesta del API al formato Product
         // Cada producto del API puede tener múltiples variantes
         // Vamos a crear un Product por cada variante
         const mappedProducts: Product[] = [];
 
-        response.data.forEach((producto: any) => {
+        productosData.forEach((producto: any) => {
           if (
             Array.isArray(producto.variantes) &&
             producto.variantes.length > 0
@@ -247,36 +278,36 @@ export default function Inicio() {
         showsVerticalScrollIndicator={false}
       >
         <Box className="flex-1 px-3">
-        {/* Header con búsqueda */}
-        <SearchHeader
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedCategory={selectedCategory}
-          selectedCategoryName={selectedCategoryData?.name}
-          onBack={handleBack}
-        />
+          {/* Header con búsqueda */}
+          <SearchHeader
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedCategory={selectedCategory}
+            selectedCategoryName={selectedCategoryData?.name}
+            onBack={handleBack}
+          />
 
-        {/* Contenido: Categorías o Productos */}
-        {selectedCategory ? (
-          <ProductsView
-            products={products}
-            onProductPress={handleProductPress}
-            onCreatePress={handleCreateProduct}
-            isLoading={loadingProducts}
-            categoryName={
-              selectedSubcategory
-                ? `${selectedCategoryData?.name || ""} / ${selectedSubcategory}`
-                : selectedCategoryData?.name || ""
-            }
-            screenWidth={screenWidth}
-          />
-        ) : (
-          <CategoriesGrid
-            categories={filteredCategories}
-            onSubcategoryPress={handleSubcategoryPress}
-          />
-        )}
-      </Box>
+          {/* Contenido: Categorías o Productos */}
+          {selectedCategory ? (
+            <ProductsView
+              products={products}
+              onProductPress={handleProductPress}
+              onCreatePress={handleCreateProduct}
+              isLoading={loadingProducts}
+              categoryName={
+                selectedSubcategory
+                  ? `${selectedCategoryData?.name || ""} / ${selectedSubcategory}`
+                  : selectedCategoryData?.name || ""
+              }
+              screenWidth={screenWidth}
+            />
+          ) : (
+            <CategoriesGrid
+              categories={filteredCategories}
+              onSubcategoryPress={handleSubcategoryPress}
+            />
+          )}
+        </Box>
       </ScrollView>
     </ImageBackground>
   );

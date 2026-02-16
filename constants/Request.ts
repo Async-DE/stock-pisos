@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Alert } from "react-native";
-import { toast } from "sonner";
+import { showError } from "@/utils/notifications";
 
 export const baseUrl = `${process.env.EXPO_PUBLIC_URL}`;
 
@@ -34,21 +33,13 @@ const data = await response.json();
 // }
 
     if (response.status === 200) {
-      
-        const successMessage = data.message || "Operación realizada exitosamente";
-        
-        toast.success(successMessage, {
-        description: "Operación realizada exitosamente",
-    });
-  }
-else if (response.status >= 400) {
-        
-        const errorMessage = data.message || "Ha ocurrido un error en la solicitud";
-        
-    toast.error(errorMessage, {
-      description: "Error del servidor",
-    });
-  }
+      // No mostrar toast para operaciones exitosas automáticas
+      // Solo se mostrará si se llama explícitamente desde el componente
+    }
+    else if (response.status >= 400) {
+      const errorMessage = data.message || "Ha ocurrido un error en la solicitud";
+      showError(errorMessage);
+    }
 
   return { status: response.status, data };
 };
@@ -79,21 +70,13 @@ const uploadRequest = async (url: string, formData: FormData) => {
 // }
 
     if (response.status === 200 || response.status === 201) {
-      
-        const successMessage = data.message || "Operación realizada exitosamente";
-        
-        toast.success(successMessage, {
-        description: "Operación realizada exitosamente",
-    });
-  }
+      // No mostrar toast para operaciones exitosas automáticas
+      // Solo se mostrará si se llama explícitamente desde el componente
+    }
     else if (response.status >= 400) {
-        
-        const errorMessage = data.message || "Ha ocurrido un error en la solicitud";
-        
-    toast.error(errorMessage, {
-      description: "Error del servidor",
-    });
-  }
+      const errorMessage = data.message || "Ha ocurrido un error en la solicitud";
+      showError(errorMessage);
+    }
 
   return { status: response.status, data };
 };

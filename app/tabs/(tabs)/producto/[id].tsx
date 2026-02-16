@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { ProductDetailView } from "@/components/ProductDetailView";
 import { Box } from "@/components/ui/box";
 import { Center } from "@/components/ui/center";
@@ -17,34 +18,49 @@ export default function ProductDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      if (!productId || isNaN(productId)) {
-        setError("ID inválido");
-        setLoading(false);
-        return;
-      }
+  const fetchProduct = useCallback(async (forceRefresh: boolean = false) => {
+    if (!productId || isNaN(productId)) {
+      setError("ID inválido");
+      setLoading(false);
+      return;
+    }
 
-      setLoading(true);
-      setError(null);
+    setLoading(true);
+    setError(null);
 
-      try {
-        const response = await request(
-          `/stock/productos/ver/${productId}`,
-          "GET",
-        );
+    try {
+      // Agregar timestamp para evitar caché del navegador
+      const timestamp = forceRefresh ? Date.now() : 0;
+      const url = timestamp 
+        ? `/stock/productos/ver/${productId}?_t=${timestamp}`
+        : `/stock/productos/ver/${productId}`;
+      
+      console.log(`[${new Date().toLocaleTimeString()}] Consultando producto: ${productId}`);
+      
+      const response = await request(url, "GET");
 
-        if (response.status === 200 && response.data) {
-          const productoData = response.data;
+      console.log(`[${new Date().toLocaleTimeString()}] Respuesta recibida para producto ${productId}`);
 
-          // Mapear respuesta del API al formato Product
-          const mappedProduct: Product = {
-            id: productoData.id,
-            name: productoData.subcategoria?.nombre || `Producto ${productoData.id}`,
-            price: 0, // Se establecerá desde la variante seleccionada
-            description: `${productoData.subcategoria?.categoria?.nombre || ""} / ${productoData.subcategoria?.nombre || ""}`.trim(),
-            variants: Array.isArray(productoData.variantes)
-              ? productoData.variantes.map((variante: any) => ({
+      // La respuesta del servidor es: { message: "...", data: {...} }
+      const productoData = response.data?.data || response.data;
+
+      if (response.status === 200 && productoData) {
+
+        // Mapear respuesta del API al formato Product
+        const mappedProduct: Product = {
+          id: productoData.id,
+          productId: productoData.id,
+          name: productoData.subcategoria?.nombre || `Producto ${productoData.id}`,
+          price: 0, // Se establecerá desde la variante seleccionada
+          description: `${productoData.subcategoria?.categoria?.nombre || ""} / ${productoData.subcategoria?.nombre || ""}`.trim(),
+          variants: Array.isArray(productoData.variantes)
+            ? productoData.variantes.map((variante: any) => {
+                // Extraer datos anidados de ubicación
+                const ubicacion = variante.niveles?.estantes?.ubicacion;
+                const estante = variante.niveles?.estantes;
+                const nivel = variante.niveles;
+
+                return {
                   id: variante.id,
                   name: variante.nombre || "",
                   price: variante.precio_publico || 0,
@@ -59,34 +75,67 @@ export default function ProductDetailScreen() {
                     precio_contratista: variante.precio_contratista?.toString() || "",
                     costo_compra: variante.costo_compra?.toString() || "",
                     cantidad: variante.cantidad?.toString() || "",
-                    ubicacion_id: variante.ubicacion_id?.toString() || "",
-                    estante_id: variante.estante_id?.toString() || "",
+                    ganacia_publico: variante.ganacia_publico?.toString() || "0",
+                    ganacia_contratista: variante.ganacia_contratista?.toString() || "0",
+                    ganancias_stock: variante.ganancias_stock?.toString() || "0",
+                    valor_stock: variante.valor_stock?.toString() || "0",
+                    // Datos de ubicación anidados
+                    ubicacion_id: ubicacion?.id?.toString() || "",
+                    ubicacion_nombre: ubicacion?.nombre || "",
+                    ubicacion_calle: ubicacion?.calle || "",
+                    ubicacion_cp: ubicacion?.cp || "",
+                    ubicacion_colonia: ubicacion?.colonia || "",
+                    ubicacion_celular: ubicacion?.celular || "",
+                    // Datos de estante
+                    estante_id: estante?.id?.toString() || "",
+                    estante_seccion: estante?.Seccion || "",
+                    estante_pasillo: estante?.pasillo?.toString() || "",
+                    // Datos de nivel
+                    nivel_id: nivel?.id?.toString() || "",
+                    nivel_numero: nivel?.niveles?.toString() || "",
                   },
-                }))
-              : [],
-          };
+                };
+              })
+            : [],
+        };
 
-          // Si hay variantes, establecer la primera como predeterminada
-          if (mappedProduct.variants && mappedProduct.variants.length > 0) {
-            const firstVariant = mappedProduct.variants[0];
-            mappedProduct.price = firstVariant.price;
-            mappedProduct.image = firstVariant.attributes?.foto;
-          }
-
-          setProduct(mappedProduct);
-        } else {
-          setError("Producto no encontrado");
+        // Si hay variantes, establecer la primera como predeterminada
+        if (mappedProduct.variants && mappedProduct.variants.length > 0) {
+          const firstVariant = mappedProduct.variants[0];
+          mappedProduct.price = firstVariant.price;
+          mappedProduct.image = firstVariant.attributes?.foto;
         }
-      } catch (err) {
-        console.error("Error cargando producto:", err);
-        setError("Error al cargar el producto");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchProduct();
+        console.log(`[${new Date().toLocaleTimeString()}] Producto mapeado con ${mappedProduct.variants?.length || 0} variantes`);
+        setProduct(mappedProduct);
+      } else {
+        setError("Producto no encontrado");
+      }
+    } catch (err) {
+      console.error(`[${new Date().toLocaleTimeString()}] Error cargando producto:`, err);
+      setError("Error al cargar el producto");
+    } finally {
+      setLoading(false);
+    }
   }, [productId]);
+
+  useEffect(() => {
+    fetchProduct(false);
+  }, [fetchProduct]);
+
+  // Consultar cuando la pantalla se enfoca (usuario vuelve a esta pantalla)
+  useFocusEffect(
+    useCallback(() => {
+      if (productId && !isNaN(productId)) {
+        console.log(`[${new Date().toLocaleTimeString()}] Pantalla enfocada, consultando producto en tiempo real...`);
+        // Pequeño delay para asegurar que la pantalla esté lista
+        const timer = setTimeout(() => {
+          fetchProduct(true);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    }, [productId, fetchProduct])
+  );
 
   if (!productId || isNaN(productId)) {
     return (

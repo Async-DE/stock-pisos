@@ -6,6 +6,7 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { Slot } from "expo-router";
+import { UpdateChecker } from "@/components/UpdateChecker";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -34,6 +35,7 @@ function RootLayoutNav() {
   return (
     <GluestackUIProvider mode="dark">
       <ThemeProvider value={DarkTheme}>
+        <UpdateChecker />
         <Slot />
       </ThemeProvider>
     </GluestackUIProvider>

@@ -26,7 +26,7 @@ import { ArrowLeft, Camera, ChevronDown, ImagePlus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/utils/notifications";
 
 type Nivel = {
   id: number;
@@ -82,12 +82,37 @@ export default function NuevaVariante() {
       try {
         const response = await request("/stock/ubicaciones/ver", "GET");
 
-        if (response.status === 200 && Array.isArray(response.data)) {
-          setUbicaciones(response.data);
+        // La respuesta del servidor es: { message: "...", data: [...] }
+        const ubicacionesData = response.data?.data || response.data;
+
+        if (response.status === 200 && Array.isArray(ubicacionesData)) {
+          console.log(`[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`, ubicacionesData.length);
+          // Validar y mapear la estructura anidada
+          const ubicacionesValidadas = ubicacionesData.map((ubicacion: any) => ({
+            id: ubicacion.id,
+            nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+            estantes: Array.isArray(ubicacion.estantes)
+              ? ubicacion.estantes.map((estante: any) => ({
+                  id: estante.id,
+                  Seccion: estante.Seccion || "N/A",
+                  pasillo: estante.pasillo || 0,
+                  niveles: Array.isArray(estante.niveles)
+                    ? estante.niveles.map((nivel: any) => ({
+                        id: nivel.id,
+                        niveles: nivel.niveles || 0,
+                      }))
+                    : [],
+                }))
+              : [],
+          }));
+          setUbicaciones(ubicacionesValidadas);
+        } else {
+          console.warn("Respuesta no válida del endpoint de ubicaciones");
+          showError("Formato de respuesta inválido");
         }
       } catch (error) {
-        console.error("Error cargando ubicaciones:", error);
-        toast.error("No se pudieron cargar las ubicaciones");
+        console.error(`[${new Date().toLocaleTimeString()}] Error cargando ubicaciones:`, error);
+        showError("No se pudieron cargar las ubicaciones");
       } finally {
         setLoadingData(false);
       }
@@ -141,7 +166,7 @@ export default function NuevaVariante() {
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissions.granted) {
-      toast.error("Permisos requeridos para seleccionar una foto");
+      showError("Permisos requeridos para seleccionar una foto");
       return;
     }
 
@@ -176,7 +201,7 @@ export default function NuevaVariante() {
 
   const handleSubmit = async () => {
     if (!isFormValid || isSubmitting) {
-      toast.error("Completa todos los campos para continuar");
+      showError("Completa todos los campos para continuar");
       return;
     }
 
@@ -217,17 +242,15 @@ export default function NuevaVariante() {
       );
 
       if (response.ok) {
-        toast.success("Variante creada correctamente");
+        showSuccess("Variante creada correctamente");
         router.back();
       } else {
         const errorText = await response.text();
-        toast.error("No se pudo crear la variante", {
-          description: errorText || "Verifica los datos e intenta de nuevo",
-        });
+        showError(errorText || "No se pudo crear la variante. Verifica los datos e intenta de nuevo");
       }
     } catch (error) {
       console.error("Error creando variante:", error);
-      toast.error("Error al crear la variante");
+      showError("Error al crear la variante");
     } finally {
       setIsSubmitting(false);
     }
@@ -356,13 +379,21 @@ export default function NuevaVariante() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableEstantes.map((estante) => (
+                            {availableEstantes.length > 0 ? (
+                              availableEstantes.map((estante) => (
+                                <SelectItem
+                                  key={estante.id}
+                                  label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
+                                  value={String(estante.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={estante.id}
-                                label={`Seccion ${estante.Seccion} • Pasillo ${estante.pasillo}`}
-                                value={String(estante.id)}
+                                label="No hay estantes disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>
@@ -394,13 +425,21 @@ export default function NuevaVariante() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableNiveles.map((nivel) => (
+                            {availableNiveles.length > 0 ? (
+                              availableNiveles.map((nivel) => (
+                                <SelectItem
+                                  key={nivel.id}
+                                  label={`Nivel ${nivel.niveles}`}
+                                  value={String(nivel.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={nivel.id}
-                                label={`Nivel ${nivel.niveles}`}
-                                value={String(nivel.id)}
+                                label="No hay niveles disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>

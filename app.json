@@ -1,0 +1,69 @@
+{
+  "expo": {
+    "name": "Pisos Stock",
+    "slug": "pisos-stock",
+    "version": "1.0.3",
+    "orientation": "portrait",
+    "icon": "./assets/images/Pisos-Stock.png",
+    "scheme": "starterkitexpo",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/Pisos-Stock.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/Pisos-Stock.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.pisos.stock",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/Pisos-Stock.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-web-browser",
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "La aplicación necesita acceso a tus fotos para agregar imágenes de productos.",
+          "cameraPermission": "La aplicación necesita acceso a tu cámara para tomar fotos de productos."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "La aplicación necesita acceso a tu cámara para escanear códigos de barras."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "updates": {
+      "url": "https://u.expo.dev/279eb238-0660-4b1a-a1d0-6222b8e3fc17",
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD"
+    },
+    "runtimeVersion": "1.0.3",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "279eb238-0660-4b1a-a1d0-6222b8e3fc17"
+      }
+    }
+  }
+}

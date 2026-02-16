@@ -22,11 +22,11 @@ import {
 } from "@/components/ui/select";
 import { ActivityIndicator, Image, Pressable, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Camera, ChevronDown, ImagePlus } from "lucide-react-native";
+import { ArrowLeft, Camera, ChevronDown, ImagePlus, Plus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/utils/notifications";
 
 type Subcategory = {
   id: number;
@@ -86,6 +86,14 @@ export default function NuevoProducto() {
   const [costoCompra, setCostoCompra] = useState("");
   const [image, setImage] = useState<SelectedImage | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formResetKey, setFormResetKey] = useState(0);
+  
+  // Estados para crear estante
+  const [showCreateEstante, setShowCreateEstante] = useState(false);
+  const [pasillo, setPasillo] = useState("");
+  const [seccion, setSeccion] = useState("");
+  const [niveles, setNiveles] = useState("");
+  const [isCreatingEstante, setIsCreatingEstante] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,22 +104,65 @@ export default function NuevoProducto() {
           request("/stock/ubicaciones/ver", "GET"),
         ]);
 
-        if (
-          categoriesResponse.status === 200 &&
-          Array.isArray(categoriesResponse.data)
-        ) {
-          setCategories(categoriesResponse.data);
+        // Procesar categorías: response.data tiene { message, data: [...] }
+        if (categoriesResponse.status === 200) {
+          // La respuesta del servidor es: { message: "...", data: [...] }
+          const categoriasData = categoriesResponse.data?.data || categoriesResponse.data;
+          
+          if (Array.isArray(categoriasData)) {
+            // Mapear la estructura de categorías
+            const categoriasMapeadas = categoriasData.map((cat: any) => ({
+              id: cat.id,
+              nombre: cat.nombre || `Categoría ${cat.id}`,
+              subcategorias: Array.isArray(cat.subcategorias)
+                ? cat.subcategorias.map((sub: any) => ({
+                    id: sub.id,
+                    nombre: sub.nombre || `Subcategoría ${sub.id}`,
+                  }))
+                : [],
+            }));
+            
+            console.log(`[${new Date().toLocaleTimeString()}] Categorías cargadas:`, categoriasMapeadas.length);
+            setCategories(categoriasMapeadas);
+          } else {
+            console.warn("Formato de categorías no válido:", categoriasData);
+          }
         }
 
-        if (
-          ubicacionesResponse.status === 200 &&
-          Array.isArray(ubicacionesResponse.data)
-        ) {
-          setUbicaciones(ubicacionesResponse.data);
+        // Procesar ubicaciones: response.data tiene { message, data: [...] }
+        if (ubicacionesResponse.status === 200) {
+          // La respuesta del servidor es: { message: "...", data: [...] }
+          const ubicacionesData = ubicacionesResponse.data?.data || ubicacionesResponse.data;
+          
+          if (Array.isArray(ubicacionesData)) {
+            // Validar y mapear la estructura anidada de ubicaciones
+            const ubicacionesMapeadas = ubicacionesData.map((ubicacion: any) => ({
+              id: ubicacion.id,
+              nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+              estantes: Array.isArray(ubicacion.estantes)
+                ? ubicacion.estantes.map((estante: any) => ({
+                    id: estante.id,
+                    Seccion: estante.Seccion || "N/A",
+                    pasillo: estante.pasillo || 0,
+                    niveles: Array.isArray(estante.niveles)
+                      ? estante.niveles.map((nivel: any) => ({
+                          id: nivel.id,
+                          niveles: nivel.niveles || 0,
+                        }))
+                      : [],
+                  }))
+                : [],
+            }));
+            
+            console.log(`[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`, ubicacionesMapeadas.length);
+            setUbicaciones(ubicacionesMapeadas);
+          } else {
+            console.warn("Formato de ubicaciones no válido:", ubicacionesData);
+          }
         }
       } catch (error) {
-        console.error("Error cargando datos del formulario:", error);
-        toast.error("No se pudieron cargar los datos iniciales");
+        console.error(`[${new Date().toLocaleTimeString()}] Error cargando datos del formulario:`, error);
+        showError("No se pudieron cargar los datos iniciales");
       } finally {
         setLoadingData(false);
       }
@@ -149,10 +200,117 @@ export default function NuevoProducto() {
   const resetUbicacionChain = () => {
     setSelectedEstanteId("");
     setSelectedNivelId("");
+    setShowCreateEstante(false);
+    setPasillo("");
+    setSeccion("");
+    setNiveles("");
   };
 
   const resetEstanteChain = () => {
     setSelectedNivelId("");
+  };
+
+  const reloadUbicaciones = async () => {
+    try {
+      const ubicacionesResponse = await request("/stock/ubicaciones/ver", "GET");
+      
+      if (ubicacionesResponse.status === 200) {
+        // La respuesta del servidor es: { message: "...", data: [...] }
+        const ubicacionesData = ubicacionesResponse.data?.data || ubicacionesResponse.data;
+        
+        if (Array.isArray(ubicacionesData)) {
+          const ubicacionesMapeadas = ubicacionesData.map((ubicacion: any) => ({
+            id: ubicacion.id,
+            nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+            estantes: Array.isArray(ubicacion.estantes)
+              ? ubicacion.estantes.map((estante: any) => ({
+                  id: estante.id,
+                  Seccion: estante.Seccion || "N/A",
+                  pasillo: estante.pasillo || 0,
+                  niveles: Array.isArray(estante.niveles)
+                    ? estante.niveles.map((nivel: any) => ({
+                        id: nivel.id,
+                        niveles: nivel.niveles || 0,
+                      }))
+                    : [],
+                }))
+              : [],
+          }));
+          
+          setUbicaciones(ubicacionesMapeadas);
+        }
+      }
+    } catch (error) {
+      console.error("Error recargando ubicaciones:", error);
+    }
+  };
+
+  const handleCreateEstante = async () => {
+    if (!selectedUbicacionId || !pasillo.trim() || !seccion.trim() || !niveles.trim()) {
+      showError("Completa todos los campos para crear el estante");
+      return;
+    }
+
+    const pasilloNum = parseInt(pasillo);
+    const nivelesNum = parseInt(niveles);
+
+    if (isNaN(pasilloNum) || isNaN(nivelesNum) || pasilloNum <= 0 || nivelesNum <= 0) {
+      showError("El pasillo y niveles deben ser números válidos mayores a 0");
+      return;
+    }
+
+    setIsCreatingEstante(true);
+    try {
+      const response = await request("/stock/estantes/crear", "POST", {
+        pasillo: pasilloNum,
+        seccion: seccion.trim().toUpperCase(),
+        niveles: nivelesNum,
+        ubicacionId: parseInt(selectedUbicacionId),
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        showSuccess("Estante creado correctamente");
+        // Limpiar formulario de creación
+        setPasillo("");
+        setSeccion("");
+        setNiveles("");
+        setShowCreateEstante(false);
+        // Recargar ubicaciones para mostrar el nuevo estante
+        await reloadUbicaciones();
+      } else {
+        showError("No se pudo crear el estante");
+      }
+    } catch (error) {
+      console.error("Error creando estante:", error);
+      showError("Error al crear el estante");
+    } finally {
+      setIsCreatingEstante(false);
+    }
+  };
+
+  const clearForm = () => {
+    setSelectedCategoryId("");
+    setSelectedSubcategoryId("");
+    setSelectedUbicacionId("");
+    setSelectedEstanteId("");
+    setSelectedNivelId("");
+    setNombre("");
+    setCodigo("");
+    setColor("");
+    setDescripcion("");
+    setCantidad("");
+    setMedidas("");
+    setPrecioPublico("");
+    setPrecioContratista("");
+    setCostoCompra("");
+    setImage(null);
+    // Incrementar la key para forzar re-render de todos los selects
+    setFormResetKey((prev) => prev + 1);
+  };
+
+  const handleBack = () => {
+    clearForm();
+    router.back();
   };
 
   const isFormValid =
@@ -176,7 +334,7 @@ export default function NuevoProducto() {
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissions.granted) {
-      toast.error("Permisos requeridos para seleccionar una foto");
+      showError("Permisos requeridos para seleccionar una foto");
       return;
     }
 
@@ -211,7 +369,7 @@ export default function NuevoProducto() {
 
   const handleSubmit = async () => {
     if (!isFormValid || isSubmitting) {
-      toast.error("Completa todos los campos para continuar");
+      showError("Completa todos los campos para continuar");
       return;
     }
 
@@ -249,17 +407,16 @@ export default function NuevoProducto() {
       });
 
       if (response.ok) {
-        toast.success("Producto creado correctamente");
+        showSuccess("Producto creado correctamente");
+        clearForm();
         router.back();
       } else {
         const errorText = await response.text();
-        toast.error("No se pudo crear el producto", {
-          description: errorText || "Verifica los datos e intenta de nuevo",
-        });
+        showError(errorText || "No se pudo crear el producto. Verifica los datos e intenta de nuevo");
       }
     } catch (error) {
       console.error("Error creando producto:", error);
-      toast.error("Error al crear el producto");
+      showError("Error al crear el producto");
     } finally {
       setIsSubmitting(false);
     }
@@ -276,7 +433,7 @@ export default function NuevoProducto() {
         showsVerticalScrollIndicator={false}
       >
         <Box className="px-4 pt-6 mt-8">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={handleBack}>
             <HStack space="sm" className="items-center">
               <ArrowLeft size={22} color="#13E000" strokeWidth={2} />
               <Text className="text-[#169500] text-base font-semibold">
@@ -313,6 +470,7 @@ export default function NuevoProducto() {
                       Categoría
                     </Text>
                     <Select
+                      key={`category-${formResetKey}`}
                       selectedValue={selectedCategoryId}
                       onValueChange={(value) => {
                         setSelectedCategoryId(value);
@@ -351,6 +509,7 @@ export default function NuevoProducto() {
                       Subcategoría
                     </Text>
                     <Select
+                      key={`subcategory-${formResetKey}-${selectedCategoryId || "no-category"}`}
                       selectedValue={selectedSubcategoryId}
                       onValueChange={setSelectedSubcategoryId}
                       isDisabled={!selectedCategoryId}
@@ -373,13 +532,21 @@ export default function NuevoProducto() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableSubcategories.map((subcategory) => (
+                            {availableSubcategories.length > 0 ? (
+                              availableSubcategories.map((subcategory) => (
+                                <SelectItem
+                                  key={subcategory.id}
+                                  label={subcategory.nombre}
+                                  value={String(subcategory.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={subcategory.id}
-                                label={subcategory.nombre}
-                                value={String(subcategory.id)}
+                                label="No hay subcategorías disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>
@@ -398,6 +565,7 @@ export default function NuevoProducto() {
                       Ubicación
                     </Text>
                     <Select
+                      key={`ubicacion-${formResetKey}`}
                       selectedValue={selectedUbicacionId}
                       onValueChange={(value) => {
                         setSelectedUbicacionId(value);
@@ -432,49 +600,151 @@ export default function NuevoProducto() {
                   </Box>
 
                   <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Estante</Text>
-                    <Select
-                      selectedValue={selectedEstanteId}
-                      onValueChange={(value) => {
-                        setSelectedEstanteId(value);
-                        resetEstanteChain();
-                      }}
-                      isDisabled={!selectedUbicacionId}
-                    >
-                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
-                        <SelectInput
-                          placeholder={
-                            selectedUbicacionId
-                              ? "Selecciona un estante"
-                              : "Selecciona una ubicación primero"
-                          }
-                          className="text-white"
-                        />
-                        <SelectIcon className="mr-3" as={ChevronDown} />
-                      </SelectTrigger>
-                      <SelectPortal>
-                        <SelectBackdrop />
-                        <SelectContent>
-                          <SelectDragIndicatorWrapper>
-                            <SelectDragIndicator />
-                          </SelectDragIndicatorWrapper>
-                          <SelectScrollView>
-                            {availableEstantes.map((estante) => (
-                              <SelectItem
-                                key={estante.id}
-                                label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
-                                value={String(estante.id)}
-                              />
-                            ))}
-                          </SelectScrollView>
-                        </SelectContent>
-                      </SelectPortal>
-                    </Select>
+                    <HStack className="items-center justify-between mb-2">
+                      <Text className="text-gray-400 text-sm">Estante</Text>
+                      {selectedUbicacionId && availableEstantes.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-[#169500]"
+                          onPress={() => setShowCreateEstante(!showCreateEstante)}
+                        >
+                          <ButtonIcon as={Plus} className="text-[#169500]" />
+                          <ButtonText className="text-[#169500] text-xs">
+                            {showCreateEstante ? "Seleccionar" : "Crear"}
+                          </ButtonText>
+                        </Button>
+                      )}
+                    </HStack>
+                    
+                    {selectedUbicacionId && (
+                      availableEstantes.length === 0 || showCreateEstante ? (
+                        // Vista para crear estante
+                        <Box className="bg-secondary-600/50 border border-[#169500]/50 rounded-xl p-4">
+                          <Text className="text-white font-semibold text-sm mb-3">
+                            Crear nuevo estante
+                          </Text>
+                          <VStack space="md">
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">Pasillo</Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: 1"
+                                  keyboardType="numeric"
+                                  value={pasillo}
+                                  onChangeText={setPasillo}
+                                  className="text-white"
+                                />
+                              </Input>
+                            </Box>
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">Sección</Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: A"
+                                  value={seccion}
+                                  onChangeText={setSeccion}
+                                  className="text-white"
+                                  maxLength={1}
+                                />
+                              </Input>
+                            </Box>
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">Niveles</Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: 4"
+                                  keyboardType="numeric"
+                                  value={niveles}
+                                  onChangeText={setNiveles}
+                                  className="text-white"
+                                />
+                              </Input>
+                            </Box>
+                            <Button
+                              size="sm"
+                              action="primary"
+                              className="bg-[#13E000] rounded-lg mt-2"
+                              onPress={handleCreateEstante}
+                              isDisabled={isCreatingEstante || !pasillo.trim() || !seccion.trim() || !niveles.trim()}
+                            >
+                              <ButtonText className="text-black font-semibold text-sm">
+                                {isCreatingEstante ? "Creando..." : "Crear estante"}
+                              </ButtonText>
+                            </Button>
+                            {availableEstantes.length > 0 && (
+                              <Pressable onPress={() => setShowCreateEstante(false)}>
+                                <Text className="text-gray-400 text-xs text-center mt-2">
+                                  Cancelar
+                                </Text>
+                              </Pressable>
+                            )}
+                          </VStack>
+                        </Box>
+                      ) : (
+                        // Vista para seleccionar estante
+                        <Select
+                          key={`estante-${formResetKey}-${selectedUbicacionId || "no-ubicacion"}`}
+                          selectedValue={selectedEstanteId}
+                          onValueChange={(value) => {
+                            setSelectedEstanteId(value);
+                            resetEstanteChain();
+                          }}
+                          isDisabled={!selectedUbicacionId}
+                        >
+                          <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
+                            <SelectInput
+                              placeholder={
+                                selectedUbicacionId
+                                  ? "Selecciona un estante"
+                                  : "Selecciona una ubicación primero"
+                              }
+                              className="text-white"
+                            />
+                            <SelectIcon className="mr-3" as={ChevronDown} />
+                          </SelectTrigger>
+                          <SelectPortal>
+                            <SelectBackdrop />
+                            <SelectContent>
+                              <SelectDragIndicatorWrapper>
+                                <SelectDragIndicator />
+                              </SelectDragIndicatorWrapper>
+                              <SelectScrollView>
+                                {availableEstantes.length > 0 ? (
+                                  availableEstantes.map((estante) => (
+                                    <SelectItem
+                                      key={estante.id}
+                                      label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
+                                      value={String(estante.id)}
+                                    />
+                                  ))
+                                ) : (
+                                  <SelectItem
+                                    label="No hay estantes disponibles"
+                                    value=""
+                                    isDisabled
+                                  />
+                                )}
+                              </SelectScrollView>
+                            </SelectContent>
+                          </SelectPortal>
+                        </Select>
+                      )
+                    )}
+                    
+                    {!selectedUbicacionId && (
+                      <Box className="bg-secondary-600/50 border border-[#169500]/30 rounded-xl p-4">
+                        <Text className="text-gray-500 text-sm text-center">
+                          Selecciona una ubicación primero
+                        </Text>
+                      </Box>
+                    )}
                   </Box>
 
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Nivel</Text>
                     <Select
+                      key={`nivel-${formResetKey}-${selectedEstanteId || "no-estante"}`}
                       selectedValue={selectedNivelId}
                       onValueChange={setSelectedNivelId}
                       isDisabled={!selectedEstanteId}
@@ -497,13 +767,21 @@ export default function NuevoProducto() {
                             <SelectDragIndicator />
                           </SelectDragIndicatorWrapper>
                           <SelectScrollView>
-                            {availableNiveles.map((nivel) => (
+                            {availableNiveles.length > 0 ? (
+                              availableNiveles.map((nivel) => (
+                                <SelectItem
+                                  key={nivel.id}
+                                  label={`Nivel ${nivel.niveles}`}
+                                  value={String(nivel.id)}
+                                />
+                              ))
+                            ) : (
                               <SelectItem
-                                key={nivel.id}
-                                label={`Nivel ${nivel.niveles}`}
-                                value={String(nivel.id)}
+                                label="No hay niveles disponibles"
+                                value=""
+                                isDisabled
                               />
-                            ))}
+                            )}
                           </SelectScrollView>
                         </SelectContent>
                       </SelectPortal>
