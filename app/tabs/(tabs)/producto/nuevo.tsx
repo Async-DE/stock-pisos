@@ -26,7 +26,7 @@ import { ArrowLeft, Camera, ChevronDown, ImagePlus, Plus } from "lucide-react-na
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/utils/notifications";
 
 type Subcategory = {
   id: number;
@@ -162,7 +162,7 @@ export default function NuevoProducto() {
         }
       } catch (error) {
         console.error(`[${new Date().toLocaleTimeString()}] Error cargando datos del formulario:`, error);
-        toast.error("No se pudieron cargar los datos iniciales");
+        showError("No se pudieron cargar los datos iniciales");
       } finally {
         setLoadingData(false);
       }
@@ -247,7 +247,7 @@ export default function NuevoProducto() {
 
   const handleCreateEstante = async () => {
     if (!selectedUbicacionId || !pasillo.trim() || !seccion.trim() || !niveles.trim()) {
-      toast.error("Completa todos los campos para crear el estante");
+      showError("Completa todos los campos para crear el estante");
       return;
     }
 
@@ -255,7 +255,7 @@ export default function NuevoProducto() {
     const nivelesNum = parseInt(niveles);
 
     if (isNaN(pasilloNum) || isNaN(nivelesNum) || pasilloNum <= 0 || nivelesNum <= 0) {
-      toast.error("El pasillo y niveles deben ser números válidos mayores a 0");
+      showError("El pasillo y niveles deben ser números válidos mayores a 0");
       return;
     }
 
@@ -269,7 +269,7 @@ export default function NuevoProducto() {
       });
 
       if (response.status === 200 || response.status === 201) {
-        toast.success("Estante creado correctamente");
+        showSuccess("Estante creado correctamente");
         // Limpiar formulario de creación
         setPasillo("");
         setSeccion("");
@@ -278,11 +278,11 @@ export default function NuevoProducto() {
         // Recargar ubicaciones para mostrar el nuevo estante
         await reloadUbicaciones();
       } else {
-        toast.error("No se pudo crear el estante");
+        showError("No se pudo crear el estante");
       }
     } catch (error) {
       console.error("Error creando estante:", error);
-      toast.error("Error al crear el estante");
+      showError("Error al crear el estante");
     } finally {
       setIsCreatingEstante(false);
     }
@@ -334,7 +334,7 @@ export default function NuevoProducto() {
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissions.granted) {
-      toast.error("Permisos requeridos para seleccionar una foto");
+      showError("Permisos requeridos para seleccionar una foto");
       return;
     }
 
@@ -369,7 +369,7 @@ export default function NuevoProducto() {
 
   const handleSubmit = async () => {
     if (!isFormValid || isSubmitting) {
-      toast.error("Completa todos los campos para continuar");
+      showError("Completa todos los campos para continuar");
       return;
     }
 
@@ -407,18 +407,16 @@ export default function NuevoProducto() {
       });
 
       if (response.ok) {
-        toast.success("Producto creado correctamente");
+        showSuccess("Producto creado correctamente");
         clearForm();
         router.back();
       } else {
         const errorText = await response.text();
-        toast.error("No se pudo crear el producto", {
-          description: errorText || "Verifica los datos e intenta de nuevo",
-        });
+        showError(errorText || "No se pudo crear el producto. Verifica los datos e intenta de nuevo");
       }
     } catch (error) {
       console.error("Error creando producto:", error);
-      toast.error("Error al crear el producto");
+      showError("Error al crear el producto");
     } finally {
       setIsSubmitting(false);
     }

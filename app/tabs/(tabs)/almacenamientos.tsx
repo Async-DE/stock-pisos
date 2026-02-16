@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { Alert, Image, ImageBackground } from "react-native";
 import { request } from "@/constants/Request";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { toast } from "sonner";
+import { showError } from "@/utils/notifications";
 import {
   ClipboardCheck,
   Layers,
@@ -235,7 +235,7 @@ export default function Establecimientos() {
                 router.replace("/");
               } catch (clearError) {
                 console.error("Error limpiando storage:", clearError);
-                toast.error("Error al cerrar sesión");
+                showError("Error al cerrar sesión");
               }
             }
           },

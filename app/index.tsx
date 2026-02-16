@@ -81,24 +81,28 @@ export default function Home() {
 
       console.log("Login response:", JSON.stringify(response, null, 2));
 
-      // Manejar diferentes estructuras de respuesta
+      // La respuesta del endpoint tiene esta estructura:
+      // {
+      //   "message": "Login exitoso",
+      //   "data": {
+      //     "token": "...",
+      //     "usuario": {...}
+      //   }
+      // }
+      // Y la función request devuelve { status, data } donde data es el JSON completo
+      
       let token: string | null = null;
       let usuario: any = null;
 
-      // Estructura 1: response.data.token y response.data.usuario
-      if (response.data?.token && response.data?.usuario) {
-        token = response.data.token;
-        usuario = response.data.usuario;
-      }
-      // Estructura 2: response.data.data.token y response.data.data.usuario
-      else if (response.data?.data?.token && response.data?.data?.usuario) {
+      // Extraer token y usuario de response.data.data (el data anidado del endpoint)
+      if (response.data?.data?.token && response.data?.data?.usuario) {
         token = response.data.data.token;
         usuario = response.data.data.usuario;
       }
-      // Estructura 3: token y usuario directamente en data
-      else if (response.data?.token || response.data?.usuario) {
-        token = response.data.token || null;
-        usuario = response.data.usuario || null;
+      // Fallback: si la estructura es diferente
+      else if (response.data?.token && response.data?.usuario) {
+        token = response.data.token;
+        usuario = response.data.usuario;
       }
 
       if (response.status === 200 && token && usuario) {

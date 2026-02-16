@@ -26,7 +26,7 @@ import { ArrowLeft, Camera, ChevronDown, ImagePlus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/utils/notifications";
 
 type Nivel = {
   id: number;
@@ -108,11 +108,11 @@ export default function NuevaVariante() {
           setUbicaciones(ubicacionesValidadas);
         } else {
           console.warn("Respuesta no válida del endpoint de ubicaciones");
-          toast.error("Formato de respuesta inválido");
+          showError("Formato de respuesta inválido");
         }
       } catch (error) {
         console.error(`[${new Date().toLocaleTimeString()}] Error cargando ubicaciones:`, error);
-        toast.error("No se pudieron cargar las ubicaciones");
+        showError("No se pudieron cargar las ubicaciones");
       } finally {
         setLoadingData(false);
       }
@@ -166,7 +166,7 @@ export default function NuevaVariante() {
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissions.granted) {
-      toast.error("Permisos requeridos para seleccionar una foto");
+      showError("Permisos requeridos para seleccionar una foto");
       return;
     }
 
@@ -201,7 +201,7 @@ export default function NuevaVariante() {
 
   const handleSubmit = async () => {
     if (!isFormValid || isSubmitting) {
-      toast.error("Completa todos los campos para continuar");
+      showError("Completa todos los campos para continuar");
       return;
     }
 
@@ -242,17 +242,15 @@ export default function NuevaVariante() {
       );
 
       if (response.ok) {
-        toast.success("Variante creada correctamente");
+        showSuccess("Variante creada correctamente");
         router.back();
       } else {
         const errorText = await response.text();
-        toast.error("No se pudo crear la variante", {
-          description: errorText || "Verifica los datos e intenta de nuevo",
-        });
+        showError(errorText || "No se pudo crear la variante. Verifica los datos e intenta de nuevo");
       }
     } catch (error) {
       console.error("Error creando variante:", error);
-      toast.error("Error al crear la variante");
+      showError("Error al crear la variante");
     } finally {
       setIsSubmitting(false);
     }
