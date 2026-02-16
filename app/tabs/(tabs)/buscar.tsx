@@ -5,11 +5,17 @@ import { Text } from "@/components/ui/text";
 import { SearchHeader } from "@/components/SearchHeader";
 import { Center } from "@/components/ui/center";
 import { ShoppingBag } from "lucide-react-native";
-import { ActivityIndicator, ImageBackground, Pressable, View } from "react-native";
+import {
+  ActivityIndicator,
+  ImageBackground,
+  Pressable,
+  View,
+} from "react-native";
 import { request } from "@/constants/Request";
 import type { Product } from "@/components/constants";
 import { ProductsView } from "@/components/ProductsView";
 import { useRouter } from "expo-router";
+import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 
 // Componente de fallback para errores
 function ErrorFallback({ error, resetErrorBoundary }: any) {
@@ -35,6 +41,7 @@ function BuscarContent() {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const trimmedTerm = searchTerm.trim();
 
@@ -262,6 +269,7 @@ function BuscarContent() {
             onSearchChange={setSearchTerm}
             selectedCategory={null}
             onBack={() => {}}
+              onScanPress={() => setIsScannerOpen(true)}
           />
 
           {/* Contenido: Resultados o mensajes */}
@@ -308,6 +316,15 @@ function BuscarContent() {
           )}
         </Box>
       </ScrollView>
+      <BarcodeScannerModal
+        visible={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanned={(code) => {
+          // Usar el código escaneado como término de búsqueda
+          setSearchTerm(code);
+        }}
+        title="Escanear código para buscar"
+      />
     </ImageBackground>
   );
 }

@@ -44,6 +44,22 @@
           "EXPO_PUBLIC_URL": "https://backend-production-3acd.up.railway.app"
         }
       }
+    },
+    "production-release": {
+      "distribution": "internal",
+      "channel": "production-release",
+      "android": {
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_URL": "https://backend-production-3acd.up.railway.app"
+        }
+      },
+      "ios": {
+        "simulator": false,
+        "env": {
+          "EXPO_PUBLIC_URL": "https://backend-production-3acd.up.railway.app"
+        }
+      }
     }
   },
   "submit": {

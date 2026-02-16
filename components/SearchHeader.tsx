@@ -4,7 +4,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { Input, InputField } from "@/components/ui/input";
 import { Pressable, Image } from "react-native";
-import { Search, ArrowLeft } from "lucide-react-native";
+import { Search, ArrowLeft, Camera } from "lucide-react-native";
 import { Dimensions } from "react-native";
 
 interface SearchHeaderProps {
@@ -13,6 +13,7 @@ interface SearchHeaderProps {
   selectedCategory?: number | null;
   selectedCategoryName?: string;
   onBack?: () => void;
+  onScanPress?: () => void;
 }
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -23,9 +24,11 @@ export function SearchHeader({
   selectedCategory,
   selectedCategoryName,
   onBack,
+  onScanPress,
 }: SearchHeaderProps) {
   const hasCategory = Boolean(selectedCategory);
   const showBack = hasCategory && typeof onBack === "function";
+  const showScanner = typeof onScanPress === "function";
 
   return (
     <>
@@ -77,6 +80,15 @@ export function SearchHeader({
               placeholderTextColor="#9CA3AF"
             />
           </Input>
+          {showScanner && (
+            <Pressable
+              onPress={onScanPress}
+              className="ml-2 p-1.5 rounded-full bg-secondary-600/60 border border-[#169500]/70"
+              hitSlop={10}
+            >
+              <Camera size={20} color="#FFFFFF" strokeWidth={2} />
+            </Pressable>
+          )}
         </HStack>
       </Box>
     </>

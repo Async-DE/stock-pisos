@@ -20,13 +20,25 @@ import {
   SelectItem,
   SelectScrollView,
 } from "@/components/ui/select";
-import { ActivityIndicator, Image, Pressable, ImageBackground } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ImageBackground,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Camera, ChevronDown, ImagePlus, Plus } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Camera,
+  ChevronDown,
+  ImagePlus,
+  Plus,
+} from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
 import { showSuccess, showError } from "@/utils/notifications";
+import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 
 type Subcategory = {
   id: number;
@@ -87,6 +99,7 @@ export default function NuevoProducto() {
   const [image, setImage] = useState<SelectedImage | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formResetKey, setFormResetKey] = useState(0);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   
   // Estados para crear estante
   const [showCreateEstante, setShowCreateEstante] = useState(false);
@@ -809,14 +822,23 @@ export default function NuevoProducto() {
 
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Código</Text>
-                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
-                      <InputField
-                        placeholder="Ej: PL-102"
-                        value={codigo}
-                        onChangeText={setCodigo}
-                        className="text-white"
-                      />
-                    </Input>
+                    <HStack space="sm" className="items-center">
+                      <Input className="flex-1 bg-secondary-600 border-[#169500] rounded-xl">
+                        <InputField
+                          placeholder="Ej: PL-102"
+                          value={codigo}
+                          onChangeText={setCodigo}
+                          className="text-white"
+                        />
+                      </Input>
+                      <Pressable
+                        onPress={() => setIsScannerOpen(true)}
+                        className="bg-[#169500] rounded-xl px-3 py-3 ml-1"
+                        hitSlop={10}
+                      >
+                        <Camera size={20} color="#000000" strokeWidth={2} />
+                      </Pressable>
+                    </HStack>
                   </Box>
 
                   <Box>
@@ -997,6 +1019,14 @@ export default function NuevoProducto() {
           )}
         </Box>
       </ScrollView>
+      <BarcodeScannerModal
+        visible={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanned={(code) => {
+          setCodigo(code);
+        }}
+        title="Escanear código del producto"
+      />
     </ImageBackground>
   );
 }
