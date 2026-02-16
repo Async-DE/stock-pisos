@@ -10,7 +10,7 @@ export const showSuccess = (message: string, title: string = "Éxito") => {
 /**
  * Muestra una notificación de error
  */
-export const showError = (message: string, title: string = "Error") => {
+export const showError = (message: string, title: string = "Alerta") => {
   Alert.alert(title, message);
 };
 
