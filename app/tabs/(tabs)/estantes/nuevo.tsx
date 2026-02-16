@@ -24,6 +24,9 @@ import { ActivityIndicator, Pressable, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
 import { ArrowLeft, ChevronDown } from "lucide-react-native";
 import { request } from "@/constants/Request";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import { showError } from "@/utils/notifications";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Ubicacion = {
   id: number;
@@ -32,9 +35,25 @@ type Ubicacion = {
 
 export default function NuevoEstante() {
   const router = useRouter();
+  const { canCreate } = usePermissions();
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [loadingData, setLoadingData] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirigir si no tiene permisos para crear
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const token = await AsyncStorage.getItem("token");
+      const role = await AsyncStorage.getItem("user_permisos");
+      // Solo mostrar error si hay token y rol (usuario autenticado) pero sin permisos
+      // Si no hay token o rol es null, está cerrando sesión y no debemos mostrar error
+      if (!canCreate && token && role) {
+        showError("No tienes permisos para crear estantes");
+        router.replace("/tabs/(tabs)/almacenamientos");
+      }
+    };
+    checkPermissions();
+  }, [canCreate, router]);
 
   const [ubicacionId, setUbicacionId] = useState("");
   const [pasillo, setPasillo] = useState("");

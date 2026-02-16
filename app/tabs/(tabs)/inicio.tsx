@@ -9,6 +9,7 @@ import { request } from "@/constants/Request";
 import { SearchHeader } from "@/components/SearchHeader";
 import { CategoriesGrid } from "@/components/CategoriesGrid";
 import { ProductsView } from "@/components/ProductsView";
+import { usePermissions } from "@/contexts/PermissionsContext";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -28,6 +29,7 @@ type Category = {
 
 export default function Inicio() {
   const router = useRouter();
+  const { canCreate } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [apiCategories, setApiCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -292,7 +294,7 @@ export default function Inicio() {
             <ProductsView
               products={products}
               onProductPress={handleProductPress}
-              onCreatePress={handleCreateProduct}
+              onCreatePress={canCreate ? handleCreateProduct : undefined}
               isLoading={loadingProducts}
               categoryName={
                 selectedSubcategory

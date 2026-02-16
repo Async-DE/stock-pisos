@@ -9,10 +9,12 @@ import { ShoppingBag } from "lucide-react-native";
 import { View, ActivityIndicator } from "react-native";
 import { request } from "@/constants/Request";
 import type { Product } from "@/components/constants";
+import { usePermissions } from "@/contexts/PermissionsContext";
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { canCreate } = usePermissions();
   const productId = id ? parseInt(id, 10) : null;
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -190,9 +192,9 @@ export default function ProductDetailScreen() {
     <View style={{ flex: 1, backgroundColor: "#000000" }}>
       <ProductDetailView
         product={product}
-        onAddVariant={() =>
+        onAddVariant={canCreate ? () =>
           router.push(`/tabs/(tabs)/producto/${productId}/variante/nuevo`)
-        }
+        : undefined}
       />
     </View>
   );

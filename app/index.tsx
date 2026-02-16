@@ -13,11 +13,13 @@ import { Image } from "react-native";
 import { Dimensions } from "react-native";
 import { request } from "@/constants/Request";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { usePermissions } from "@/contexts/PermissionsContext";
 
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Home() {
   const router = useRouter();
+  const { setRole } = usePermissions();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +35,12 @@ export default function Home() {
     const checkExistingSession = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
+        const savedPermisos = await AsyncStorage.getItem("user_permisos");
         if (token) {
+          // Restaurar permisos si hay sesión guardada
+          if (savedPermisos && (savedPermisos === "owner" || savedPermisos === "admin" || savedPermisos === "seller")) {
+            await setRole(savedPermisos);
+          }
           // Hay sesión guardada, ir directamente al inicio
           console.log("Sesión encontrada, redirigiendo a inicio...");
           router.replace("/tabs/(tabs)/inicio");
@@ -109,6 +116,10 @@ export default function Home() {
         console.log("Token recibido:", token ? "Sí" : "No");
         console.log("Usuario recibido:", usuario ? "Sí" : "No");
 
+        // Guardar permisos del usuario
+        const permisos = usuario.permisos || "seller";
+        await setRole(permisos);
+
         await AsyncStorage.multiSet([
           ["token", token],
           ["user_id", String(usuario.id || "")],
@@ -116,6 +127,7 @@ export default function Home() {
           ["user_nombre", usuario.nombre ?? ""],
           ["user_email_phone", usuario.email_phone ?? ""],
           ["user_estado", String(usuario.estado || "")],
+          ["user_permisos", permisos],
           ["user_createdAt", usuario.createdAt ?? ""],
           ["user_updatedAt", usuario.updatedAt ?? ""],
         ]);

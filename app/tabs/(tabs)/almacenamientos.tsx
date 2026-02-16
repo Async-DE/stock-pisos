@@ -14,6 +14,7 @@ import { Alert, Image, ImageBackground } from "react-native";
 import { request } from "@/constants/Request";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showError } from "@/utils/notifications";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import {
   ClipboardCheck,
   Layers,
@@ -37,6 +38,7 @@ const { width: screenWidth } = Dimensions.get("window");
 
 export default function Establecimientos() {
   const router = useRouter();
+  const { canAccessVentas, canAccessAuditorias, setRole, role } = usePermissions();
   const [establecimientos, setEstablecimientos] = useState<Establecimiento[]>([
     {
       id: "1",
@@ -204,6 +206,9 @@ export default function Establecimientos() {
               // Llamar al endpoint de logout
               await request("/stock/auth/logout", "POST");
               
+              // Limpiar permisos del contexto
+              await setRole(null);
+              
               // Limpiar todos los datos del AsyncStorage
               await AsyncStorage.multiRemove([
                 "token",
@@ -212,6 +217,7 @@ export default function Establecimientos() {
                 "user_nombre",
                 "user_email_phone",
                 "user_estado",
+                "user_permisos",
                 "user_createdAt",
                 "user_updatedAt",
               ]);
@@ -222,6 +228,7 @@ export default function Establecimientos() {
               console.error("Error al cerrar sesión:", error);
               // Aún así, limpiar el storage y redirigir
               try {
+                await setRole(null);
                 await AsyncStorage.multiRemove([
                   "token",
                   "user_id",
@@ -229,6 +236,7 @@ export default function Establecimientos() {
                   "user_nombre",
                   "user_email_phone",
                   "user_estado",
+                  "user_permisos",
                   "user_createdAt",
                   "user_updatedAt",
                 ]);
@@ -270,54 +278,76 @@ export default function Establecimientos() {
             {/* Acciones principales */}
             <Box className="mb-6 mt-12">
               <VStack space="2xl">
-                <Button
-                  size="xl"
-                  variant="outline"
-                  action="secondary"
-                  className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
-                  onPress={() => router.push("/tabs/(tabs)/estantes/nuevo")}
-                >
-                  <Layers size={24} color="#13E000" strokeWidth={2} />
-                  <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
-                    Estantes
-                  </ButtonText>
-                </Button>
-                <Button
-                  size="xl"
-                  variant="outline"
-                  action="secondary"
-                  className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
-                  onPress={() => router.push("/tabs/(tabs)/ventas/buscar")}
-                >
-                  <ShoppingCart size={24} color="#13E000" strokeWidth={2} />
-                  <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
-                    Ventas
-                  </ButtonText>
-                </Button>
-                <Button
-                  size="xl"
-                  variant="outline"
-                  action="secondary"
-                  className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
-                  onPress={() => router.push("/tabs/(tabs)/auditorias" as any)}
-                >
-                  <ClipboardCheck size={24} color="#13E000" strokeWidth={2} />
-                  <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
-                    Auditorias
-                  </ButtonText>
-                </Button>
-                <Button
-                  size="xl"
-                  variant="outline"
-                  action="secondary"
-                  className="border-2 border-red-500 bg-[#121212] rounded-3xl mt-4"
-                  onPress={handleLogout}
-                >
-                  <LogOut size={24} color="#ef4444" strokeWidth={2} />
-                  <ButtonText className="text-[30px] font-bold text-red-500 text-left w-full">
-                    Cerrar Sesión
-                  </ButtonText>
-                </Button>
+                {/* Para seller, solo mostrar Cerrar Sesión */}
+                {role === "seller" ? (
+                  <Button
+                    size="xl"
+                    variant="outline"
+                    action="secondary"
+                    className="border-2 border-red-500 bg-[#121212] rounded-3xl"
+                    onPress={handleLogout}
+                  >
+                    <LogOut size={24} color="#ef4444" strokeWidth={2} />
+                    <ButtonText className="text-[30px] font-bold text-red-500 text-left w-full">
+                      Cerrar Sesión
+                    </ButtonText>
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
+                      onPress={() => router.push("/tabs/(tabs)/estantes/nuevo")}
+                    >
+                      <Layers size={24} color="#13E000" strokeWidth={2} />
+                      <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
+                        Estantes
+                      </ButtonText>
+                    </Button>
+                    {canAccessVentas && (
+                      <Button
+                        size="xl"
+                        variant="outline"
+                        action="secondary"
+                        className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
+                        onPress={() => router.push("/tabs/(tabs)/ventas/buscar")}
+                      >
+                        <ShoppingCart size={24} color="#13E000" strokeWidth={2} />
+                        <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
+                          Ventas
+                        </ButtonText>
+                      </Button>
+                    )}
+                    {canAccessAuditorias && (
+                      <Button
+                        size="xl"
+                        variant="outline"
+                        action="secondary"
+                        className="border-2 border-[#13E000] bg-[#121212] rounded-3xl"
+                        onPress={() => router.push("/tabs/(tabs)/auditorias" as any)}
+                      >
+                        <ClipboardCheck size={24} color="#13E000" strokeWidth={2} />
+                        <ButtonText className="text-[30px] font-bold text-[#13E000] text-left w-full">
+                          Auditorias
+                        </ButtonText>
+                      </Button>
+                    )}
+                    <Button
+                      size="xl"
+                      variant="outline"
+                      action="secondary"
+                      className="border-2 border-red-500 bg-[#121212] rounded-3xl mt-4"
+                      onPress={handleLogout}
+                    >
+                      <LogOut size={24} color="#ef4444" strokeWidth={2} />
+                      <ButtonText className="text-[30px] font-bold text-red-500 text-left w-full">
+                        Cerrar Sesión
+                      </ButtonText>
+                    </Button>
+                  </>
+                )}
               </VStack>
             </Box>
           </Box>

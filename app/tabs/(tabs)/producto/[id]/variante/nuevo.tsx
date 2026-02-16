@@ -27,6 +27,7 @@ import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
 import { showSuccess, showError } from "@/utils/notifications";
+import { usePermissions } from "@/contexts/PermissionsContext";
 
 type Nivel = {
   id: number;
@@ -54,10 +55,26 @@ type SelectedImage = {
 
 export default function NuevaVariante() {
   const router = useRouter();
+  const { canCreate } = usePermissions();
   const { id } = useLocalSearchParams<{ id: string }>();
   const productId = id ? parseInt(id, 10) : null;
 
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
+
+  // Redirigir si no tiene permisos para crear
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const token = await AsyncStorage.getItem("token");
+      const role = await AsyncStorage.getItem("user_permisos");
+      // Solo mostrar error si hay token y rol (usuario autenticado) pero sin permisos
+      // Si no hay token o rol es null, está cerrando sesión y no debemos mostrar error
+      if (!canCreate && token && role) {
+        showError("No tienes permisos para crear variantes");
+        router.replace(`/tabs/(tabs)/producto/${productId || ""}`);
+      }
+    };
+    checkPermissions();
+  }, [canCreate, router, productId]);
   const [loadingData, setLoadingData] = useState(false);
 
   const [selectedUbicacionId, setSelectedUbicacionId] = useState("");

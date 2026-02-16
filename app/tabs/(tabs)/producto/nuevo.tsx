@@ -39,6 +39,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
 import { showSuccess, showError } from "@/utils/notifications";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
+import { usePermissions } from "@/contexts/PermissionsContext";
 
 type Subcategory = {
   id: number;
@@ -77,9 +78,25 @@ type SelectedImage = {
 
 export default function NuevoProducto() {
   const router = useRouter();
+  const { canCreate } = usePermissions();
   const [categories, setCategories] = useState<Category[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [loadingData, setLoadingData] = useState(false);
+
+  // Redirigir si no tiene permisos para crear
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const token = await AsyncStorage.getItem("token");
+      const role = await AsyncStorage.getItem("user_permisos");
+      // Solo mostrar error si hay token y rol (usuario autenticado) pero sin permisos
+      // Si no hay token o rol es null, está cerrando sesión y no debemos mostrar error
+      if (!canCreate && token && role) {
+        showError("No tienes permisos para crear productos");
+        router.replace("/tabs/(tabs)/inicio");
+      }
+    };
+    checkPermissions();
+  }, [canCreate, router]);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState("");
