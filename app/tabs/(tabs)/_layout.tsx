@@ -46,9 +46,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="almacenamientos"
         options={{
-          title: "Almacenamientos",
+          title: "Opciones",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="building" color={color} />
+            <TabBarIcon name="ellipsis-h" color={color} />
           ),
         }}
       />
