@@ -3,8 +3,8 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Pressable, Image, ImageBackground } from "react-native";
-import { ShoppingBag, ArrowLeft, Package, Check, ChevronDown, ChevronUp } from "lucide-react-native";
+import { Pressable, Image, ImageBackground, Modal, Dimensions } from "react-native";
+import { ShoppingBag, ArrowLeft, Package, Check, ChevronDown, ChevronUp, X } from "lucide-react-native";
 import type { Product, ProductVariant } from "./constants";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -32,6 +32,9 @@ export function ProductDetailView({
 
   // Estado para mostrar/ocultar la sección de ganancias
   const [showGanancias, setShowGanancias] = useState(false);
+
+  // Estado para mostrar la imagen en grande
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-AR", {
@@ -163,23 +166,32 @@ export function ProductDetailView({
           )}
 
           {/* Imagen de la variante seleccionada */}
-          <Box
-            className="bg-secondary-600 justify-center items-center rounded-lg border border-[#169500] mb-4 overflow-hidden"
-            style={{ width: "100%", height: 300 }}
+          <Pressable
+            onPress={() => {
+              if (selectedVariant?.attributes?.foto) {
+                setShowImageModal(true);
+              }
+            }}
+            disabled={!selectedVariant?.attributes?.foto}
           >
-            {selectedVariant?.attributes?.foto ? (
-              <Image
-                source={{ uri: selectedVariant.attributes.foto }}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  resizeMode: "cover",
-                }}
-              />
-            ) : (
-              <ShoppingBag size={80} color="#13E000" strokeWidth={1.5} />
-            )}
-          </Box>
+            <Box
+              className="bg-secondary-600 justify-center items-center rounded-lg border border-[#169500] mb-4 overflow-hidden"
+              style={{ width: "100%", height: 300 }}
+            >
+              {selectedVariant?.attributes?.foto ? (
+                <Image
+                  source={{ uri: selectedVariant.attributes.foto }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    resizeMode: "cover",
+                  }}
+                />
+              ) : (
+                <ShoppingBag size={80} color="#13E000" strokeWidth={1.5} />
+              )}
+            </Box>
+          </Pressable>
 
           {/* Información de la variante seleccionada */}
           {selectedVariant && (
@@ -388,6 +400,61 @@ export function ProductDetailView({
           )}
         </Box>
       </ScrollView>
+
+      {/* Modal para imagen en grande */}
+      <Modal
+        visible={showImageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowImageModal(false)}
+      >
+        <Box
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.95)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {/* Botón de cerrar */}
+          <Pressable
+            onPress={() => setShowImageModal(false)}
+            style={{
+              position: "absolute",
+              top: Math.max(insets.top, 20),
+              right: 20,
+              zIndex: 10,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              borderRadius: 25,
+              padding: 10,
+            }}
+          >
+            <X size={24} color="#FFFFFF" strokeWidth={2} />
+          </Pressable>
+
+          {/* Imagen en grande */}
+          {selectedVariant?.attributes?.foto && (
+            <Pressable
+              onPress={() => setShowImageModal(false)}
+              style={{
+                width: Dimensions.get("window").width,
+                height: Dimensions.get("window").height,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Image
+                source={{ uri: selectedVariant.attributes.foto }}
+                style={{
+                  width: Dimensions.get("window").width * 0.95,
+                  height: Dimensions.get("window").height * 0.8,
+                  resizeMode: "contain",
+                }}
+              />
+            </Pressable>
+          )}
+        </Box>
+      </Modal>
     </ImageBackground>
   );
 }
