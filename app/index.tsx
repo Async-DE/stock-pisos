@@ -166,7 +166,7 @@ export default function Home() {
                   <Center className="mt-4 mb-5 rounded-full">
                     <Box className="rounded-full">
                       <Image
-                        source={require("@/assets/images/Pisos-logo2.jpeg")}
+                        source={require("@/assets/images/Pisos-logo2.png")}
                         style={{
                           width: screenWidth < 375 ? 300 : 350,
                           height: screenWidth < 375 ? 90 : 105,

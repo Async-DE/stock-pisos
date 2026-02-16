@@ -5,11 +5,11 @@ import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Center } from "@/components/ui/center";
-import { Input, InputField } from "@/components/ui/input";
+import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Button, ButtonText } from "@/components/ui/button";
 import { ActivityIndicator, Pressable, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, CalendarSearch, Search } from "lucide-react-native";
+import { ArrowLeft, CalendarSearch, Search, Calendar } from "lucide-react-native";
 import { request } from "@/constants/Request";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
@@ -314,16 +314,30 @@ export default function BuscarVentas() {
                   <Text className="text-gray-400 text-sm mb-2">
                     Fecha inicio
                   </Text>
-                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
-                    <InputField
-                      placeholder="Selecciona la fecha"
-                      value={formatDateInput(startDateValue)}
-                      editable={false}
-                      showSoftInputOnFocus={false}
-                      onPressIn={openStartPicker}
-                      className="text-white"
-                    />
-                  </Input>
+                  <HStack space="sm" className="items-center">
+                    <Pressable
+                      onPress={openStartPicker}
+                      className="bg-secondary-600 border border-[#169500] rounded-xl p-3"
+                    >
+                      <HStack space="xs" className="items-center">
+                        <Calendar size={20} color="#13E000" strokeWidth={2} />
+                        <Text className="text-gray-200 text-xs">Calendario</Text>
+                      </HStack>
+                    </Pressable>
+                    {startDateValue ? (
+                      <Box className="flex-1 bg-secondary-600 border border-[#169500] rounded-xl p-3">
+                        <Text className="text-white font-semibold text-base">
+                          {formatDateInput(startDateValue)}
+                        </Text>
+                      </Box>
+                    ) : (
+                      <Box className="flex-1 bg-secondary-600 border border-[#169500] rounded-xl p-3">
+                        <Text className="text-gray-400 text-sm">
+                          Selecciona una fecha
+                        </Text>
+                      </Box>
+                    )}
+                  </HStack>
                   {errors.startDate ? (
                     <Text className="text-red-500 text-sm mt-2">
                       {errors.startDate}
@@ -333,16 +347,30 @@ export default function BuscarVentas() {
 
                 <Box>
                   <Text className="text-gray-400 text-sm mb-2">Fecha fin</Text>
-                  <Input className="bg-secondary-600 border-[#169500] rounded-xl">
-                    <InputField
-                      placeholder="Selecciona la fecha"
-                      value={formatDateInput(endDateValue)}
-                      editable={false}
-                      showSoftInputOnFocus={false}
-                      onPressIn={openEndPicker}
-                      className="text-white"
-                    />
-                  </Input>
+                  <HStack space="sm" className="items-center">
+                    <Pressable
+                      onPress={openEndPicker}
+                      className="bg-secondary-600 border border-[#169500] rounded-xl p-3"
+                    >
+                      <HStack space="xs" className="items-center">
+                        <Calendar size={20} color="#13E000" strokeWidth={2} />
+                        <Text className="text-gray-200 text-xs">Calendario</Text>
+                      </HStack>
+                    </Pressable>
+                    {endDateValue ? (
+                      <Box className="flex-1 bg-secondary-600 border border-[#169500] rounded-xl p-3">
+                        <Text className="text-white font-semibold text-base">
+                          {formatDateInput(endDateValue)}
+                        </Text>
+                      </Box>
+                    ) : (
+                      <Box className="flex-1 bg-secondary-600 border border-[#169500] rounded-xl p-3">
+                        <Text className="text-gray-400 text-sm">
+                          Selecciona una fecha
+                        </Text>
+                      </Box>
+                    )}
+                  </HStack>
                   {errors.endDate ? (
                     <Text className="text-red-500 text-sm mt-2">
                       {errors.endDate}
@@ -373,7 +401,7 @@ export default function BuscarVentas() {
                 >
                   <Search size={16} color="#000000" strokeWidth={2} />
                   <ButtonText className="text-black font-semibold">
-                    Buscar por fechas
+                    Buscar
                   </ButtonText>
                 </Button>
               </VStack>
@@ -383,14 +411,14 @@ export default function BuscarVentas() {
               <HStack space="sm" className="items-center mb-3">
                 <Search size={18} color="#13E000" strokeWidth={2} />
                 <Text className="text-white font-semibold text-lg">
-                  Busqueda por parametro
+                  Busqueda por Nombre / contacto cliente
                 </Text>
               </HStack>
 
               <VStack space="md">
                 <Box>
                   <Text className="text-gray-400 text-sm mb-2">
-                    Parametro de busqueda
+                    Nombre o contacto del cliente
                   </Text>
                   <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                     <InputField
@@ -416,7 +444,7 @@ export default function BuscarVentas() {
                 >
                   <Search size={16} color="#000000" strokeWidth={2} />
                   <ButtonText className="text-black font-semibold">
-                    Buscar por parametro
+                    Buscar
                   </ButtonText>
                 </Button>
               </VStack>

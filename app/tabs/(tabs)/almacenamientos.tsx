@@ -256,7 +256,7 @@ export default function Establecimientos() {
         <Center className="mt-12 mb-4 rounded-lg mx-4">
           <Box className="rounded-full">
             <Image
-              source={require("@/assets/images/Pisos-logo2.jpeg")}
+              source={require("@/assets/images/Pisos-logo2.png")}
               style={{
                 width: screenWidth < 375 ? 300 : 350,
                 height: screenWidth < 375 ? 90 : 105,
