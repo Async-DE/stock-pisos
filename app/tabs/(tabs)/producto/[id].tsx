@@ -61,6 +61,12 @@ export default function ProductDetailScreen() {
                 const ubicacion = variante.niveles?.estantes?.ubicacion;
                 const estante = variante.niveles?.estantes;
                 const nivel = variante.niveles;
+                
+                // Extraer array de fotos
+                const fotos = Array.isArray(variante.fotos) 
+                  ? variante.fotos.map((foto: any) => foto?.url || "").filter(Boolean)
+                  : [];
+                const primeraFoto = fotos.length > 0 ? fotos[0] : "";
 
                 return {
                   id: variante.id,
@@ -68,7 +74,8 @@ export default function ProductDetailScreen() {
                   price: variante.precio_publico || 0,
                   stock: variante.cantidad,
                   attributes: {
-                    foto: variante.foto || "",
+                    foto: primeraFoto, // Primera foto para compatibilidad
+                    fotos: fotos.join(","), // Todas las fotos separadas por coma
                     codigo: variante.codigo || "",
                     color: variante.color || "",
                     descripcion: variante.descripcion || "",

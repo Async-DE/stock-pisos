@@ -141,6 +141,16 @@ function BuscarContent() {
                 producto.variantes.forEach((variante: any, index: number) => {
                   try {
                     const variantId = productId * 1000 + index;
+                    // Obtener la primera foto del array de fotos
+                    const firstPhotoUrl =
+                      Array.isArray(variante.fotos) && variante.fotos.length > 0
+                        ? variante.fotos[0]?.url
+                        : undefined;
+                    
+                    const shortDescription = (
+                      `${variante?.color || ""} - ${variante?.medidas || ""}`
+                    ).trim();
+
                     mappedProducts.push({
                       id: variantId,
                       productId: productId,
@@ -148,10 +158,8 @@ function BuscarContent() {
                       price: typeof variante?.precio_publico === "number"
                         ? variante.precio_publico
                         : 0,
-                      image: variante?.foto || undefined,
-                      description: `${variante?.color || ""} - ${
-                        variante?.medidas || ""
-                      }`.trim() || undefined,
+                      image: firstPhotoUrl,
+                      description: shortDescription || undefined,
                       variants: [
                         {
                           id: variantId,
@@ -173,7 +181,7 @@ function BuscarContent() {
                               variante?.cantidad != null
                                 ? String(variante.cantidad)
                                 : "",
-                            foto: variante?.foto || "",
+                            foto: firstPhotoUrl || "",
                           },
                         },
                       ],

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Pressable, Image, ImageBackground, Modal, Dimensions } from "react-native";
+import { Pressable, Image, ImageBackground, Modal, Dimensions, FlatList, View as RNView } from "react-native";
 import { ShoppingBag, ArrowLeft, Package, Check, ChevronDown, ChevronUp, X } from "lucide-react-native";
 import type { Product, ProductVariant } from "./constants";
 import { useRouter } from "expo-router";
@@ -29,12 +29,37 @@ export function ProductDetailView({
       ? product.variants[0]
       : null,
   );
+  
+  // Resetear índice de imagen cuando cambia la variante
+  const handleVariantChange = (variant: ProductVariant) => {
+    setSelectedVariant(variant);
+    setSelectedImageIndex(0);
+    if (carouselRef.current) {
+      carouselRef.current.scrollToIndex({ index: 0, animated: false });
+    }
+  };
 
   // Estado para mostrar/ocultar la sección de ganancias
   const [showGanancias, setShowGanancias] = useState(false);
 
   // Estado para mostrar la imagen en grande
   const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  
+  // Referencias para el carrusel
+  const carouselRef = useRef<FlatList>(null);
+  const modalCarouselRef = useRef<FlatList>(null);
+  
+  // Obtener array de fotos de la variante seleccionada
+  const getVariantPhotos = (variant: ProductVariant | null): string[] => {
+    if (!variant?.attributes?.fotos) {
+      // Si no hay fotos en formato array, usar foto individual
+      return variant?.attributes?.foto ? [variant.attributes.foto] : [];
+    }
+    // Separar las fotos por coma si vienen como string
+    const fotosString = variant.attributes.fotos;
+    return fotosString.split(",").filter(Boolean);
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-AR", {
@@ -68,7 +93,7 @@ export function ProductDetailView({
     return (
       <Pressable
         key={variant.id}
-        onPress={() => setSelectedVariant(variant)}
+        onPress={() => handleVariantChange(variant)}
         className="mb-3"
       >
         <Box
@@ -165,33 +190,90 @@ export function ProductDetailView({
             </Text>
           )}
 
-          {/* Imagen de la variante seleccionada */}
-          <Pressable
-            onPress={() => {
-              if (selectedVariant?.attributes?.foto) {
-                setShowImageModal(true);
-              }
-            }}
-            disabled={!selectedVariant?.attributes?.foto}
-          >
-            <Box
-              className="bg-secondary-600 justify-center items-center rounded-lg border border-[#169500] mb-4 overflow-hidden"
-              style={{ width: "100%", height: 300 }}
-            >
-              {selectedVariant?.attributes?.foto ? (
-                <Image
-                  source={{ uri: selectedVariant.attributes.foto }}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    resizeMode: "cover",
+          {/* Carrusel de imágenes de la variante seleccionada */}
+          {(() => {
+            const photos = getVariantPhotos(selectedVariant);
+            
+            if (photos.length === 0) {
+              return (
+                <Box
+                  className="bg-secondary-600 justify-center items-center rounded-lg border border-[#169500] mb-4 overflow-hidden"
+                  style={{ width: "100%", height: 300 }}
+                >
+                  <ShoppingBag size={80} color="#13E000" strokeWidth={1.5} />
+                </Box>
+              );
+            }
+            
+            const itemWidth = Dimensions.get("window").width - 32;
+            
+            return (
+              <Box className="mb-4">
+                <FlatList
+                  ref={carouselRef}
+                  data={photos}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item, index) => `photo-${index}`}
+                  getItemLayout={(_, index) => ({
+                    length: itemWidth,
+                    offset: itemWidth * index,
+                    index,
+                  })}
+                  onMomentumScrollEnd={(event) => {
+                    const index = Math.round(
+                      event.nativeEvent.contentOffset.x / itemWidth
+                    );
+                    setSelectedImageIndex(index);
                   }}
+                  renderItem={({ item, index }) => (
+                    <Pressable
+                      onPress={() => {
+                        setSelectedImageIndex(index);
+                        setShowImageModal(true);
+                      }}
+                      style={{ width: itemWidth }}
+                    >
+                      <Box
+                        className="bg-secondary-600 justify-center items-center rounded-lg border border-[#169500] overflow-hidden"
+                        style={{ width: "100%", height: 300 }}
+                      >
+                        <Image
+                          source={{ uri: item }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            resizeMode: "cover",
+                          }}
+                        />
+                      </Box>
+                    </Pressable>
+                  )}
                 />
-              ) : (
-                <ShoppingBag size={80} color="#13E000" strokeWidth={1.5} />
-              )}
-            </Box>
-          </Pressable>
+                
+                {/* Indicadores de página */}
+                {photos.length > 1 && (
+                  <HStack space="xs" className="justify-center items-center mt-2">
+                    {photos.map((_, index) => (
+                      <Box
+                        key={`indicator-${index}`}
+                        className={`rounded-full ${
+                          index === selectedImageIndex
+                            ? "bg-[#13E000]"
+                            : "bg-gray-500"
+                        }`}
+                        style={{
+                          width: index === selectedImageIndex ? 8 : 6,
+                          height: index === selectedImageIndex ? 8 : 6,
+                        }}
+                      />
+                    ))}
+                  </HStack>
+                )}
+              </Box>
+            );
+          })()}
 
           {/* Información de la variante seleccionada */}
           {selectedVariant && (
@@ -401,7 +483,7 @@ export function ProductDetailView({
         </Box>
       </ScrollView>
 
-      {/* Modal para imagen en grande */}
+      {/* Modal para imagen en grande con carrusel */}
       <Modal
         visible={showImageModal}
         transparent={true}
@@ -432,27 +514,87 @@ export function ProductDetailView({
             <X size={24} color="#FFFFFF" strokeWidth={2} />
           </Pressable>
 
-          {/* Imagen en grande */}
-          {selectedVariant?.attributes?.foto && (
-            <Pressable
-              onPress={() => setShowImageModal(false)}
-              style={{
-                width: Dimensions.get("window").width,
-                height: Dimensions.get("window").height,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Image
-                source={{ uri: selectedVariant.attributes.foto }}
-                style={{
-                  width: Dimensions.get("window").width * 0.95,
-                  height: Dimensions.get("window").height * 0.8,
-                  resizeMode: "contain",
-                }}
-              />
-            </Pressable>
-          )}
+          {/* Carrusel de imágenes en grande */}
+          {(() => {
+            const photos = getVariantPhotos(selectedVariant);
+            
+            if (photos.length === 0) {
+              return null;
+            }
+            
+            return (
+              <RNView style={{ flex: 1, width: "100%", justifyContent: "center" }}>
+                <FlatList
+                  ref={modalCarouselRef}
+                  data={photos}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item, index) => `modal-photo-${index}`}
+                  initialScrollIndex={selectedImageIndex}
+                  getItemLayout={(_, index) => ({
+                    length: Dimensions.get("window").width,
+                    offset: Dimensions.get("window").width * index,
+                    index,
+                  })}
+                  onMomentumScrollEnd={(event) => {
+                    const index = Math.round(
+                      event.nativeEvent.contentOffset.x / Dimensions.get("window").width
+                    );
+                    setSelectedImageIndex(index);
+                  }}
+                  renderItem={({ item }) => (
+                    <Pressable
+                      onPress={() => setShowImageModal(false)}
+                      style={{
+                        width: Dimensions.get("window").width,
+                        height: Dimensions.get("window").height,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: item }}
+                        style={{
+                          width: Dimensions.get("window").width * 0.95,
+                          height: Dimensions.get("window").height * 0.8,
+                          resizeMode: "contain",
+                        }}
+                      />
+                    </Pressable>
+                  )}
+                />
+                
+                {/* Indicadores de página en el modal */}
+                {photos.length > 1 && (
+                  <HStack 
+                    space="xs" 
+                    className="justify-center items-center"
+                    style={{
+                      position: "absolute",
+                      bottom: Math.max(insets.bottom, 40),
+                      alignSelf: "center",
+                    }}
+                  >
+                    {photos.map((_, index) => (
+                      <Box
+                        key={`modal-indicator-${index}`}
+                        className={`rounded-full ${
+                          index === selectedImageIndex
+                            ? "bg-[#13E000]"
+                            : "bg-gray-500"
+                        }`}
+                        style={{
+                          width: index === selectedImageIndex ? 10 : 8,
+                          height: index === selectedImageIndex ? 10 : 8,
+                        }}
+                      />
+                    ))}
+                  </HStack>
+                )}
+              </RNView>
+            );
+          })()}
         </Box>
       </Modal>
     </ImageBackground>
