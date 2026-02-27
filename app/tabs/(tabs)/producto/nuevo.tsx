@@ -453,6 +453,10 @@ export default function NuevoProducto() {
     });
   };
 
+  const removeImage = (uri: string) => {
+    setImages((prev) => prev.filter((image) => image.uri !== uri));
+  };
+
   const handleSubmit = async () => {
     if (!isFormValid || isSubmitting) {
       showError("Completa todos los campos para continuar");
@@ -1069,12 +1073,40 @@ export default function NuevoProducto() {
                 </Text>
                 <VStack space="md">
                   {images.length > 0 ? (
-                    <Box className="border border-[#169500]/40 rounded-2xl overflow-hidden">
-                      <Image
-                        source={{ uri: images[0].uri }}
-                        style={{ width: "100%", height: 220 }}
-                      />
-                    </Box>
+                    <VStack space="sm">
+                      <Box className="border border-[#169500]/40 rounded-2xl overflow-hidden">
+                        <Image
+                          source={{ uri: images[0].uri }}
+                          style={{ width: "100%", height: 220 }}
+                        />
+                      </Box>
+
+                      <HStack space="sm" className="flex-wrap">
+                        {images.map((image, index) => (
+                          <Box
+                            key={image.uri}
+                            className="w-[31%] border border-[#169500]/30 rounded-lg p-1"
+                          >
+                            <Image
+                              source={{ uri: image.uri }}
+                              style={{
+                                width: "100%",
+                                height: 72,
+                                borderRadius: 8,
+                              }}
+                            />
+                            <Pressable
+                              onPress={() => removeImage(image.uri)}
+                              className="mt-1 bg-secondary-700 border border-[#169500]/40 rounded-md px-2 py-1"
+                            >
+                              <Text className="text-gray-300 text-xs text-center">
+                                Quitar #{index + 1}
+                              </Text>
+                            </Pressable>
+                          </Box>
+                        ))}
+                      </HStack>
+                    </VStack>
                   ) : (
                     <Center className="border border-dashed border-[#169500]/40 rounded-2xl py-8">
                       <ImagePlus size={36} color="#13E000" strokeWidth={1.5} />
