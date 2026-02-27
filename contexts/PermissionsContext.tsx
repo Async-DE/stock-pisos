@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type UserRole = "owner" | "admin" | "seller" | "editor";
@@ -13,7 +19,9 @@ interface PermissionsContextType {
   setRole: (role: UserRole | null) => void;
 }
 
-const PermissionsContext = createContext<PermissionsContextType | undefined>(undefined);
+const PermissionsContext = createContext<PermissionsContextType | undefined>(
+  undefined,
+);
 
 export function PermissionsProvider({ children }: { children: ReactNode }) {
   const [role, setRoleState] = useState<UserRole | null>(null);
@@ -24,7 +32,13 @@ export function PermissionsProvider({ children }: { children: ReactNode }) {
     const loadRole = async () => {
       try {
         const savedRole = await AsyncStorage.getItem("user_permisos");
-        if (savedRole && (savedRole === "owner" || savedRole === "admin" || savedRole === "seller" || savedRole === "editor")) {
+        if (
+          savedRole &&
+          (savedRole === "owner" ||
+            savedRole === "admin" ||
+            savedRole === "seller" ||
+            savedRole === "editor")
+        ) {
           setRoleState(savedRole as UserRole);
         }
       } catch (error) {
@@ -49,7 +63,7 @@ export function PermissionsProvider({ children }: { children: ReactNode }) {
   // Lógica de permisos según el rol
   const canCreate = role === "owner" || role === "admin" || role === "editor";
   const canAccessAlmacenamientos = role === "owner" || role === "admin";
-  const canAccessVentas = role === "owner";
+  const canAccessVentas = role === "owner" || role === "admin";
   const canAccessAuditorias = role === "owner";
 
   const value: PermissionsContextType = {
@@ -76,4 +90,3 @@ export function usePermissions() {
   }
   return context;
 }
-

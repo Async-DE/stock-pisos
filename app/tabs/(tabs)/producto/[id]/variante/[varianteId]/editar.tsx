@@ -38,6 +38,7 @@ import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
 import { showSuccess, showError } from "@/utils/notifications";
+import { usePermissions } from "@/contexts/PermissionsContext";
 
 type SelectedImage = {
   uri: string;
@@ -121,6 +122,7 @@ const mapUbicacionesFromResponse = (ubicacionesData: any[]): Ubicacion[] => {
 
 export default function EditarVariante() {
   const router = useRouter();
+  const { canCreate } = usePermissions();
   const { id, varianteId } = useLocalSearchParams<{
     id: string;
     varianteId: string;
@@ -165,6 +167,19 @@ export default function EditarVariante() {
 
   const [initialSnapshot, setInitialSnapshot] =
     useState<VariantSnapshot | null>(null);
+
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const token = await AsyncStorage.getItem("token");
+      const role = await AsyncStorage.getItem("user_permisos");
+      if (!canCreate && token && role) {
+        showError("No tienes permisos para editar variantes");
+        router.replace(`/tabs/(tabs)/producto/${productId || ""}`);
+      }
+    };
+
+    checkPermissions();
+  }, [canCreate, router, productId]);
 
   useEffect(() => {
     const fetchData = async () => {

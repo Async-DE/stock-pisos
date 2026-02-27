@@ -6,11 +6,24 @@ import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Center } from "@/components/ui/center";
 import { Button, ButtonText, ButtonIcon } from "@/components/ui/button";
-import { ActivityIndicator, ImageBackground, RefreshControl, Pressable } from "react-native";
+import {
+  ActivityIndicator,
+  ImageBackground,
+  RefreshControl,
+  Pressable,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { ArrowLeft, ChevronLeft, ChevronRight, History } from "lucide-react-native";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  History,
+} from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { request } from "@/constants/Request";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showError } from "@/utils/notifications";
 
 type Usuario = {
   id: number;
@@ -85,6 +98,7 @@ const ITEMS_PER_PAGE = 8;
 
 export default function Auditorias() {
   const router = useRouter();
+  const { canAccessAuditorias } = usePermissions();
   const [auditorias, setAuditorias] = useState<Auditoria[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -92,13 +106,26 @@ export default function Auditorias() {
   const [hasMore, setHasMore] = useState(true);
   const isLoadingRef = useRef(false);
 
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const token = await AsyncStorage.getItem("token");
+      const role = await AsyncStorage.getItem("user_permisos");
+      if (!canAccessAuditorias && token && role) {
+        showError("No tienes permisos para ver auditorías");
+        router.replace("/tabs/(tabs)/almacenamientos");
+      }
+    };
+
+    checkPermissions();
+  }, [canAccessAuditorias, router]);
+
   const fetchAuditorias = useCallback(async (page: number = 0) => {
     if (isLoadingRef.current) return;
 
     isLoadingRef.current = true;
     setLoading(true);
     const currentSkip = page * ITEMS_PER_PAGE;
-    
+
     try {
       const response = await request(
         `/stock/auditoria/general?take=${ITEMS_PER_PAGE}&skip=${currentSkip}`,
@@ -210,7 +237,7 @@ export default function Auditorias() {
         setHasMore(true);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []),
   );
 
   const handleRefresh = useCallback(async () => {
@@ -223,7 +250,7 @@ export default function Auditorias() {
 
   const goToNextPage = useCallback(() => {
     if (isLoadingRef.current || !hasMore) return;
-    
+
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
     fetchAuditorias(nextPage);
@@ -231,7 +258,7 @@ export default function Auditorias() {
 
   const goToPreviousPage = useCallback(() => {
     if (isLoadingRef.current || currentPage === 0) return;
-    
+
     const prevPage = currentPage - 1;
     setCurrentPage(prevPage);
     fetchAuditorias(prevPage);
@@ -300,9 +327,7 @@ export default function Auditorias() {
                 {audit.accion}
               </Text>
             </Box>
-            <Text className="text-gray-400 text-xs">
-              ID: {audit.id}
-            </Text>
+            <Text className="text-gray-400 text-xs">ID: {audit.id}</Text>
           </HStack>
           <Text className="text-gray-400 text-xs">
             {formatDate(audit.createdAt)}
@@ -311,9 +336,7 @@ export default function Auditorias() {
 
         {/* Usuario */}
         <Box className="mb-3 bg-secondary-700/60 rounded-xl p-3">
-          <Text className="text-gray-400 text-xs uppercase mb-2">
-            Usuario
-          </Text>
+          <Text className="text-gray-400 text-xs uppercase mb-2">Usuario</Text>
           <VStack space="xs">
             <HStack space="sm" className="items-center justify-between">
               <Text className="text-gray-300 text-sm">Nombre:</Text>
@@ -423,7 +446,9 @@ export default function Auditorias() {
               {audit.accion === "LOGIN" ? "Sesión Iniciada" : "Sesión Cerrada"}
             </Text>
             <Text className="text-gray-300 text-sm">
-              El usuario {audit.usuario.nombre} ({audit.usuario.usuario}) {audit.accion === "LOGIN" ? "inició sesión" : "cerró sesión"} en el sistema.
+              El usuario {audit.usuario.nombre} ({audit.usuario.usuario}){" "}
+              {audit.accion === "LOGIN" ? "inició sesión" : "cerró sesión"} en
+              el sistema.
             </Text>
           </Box>
         )}
@@ -465,7 +490,9 @@ export default function Auditorias() {
         {(audit.accion === "UPDATE" || audit.accion === "DELETE") && (
           <Box className="mb-3 bg-secondary-700/60 rounded-xl p-3">
             <Text className="text-gray-400 text-xs uppercase mb-2">
-              {audit.accion === "UPDATE" ? "Registro Actualizado" : "Registro Eliminado"}
+              {audit.accion === "UPDATE"
+                ? "Registro Actualizado"
+                : "Registro Eliminado"}
             </Text>
             <VStack space="xs">
               {audit.estanteId && (
@@ -580,7 +607,9 @@ export default function Auditorias() {
                   </Text>
                 </HStack>
                 <HStack space="sm" className="items-center justify-between">
-                  <Text className="text-gray-300 text-sm">Precio Contratista:</Text>
+                  <Text className="text-gray-300 text-sm">
+                    Precio Contratista:
+                  </Text>
                   <Text className="text-white text-sm font-semibold">
                     {formatPrice(audit.venta.precio_contratista)}
                   </Text>
@@ -628,9 +657,7 @@ export default function Auditorias() {
 
           <HStack space="sm" className="items-center mb-6">
             <History size={24} color="#13E000" strokeWidth={2} />
-            <Text className="text-white text-2xl font-bold">
-              Auditorías
-            </Text>
+            <Text className="text-white text-2xl font-bold">Auditorías</Text>
           </HStack>
 
           {/* Botones de navegación al inicio */}
@@ -683,9 +710,7 @@ export default function Auditorias() {
             </Center>
           ) : (
             <>
-              <VStack space="md">
-                {auditorias.map(renderAuditoria)}
-              </VStack>
+              <VStack space="md">{auditorias.map(renderAuditoria)}</VStack>
 
               {/* Botones de navegación al final */}
               <Box className="mt-6">
@@ -736,4 +761,3 @@ export default function Auditorias() {
     </ImageBackground>
   );
 }
-

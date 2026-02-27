@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -9,9 +9,17 @@ import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Button, ButtonText } from "@/components/ui/button";
 import { ActivityIndicator, Pressable, ImageBackground } from "react-native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, CalendarSearch, Search, Calendar } from "lucide-react-native";
+import {
+  ArrowLeft,
+  CalendarSearch,
+  Search,
+  Calendar,
+} from "lucide-react-native";
 import { request } from "@/constants/Request";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showError } from "@/utils/notifications";
 
 type Variante = {
   nombre: string;
@@ -51,6 +59,7 @@ type Errors = {
 
 export default function BuscarVentas() {
   const router = useRouter();
+  const { canAccessVentas } = usePermissions();
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -66,6 +75,19 @@ export default function BuscarVentas() {
     endDate: "",
     search: "",
   });
+
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const token = await AsyncStorage.getItem("token");
+      const role = await AsyncStorage.getItem("user_permisos");
+      if (!canAccessVentas && token && role) {
+        showError("No tienes permisos para consultar ventas");
+        router.replace("/tabs/(tabs)/almacenamientos");
+      }
+    };
+
+    checkPermissions();
+  }, [canAccessVentas, router]);
 
   const formatDate = (value: string) => {
     const date = new Date(value);
@@ -321,7 +343,9 @@ export default function BuscarVentas() {
                     >
                       <HStack space="xs" className="items-center">
                         <Calendar size={20} color="#13E000" strokeWidth={2} />
-                        <Text className="text-gray-200 text-xs">Calendario</Text>
+                        <Text className="text-gray-200 text-xs">
+                          Calendario
+                        </Text>
                       </HStack>
                     </Pressable>
                     {startDateValue ? (
@@ -354,7 +378,9 @@ export default function BuscarVentas() {
                     >
                       <HStack space="xs" className="items-center">
                         <Calendar size={20} color="#13E000" strokeWidth={2} />
-                        <Text className="text-gray-200 text-xs">Calendario</Text>
+                        <Text className="text-gray-200 text-xs">
+                          Calendario
+                        </Text>
                       </HStack>
                     </Pressable>
                     {endDateValue ? (
@@ -516,7 +542,9 @@ export default function BuscarVentas() {
                             space="sm"
                             className="items-center justify-between"
                           >
-                            <Text className="text-gray-300 text-sm">Nombre:</Text>
+                            <Text className="text-gray-300 text-sm">
+                              Nombre:
+                            </Text>
                             <Text className="text-white text-sm font-semibold">
                               {venta.variante.nombre}
                             </Text>
@@ -525,7 +553,9 @@ export default function BuscarVentas() {
                             space="sm"
                             className="items-center justify-between"
                           >
-                            <Text className="text-gray-300 text-sm">Código:</Text>
+                            <Text className="text-gray-300 text-sm">
+                              Código:
+                            </Text>
                             <Text className="text-white text-sm font-semibold">
                               {venta.variante.codigo}
                             </Text>
@@ -534,7 +564,9 @@ export default function BuscarVentas() {
                             space="sm"
                             className="items-center justify-between"
                           >
-                            <Text className="text-gray-300 text-sm">Color:</Text>
+                            <Text className="text-gray-300 text-sm">
+                              Color:
+                            </Text>
                             <Text className="text-white text-sm font-semibold">
                               {venta.variante.color}
                             </Text>
@@ -543,7 +575,9 @@ export default function BuscarVentas() {
                             space="sm"
                             className="items-center justify-between"
                           >
-                            <Text className="text-gray-300 text-sm">Medidas:</Text>
+                            <Text className="text-gray-300 text-sm">
+                              Medidas:
+                            </Text>
                             <Text className="text-white text-sm font-semibold">
                               {venta.variante.medidas}
                             </Text>
