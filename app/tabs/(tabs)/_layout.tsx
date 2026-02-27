@@ -78,6 +78,14 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="producto/[id]/variante/[varianteId]/editar"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
         name="estantes/nuevo"
         options={{
           href: null,
