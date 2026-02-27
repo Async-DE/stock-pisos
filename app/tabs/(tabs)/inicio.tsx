@@ -90,7 +90,10 @@ export default function Inicio() {
 
           setApiCategories(mapped);
         } else {
-          console.warn("No se encontraron categorías en la respuesta:", response);
+          console.warn(
+            "No se encontraron categorías en la respuesta:",
+            response,
+          );
         }
       } else {
         console.warn("Respuesta inesperada al cargar categorías:", response);
@@ -105,7 +108,7 @@ export default function Inicio() {
   useFocusEffect(
     useCallback(() => {
       fetchCategories();
-    }, [fetchCategories])
+    }, [fetchCategories]),
   );
 
   // Fetch products when subcategory is selected
@@ -144,9 +147,8 @@ export default function Inicio() {
                   : undefined;
 
               // Texto descriptivo corto para la card
-              const shortDescription = (
-                `${variante.color || ""} - ${variante.medidas || ""}`
-              ).trim();
+              const shortDescription =
+                `${variante.color || ""} - ${variante.medidas || ""}`.trim();
 
               mappedProducts.push({
                 id: producto.id * 1000 + index, // ID único para cada variante (para la tarjeta)
@@ -168,6 +170,8 @@ export default function Inicio() {
                       precio_contratista:
                         variante.precio_contratista?.toString() || "",
                       cantidad: variante.cantidad?.toString() || "",
+                      ubicacion_nombre:
+                        variante.ubicacion_almacen?.ubicacion?.nombre || "",
                       // Guardamos también la foto principal por consistencia
                       foto: firstPhotoUrl || "",
                     },

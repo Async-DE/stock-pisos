@@ -1,8 +1,9 @@
 import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { Pressable, Image } from "react-native";
-import { ShoppingBag, Star } from "lucide-react-native";
+import { ShoppingBag } from "lucide-react-native";
 import type { Product } from "./constants";
 
 interface ProductCardProps {
@@ -15,6 +16,11 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
   const handlePress = () => {
     onPress?.(product.id);
   };
+
+  const locationName =
+    product.variants?.[0]?.attributes?.ubicacion_nombre || "Sin ubicación";
+  const quantity = product.variants?.[0]?.attributes?.cantidad || "0";
+  const publicPrice = Number(product.price || 0).toFixed(2);
 
   return (
     <Pressable onPress={handlePress} className="mb-4">
@@ -51,13 +57,18 @@ export function ProductCard({ product, width, onPress }: ProductCardProps) {
             {product.name}
           </Text>
 
-          {/* Precios */}
           <Box className="items-start mt-2">
-            <HStack space="sm" className="items-center">
+            <VStack space="sm" className="justify-start mt-1">
               <Text className="text-[#169500] font-semibold text-base">
-                Almacén del Lago
+                {locationName}
               </Text>
-            </HStack>
+              <Text className="text-gray-300 text-sm">
+                Cantidad: {quantity}
+              </Text>
+              <Text className="text-gray-300 text-sm">
+                Precio: ${publicPrice}
+              </Text>
+            </VStack>
           </Box>
         </Box>
       </Box>

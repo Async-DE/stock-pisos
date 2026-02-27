@@ -20,9 +20,21 @@ import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 // Componente de fallback para errores
 function ErrorFallback({ error, resetErrorBoundary }: any) {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#000000" }}>
-      <Text className="text-white text-lg font-semibold mb-4">Error al cargar la búsqueda</Text>
-      <Text className="text-gray-400 text-sm mb-4">{error?.message || "Error desconocido"}</Text>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+        backgroundColor: "#000000",
+      }}
+    >
+      <Text className="text-white text-lg font-semibold mb-4">
+        Error al cargar la búsqueda
+      </Text>
+      <Text className="text-gray-400 text-sm mb-4">
+        {error?.message || "Error desconocido"}
+      </Text>
       {resetErrorBoundary && (
         <Pressable
           onPress={resetErrorBoundary}
@@ -105,7 +117,7 @@ function BuscarContent() {
         if (response.status === 200) {
           // Manejar diferentes estructuras de respuesta de forma segura
           let productosArray: any[] = [];
-          
+
           try {
             if (Array.isArray(response.data?.data)) {
               productosArray = response.data.data;
@@ -146,30 +158,32 @@ function BuscarContent() {
                       Array.isArray(variante.fotos) && variante.fotos.length > 0
                         ? variante.fotos[0]?.url
                         : undefined;
-                    
-                    const shortDescription = (
-                      `${variante?.color || ""} - ${variante?.medidas || ""}`
-                    ).trim();
+
+                    const shortDescription =
+                      `${variante?.color || ""} - ${variante?.medidas || ""}`.trim();
 
                     mappedProducts.push({
                       id: variantId,
                       productId: productId,
                       name: variante?.nombre || `Producto ${productId}`,
-                      price: typeof variante?.precio_publico === "number"
-                        ? variante.precio_publico
-                        : 0,
+                      price:
+                        typeof variante?.precio_publico === "number"
+                          ? variante.precio_publico
+                          : 0,
                       image: firstPhotoUrl,
                       description: shortDescription || undefined,
                       variants: [
                         {
                           id: variantId,
                           name: variante?.nombre || "",
-                          price: typeof variante?.precio_publico === "number"
-                            ? variante.precio_publico
-                            : 0,
-                          stock: typeof variante?.cantidad === "number"
-                            ? variante.cantidad
-                            : 0,
+                          price:
+                            typeof variante?.precio_publico === "number"
+                              ? variante.precio_publico
+                              : 0,
+                          stock:
+                            typeof variante?.cantidad === "number"
+                              ? variante.cantidad
+                              : 0,
                           attributes: {
                             color: variante?.color || "",
                             medidas: variante?.medidas || "",
@@ -181,6 +195,9 @@ function BuscarContent() {
                               variante?.cantidad != null
                                 ? String(variante.cantidad)
                                 : "",
+                            ubicacion_nombre:
+                              variante?.ubicacion_almacen?.ubicacion?.nombre ||
+                              "",
                             foto: firstPhotoUrl || "",
                           },
                         },
@@ -277,7 +294,7 @@ function BuscarContent() {
             onSearchChange={setSearchTerm}
             selectedCategory={null}
             onBack={() => {}}
-              onScanPress={() => setIsScannerOpen(true)}
+            onScanPress={() => setIsScannerOpen(true)}
           />
 
           {/* Contenido: Resultados o mensajes */}
