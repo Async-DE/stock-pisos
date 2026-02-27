@@ -92,6 +92,9 @@ type SelectedImage = {
   type: string;
 };
 
+const ALLOWED_IMAGE_EXTENSIONS = ["jpeg", "jpg", "png", "webp"];
+const MAX_FILES = 5;
+
 export default function NuevaVariante() {
   const router = useRouter();
   const { canCreate } = usePermissions();
@@ -132,11 +135,13 @@ export default function NuevaVariante() {
   const [color, setColor] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [cantidad, setCantidad] = useState("");
-  const [medidas, setMedidas] = useState("");
+  const [alto, setAlto] = useState("");
+  const [ancho, setAncho] = useState("");
+  const [largo, setLargo] = useState("");
   const [precioPublico, setPrecioPublico] = useState("");
   const [precioContratista, setPrecioContratista] = useState("");
   const [costoCompra, setCostoCompra] = useState("");
-  const [image, setImage] = useState<SelectedImage | null>(null);
+  const [images, setImages] = useState<SelectedImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -216,13 +221,7 @@ export default function NuevaVariante() {
   };
 
   const handleCreateEstante = async () => {
-    if (
-      !selectedUbicacionId ||
-      !pasillo.trim() ||
-      !seccion.trim() ||
-      !tipoAlmacen.trim() ||
-      !descripcionAlmacen.trim()
-    ) {
+    if (!selectedUbicacionId || !pasillo.trim() || !seccion.trim()) {
       showError("Completa todos los campos para crear la ubicacion de almacen");
       return;
     }
@@ -237,12 +236,29 @@ export default function NuevaVariante() {
     setIsCreatingEstante(true);
     try {
       const seccionUpper = seccion.trim().toUpperCase();
-      const response = await request("/stock/ubicacion-almacen/crear", "POST", {
+      const payload: {
+        codigo: string;
+        ubicacion_id: number;
+        tipo?: string;
+        descripcion?: string;
+      } = {
         codigo: `${seccionUpper}-${pasilloNum}`,
-        tipo: tipoAlmacen.trim(),
-        descripcion: descripcionAlmacen.trim(),
         ubicacion_id: parseInt(selectedUbicacionId, 10),
-      });
+      };
+
+      if (tipoAlmacen.trim()) {
+        payload.tipo = tipoAlmacen.trim();
+      }
+
+      if (descripcionAlmacen.trim()) {
+        payload.descripcion = descripcionAlmacen.trim();
+      }
+
+      const response = await request(
+        "/stock/ubicacion-almacen/crear",
+        "POST",
+        payload,
+      );
 
       if (response.status === 200 || response.status === 201) {
         showSuccess("Ubicacion de almacen creada correctamente");
@@ -276,7 +292,8 @@ export default function NuevaVariante() {
     precioPublico.trim() &&
     precioContratista.trim() &&
     costoCompra.trim() &&
-    image?.uri;
+    images.length > 0 &&
+    images.length <= MAX_FILES;
 
   const pickImage = async (source: "camera" | "library") => {
     const permissions =
@@ -299,23 +316,58 @@ export default function NuevaVariante() {
             allowsEditing: true,
             quality: 0.8,
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            selectionLimit: MAX_FILES,
           });
 
     if (result.canceled || !result.assets?.length) {
       return;
     }
 
-    const asset = result.assets[0];
-    const uri = asset.uri;
-    const filename = asset.fileName || uri.split("/").pop() || "foto.jpg";
-    const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
-    const mimeType = asset.mimeType || `image/${ext === "jpg" ? "jpeg" : ext}`;
+    const selectedFromPicker: SelectedImage[] = result.assets
+      .map((asset) => {
+        const uri = asset.uri;
+        const filename = asset.fileName || uri.split("/").pop() || "foto.jpg";
+        const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+        const mimeType = (
+          asset.mimeType || `image/${ext === "jpg" ? "jpeg" : ext}`
+        ).toLowerCase();
+        return {
+          uri,
+          name: filename,
+          type: mimeType,
+        };
+      })
+      .filter((file) => {
+        const ext = file.name.split(".").pop()?.toLowerCase() || "";
+        const mimeSubtype = file.type.split("/")[1] || "";
+        return (
+          ALLOWED_IMAGE_EXTENSIONS.includes(ext) ||
+          ALLOWED_IMAGE_EXTENSIONS.includes(mimeSubtype)
+        );
+      });
 
-    setImage({
-      uri,
-      name: filename,
-      type: mimeType,
+    if (!selectedFromPicker.length) {
+      showError("Solo se permiten imágenes JPG, JPEG, PNG o WEBP");
+      return;
+    }
+
+    setImages((prev) => {
+      const merged = [...prev, ...selectedFromPicker].filter(
+        (file, index, arr) =>
+          arr.findIndex((item) => item.uri === file.uri) === index,
+      );
+
+      if (merged.length > MAX_FILES) {
+        showError(`Máximo ${MAX_FILES} imágenes`);
+      }
+
+      return merged.slice(0, MAX_FILES);
     });
+  };
+
+  const removeImage = (uri: string) => {
+    setImages((prev) => prev.filter((image) => image.uri !== uri));
   };
 
   const handleSubmit = async () => {
@@ -340,20 +392,32 @@ export default function NuevaVariante() {
       formData.append("precio_contratista", precioContratista.trim());
       formData.append("costo_compra", costoCompra.trim());
 
-      const medidasParts = medidas
-        .split(/[xX]/)
-        .map((value) => value.trim())
-        .filter(Boolean);
-
-      if (medidasParts.length === 3) {
-        const [alto, ancho, largo] = medidasParts;
-        formData.append("alto", alto);
-        formData.append("ancho", ancho);
-        formData.append("largo", largo);
+      if (alto.trim()) {
+        formData.append("alto", alto.trim());
       }
 
-      if (image) {
-        formData.append("files", {
+      if (ancho.trim()) {
+        formData.append("ancho", ancho.trim());
+      }
+
+      if (largo.trim()) {
+        formData.append("largo", largo.trim());
+      }
+
+      if (images.length === 0) {
+        showError("Debes agregar al menos 1 imagen");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (images.length > MAX_FILES) {
+        showError(`Máximo ${MAX_FILES} imágenes`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      for (const image of images) {
+        formData.append("foto", {
           uri: image.uri,
           name: image.name,
           type: image.type,
@@ -375,7 +439,14 @@ export default function NuevaVariante() {
         showSuccess("Variante creada correctamente");
         router.back();
       } else {
-        const errorText = await response.text();
+        let errorText = "";
+        try {
+          const errorJson = await response.json();
+          errorText =
+            errorJson?.message || errorJson?.error || JSON.stringify(errorJson);
+        } catch {
+          errorText = await response.text();
+        }
         showError(
           errorText ||
             "No se pudo crear la variante. Verifica los datos e intenta de nuevo",
@@ -448,7 +519,7 @@ export default function NuevaVariante() {
                 <VStack space="md">
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Ubicacion
+                      Ubicacion *
                     </Text>
                     <Select
                       selectedValue={selectedUbicacionId}
@@ -487,7 +558,7 @@ export default function NuevaVariante() {
                   <Box>
                     <HStack className="items-center justify-between mb-2">
                       <Text className="text-gray-400 text-sm">
-                        Ubicacion almacen
+                        Ubicacion almacen *
                       </Text>
                       {selectedUbicacionId && availableEstantes.length > 0 && (
                         <Button
@@ -513,10 +584,14 @@ export default function NuevaVariante() {
                           <Text className="text-white font-semibold text-sm mb-3">
                             Crear ubicacion almacen
                           </Text>
+                          <Text className="text-gray-500 text-xs mb-3">
+                            Sección y Pasillo son obligatorios. Tipo y
+                            Descripción son opcionales.
+                          </Text>
                           <VStack space="md">
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Pasillo
+                                Pasillo *
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -530,7 +605,7 @@ export default function NuevaVariante() {
                             </Box>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Sección
+                                Sección *
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -544,7 +619,7 @@ export default function NuevaVariante() {
                             </Box>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Tipo
+                                Tipo (opcional)
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -557,7 +632,7 @@ export default function NuevaVariante() {
                             </Box>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Descripcion
+                                Descripcion (opcional)
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -576,9 +651,7 @@ export default function NuevaVariante() {
                               isDisabled={
                                 isCreatingEstante ||
                                 !pasillo.trim() ||
-                                !seccion.trim() ||
-                                !tipoAlmacen.trim() ||
-                                !descripcionAlmacen.trim()
+                                !seccion.trim()
                               }
                             >
                               <ButtonText className="text-black font-semibold text-sm">
@@ -665,7 +738,7 @@ export default function NuevaVariante() {
                 </Text>
                 <VStack space="md">
                   <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Nombre</Text>
+                    <Text className="text-gray-400 text-sm mb-2">Nombre *</Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: Decoraciones El Lago"
@@ -677,7 +750,7 @@ export default function NuevaVariante() {
                   </Box>
 
                   <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Codigo</Text>
+                    <Text className="text-gray-400 text-sm mb-2">Codigo *</Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: DL-200"
@@ -689,7 +762,7 @@ export default function NuevaVariante() {
                   </Box>
 
                   <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Color</Text>
+                    <Text className="text-gray-400 text-sm mb-2">Color *</Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: Azul"
@@ -702,7 +775,7 @@ export default function NuevaVariante() {
 
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Descripcion
+                      Descripcion *
                     </Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
@@ -717,7 +790,7 @@ export default function NuevaVariante() {
                   <HStack space="md" className="items-start">
                     <Box className="flex-1">
                       <Text className="text-gray-400 text-sm mb-2">
-                        Cantidad
+                        Cantidad *
                       </Text>
                       <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
@@ -731,13 +804,45 @@ export default function NuevaVariante() {
                     </Box>
                     <Box className="flex-1">
                       <Text className="text-gray-400 text-sm mb-2">
-                        Medidas
+                        Alto (opcional)
                       </Text>
                       <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
-                          placeholder="Ej: 15x16x35"
-                          value={medidas}
-                          onChangeText={setMedidas}
+                          placeholder="Ej: 2.5"
+                          keyboardType="numeric"
+                          value={alto}
+                          onChangeText={setAlto}
+                          className="text-white"
+                        />
+                      </Input>
+                    </Box>
+                  </HStack>
+
+                  <HStack space="md" className="items-start">
+                    <Box className="flex-1">
+                      <Text className="text-gray-400 text-sm mb-2">
+                        Ancho (opcional)
+                      </Text>
+                      <Input className="bg-secondary-600 border-[#169500] rounded-xl">
+                        <InputField
+                          placeholder="Ej: 1.2"
+                          keyboardType="numeric"
+                          value={ancho}
+                          onChangeText={setAncho}
+                          className="text-white"
+                        />
+                      </Input>
+                    </Box>
+                    <Box className="flex-1">
+                      <Text className="text-gray-400 text-sm mb-2">
+                        Largo (opcional)
+                      </Text>
+                      <Input className="bg-secondary-600 border-[#169500] rounded-xl">
+                        <InputField
+                          placeholder="Ej: 0.8"
+                          keyboardType="numeric"
+                          value={largo}
+                          onChangeText={setLargo}
                           className="text-white"
                         />
                       </Input>
@@ -753,7 +858,7 @@ export default function NuevaVariante() {
                 <VStack space="md">
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Precio publico
+                      Precio publico *
                     </Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
@@ -767,7 +872,7 @@ export default function NuevaVariante() {
                   </Box>
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Precio contratista
+                      Precio contratista *
                     </Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
@@ -781,7 +886,7 @@ export default function NuevaVariante() {
                   </Box>
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Costo compra
+                      Costo compra *
                     </Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
@@ -798,23 +903,57 @@ export default function NuevaVariante() {
 
               <Box className="bg-secondary-500/50 border border-[#169500]/30 rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
-                  Foto de la variante
+                  Foto de la variante *
                 </Text>
                 <VStack space="md">
-                  {image ? (
-                    <Box className="border border-[#169500]/40 rounded-2xl overflow-hidden">
-                      <Image
-                        source={{ uri: image.uri }}
-                        style={{ width: "100%", height: 220 }}
-                      />
-                    </Box>
+                  {images.length > 0 ? (
+                    <VStack space="sm">
+                      <Box className="border border-[#169500]/40 rounded-2xl overflow-hidden">
+                        <Image
+                          source={{ uri: images[0].uri }}
+                          style={{ width: "100%", height: 220 }}
+                        />
+                      </Box>
+
+                      <HStack space="sm" className="flex-wrap">
+                        {images.map((image, index) => (
+                          <Box
+                            key={image.uri}
+                            className="w-[31%] border border-[#169500]/30 rounded-lg p-1"
+                          >
+                            <Image
+                              source={{ uri: image.uri }}
+                              style={{
+                                width: "100%",
+                                height: 72,
+                                borderRadius: 8,
+                              }}
+                            />
+                            <Pressable
+                              onPress={() => removeImage(image.uri)}
+                              className="mt-1 bg-secondary-700 border border-[#169500]/40 rounded-md px-2 py-1"
+                            >
+                              <Text className="text-gray-300 text-xs text-center">
+                                Quitar #{index + 1}
+                              </Text>
+                            </Pressable>
+                          </Box>
+                        ))}
+                      </HStack>
+                    </VStack>
                   ) : (
                     <Center className="border border-dashed border-[#169500]/40 rounded-2xl py-8">
                       <ImagePlus size={36} color="#13E000" strokeWidth={1.5} />
                       <Text className="text-gray-400 text-sm mt-2">
-                        Agrega una foto (JPG, PNG o WEBP)
+                        Agrega entre 1 y 5 fotos (JPG, JPEG, PNG o WEBP)
                       </Text>
                     </Center>
+                  )}
+
+                  {images.length > 0 && (
+                    <Text className="text-gray-400 text-xs text-center">
+                      {images.length} de {MAX_FILES} imágenes seleccionadas
+                    </Text>
                   )}
 
                   <HStack space="md" className="items-center">
@@ -839,10 +978,10 @@ export default function NuevaVariante() {
                       <ButtonText className="text-[#169500]">Cargar</ButtonText>
                     </Button>
                   </HStack>
-                  {image && (
-                    <Pressable onPress={() => setImage(null)}>
+                  {images.length > 0 && (
+                    <Pressable onPress={() => setImages([])}>
                       <Text className="text-gray-500 text-sm text-center">
-                        Quitar foto
+                        Quitar fotos
                       </Text>
                     </Pressable>
                   )}
