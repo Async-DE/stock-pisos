@@ -73,10 +73,10 @@ export default function NuevoEstante() {
       setLoadingData(true);
       try {
         const response = await request("/stock/ubicaciones/ver", "GET");
-        
+
         // La respuesta del servidor es: { message: "...", data: [...] }
         const ubicacionesData = response.data?.data || response.data;
-        
+
         if (response.status === 200 && Array.isArray(ubicacionesData)) {
           // Mapear solo los campos necesarios (id y nombre)
           const ubicacionesMapeadas = ubicacionesData.map((ubicacion: any) => ({
@@ -159,14 +159,21 @@ export default function NuevoEstante() {
 
     setIsSubmitting(true);
     try {
+      const seccionUpper = seccion.trim().toUpperCase();
+      const pasilloNum = Number(pasillo);
+      const nivelesNum = Number(niveles);
       const payload = {
-        pasillo: Number(pasillo),
-        seccion: seccion.trim(),
-        niveles: Number(niveles),
-        ubicacionId: Number(ubicacionId),
+        codigo: `${seccionUpper}-${pasilloNum}`,
+        tipo: "estante",
+        descripcion: `Estante ${seccionUpper}, pasillo ${pasilloNum}, niveles ${nivelesNum}`,
+        ubicacion_id: Number(ubicacionId),
       };
 
-      const response = await request("/stock/estantes/crear", "POST", payload);
+      const response = await request(
+        "/stock/ubicacion-almacen/crear",
+        "POST",
+        payload,
+      );
 
       if (response.status === 200 || response.status === 201) {
         clearForm();

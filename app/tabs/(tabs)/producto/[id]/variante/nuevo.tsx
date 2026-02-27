@@ -20,31 +20,70 @@ import {
   SelectItem,
   SelectScrollView,
 } from "@/components/ui/select";
-import { ActivityIndicator, Image, Pressable, ImageBackground } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ImageBackground,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Camera, ChevronDown, ImagePlus, Plus } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Camera,
+  ChevronDown,
+  ImagePlus,
+  Plus,
+} from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
 import { showSuccess, showError } from "@/utils/notifications";
 import { usePermissions } from "@/contexts/PermissionsContext";
 
-type Nivel = {
+type UbicacionAlmacen = {
   id: number;
-  niveles: number;
-};
-
-type Estante = {
-  id: number;
-  Seccion: string;
-  pasillo: number;
-  niveles?: Nivel[];
+  codigo: string;
+  tipo?: string;
+  descripcion?: string;
 };
 
 type Ubicacion = {
   id: number;
   nombre: string;
-  estantes?: Estante[];
+  ubicacioneAlmacen?: UbicacionAlmacen[];
+};
+
+const mapUbicacionesFromResponse = (ubicacionesData: any[]): Ubicacion[] => {
+  return ubicacionesData.map((ubicacion: any) => {
+    const estantesLegacy = Array.isArray(ubicacion.estantes)
+      ? ubicacion.estantes.map((estante: any) => ({
+          id: estante.id,
+          codigo: `${estante.Seccion || "N/A"}-${estante.pasillo || 0}`,
+          tipo: "estante",
+          descripcion: `Sección ${estante.Seccion || "N/A"} • Pasillo ${estante.pasillo || 0}`,
+        }))
+      : [];
+
+    const estantesFromUbicacionAlmacen = Array.isArray(
+      ubicacion.ubicacione_almacen,
+    )
+      ? ubicacion.ubicacione_almacen.map((item: any) => ({
+          id: item.id,
+          codigo: item.codigo || "N/A",
+          tipo: item.tipo,
+          descripcion: item.descripcion,
+        }))
+      : [];
+
+    return {
+      id: ubicacion.id,
+      nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+      ubicacioneAlmacen:
+        estantesLegacy.length > 0
+          ? estantesLegacy
+          : estantesFromUbicacionAlmacen,
+    };
+  });
 };
 
 type SelectedImage = {
@@ -79,7 +118,6 @@ export default function NuevaVariante() {
 
   const [selectedUbicacionId, setSelectedUbicacionId] = useState("");
   const [selectedEstanteId, setSelectedEstanteId] = useState("");
-  const [selectedNivelId, setSelectedNivelId] = useState("");
 
   // Estados para crear estante
   const [showCreateEstante, setShowCreateEstante] = useState(false);
@@ -110,32 +148,23 @@ export default function NuevaVariante() {
         const ubicacionesData = response.data?.data || response.data;
 
         if (response.status === 200 && Array.isArray(ubicacionesData)) {
-          console.log(`[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`, ubicacionesData.length);
+          console.log(
+            `[${new Date().toLocaleTimeString()}] Ubicaciones cargadas:`,
+            ubicacionesData.length,
+          );
           // Validar y mapear la estructura anidada
-          const ubicacionesValidadas = ubicacionesData.map((ubicacion: any) => ({
-            id: ubicacion.id,
-            nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
-            estantes: Array.isArray(ubicacion.estantes)
-              ? ubicacion.estantes.map((estante: any) => ({
-                  id: estante.id,
-                  Seccion: estante.Seccion || "N/A",
-                  pasillo: estante.pasillo || 0,
-                  niveles: Array.isArray(estante.niveles)
-                    ? estante.niveles.map((nivel: any) => ({
-                        id: nivel.id,
-                        niveles: nivel.niveles || 0,
-                      }))
-                    : [],
-                }))
-              : [],
-          }));
+          const ubicacionesValidadas =
+            mapUbicacionesFromResponse(ubicacionesData);
           setUbicaciones(ubicacionesValidadas);
         } else {
           console.warn("Respuesta no válida del endpoint de ubicaciones");
           showError("Formato de respuesta inválido");
         }
       } catch (error) {
-        console.error(`[${new Date().toLocaleTimeString()}] Error cargando ubicaciones:`, error);
+        console.error(
+          `[${new Date().toLocaleTimeString()}] Error cargando ubicaciones:`,
+          error,
+        );
         showError("No se pudieron cargar las ubicaciones");
       } finally {
         setLoadingData(false);
@@ -150,56 +179,32 @@ export default function NuevaVariante() {
     [ubicaciones, selectedUbicacionId],
   );
 
-  const availableEstantes = selectedUbicacion?.estantes ?? [];
-
-  const selectedEstante = useMemo(
-    () =>
-      availableEstantes.find((item) => String(item.id) === selectedEstanteId),
-    [availableEstantes, selectedEstanteId],
-  );
-
-  const availableNiveles = selectedEstante?.niveles ?? [];
+  const availableEstantes = selectedUbicacion?.ubicacioneAlmacen ?? [];
 
   const resetUbicacionChain = () => {
     setSelectedEstanteId("");
-    setSelectedNivelId("");
     setShowCreateEstante(false);
     setPasillo("");
     setSeccion("");
     setNiveles("");
   };
 
-  const resetEstanteChain = () => {
-    setSelectedNivelId("");
-  };
-
   const reloadUbicaciones = async () => {
     try {
-      const ubicacionesResponse = await request("/stock/ubicaciones/ver", "GET");
-      
+      const ubicacionesResponse = await request(
+        "/stock/ubicaciones/ver",
+        "GET",
+      );
+
       if (ubicacionesResponse.status === 200) {
         // La respuesta del servidor es: { message: "...", data: [...] }
-        const ubicacionesData = ubicacionesResponse.data?.data || ubicacionesResponse.data;
-        
+        const ubicacionesData =
+          ubicacionesResponse.data?.data || ubicacionesResponse.data;
+
         if (Array.isArray(ubicacionesData)) {
-          const ubicacionesMapeadas = ubicacionesData.map((ubicacion: any) => ({
-            id: ubicacion.id,
-            nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
-            estantes: Array.isArray(ubicacion.estantes)
-              ? ubicacion.estantes.map((estante: any) => ({
-                  id: estante.id,
-                  Seccion: estante.Seccion || "N/A",
-                  pasillo: estante.pasillo || 0,
-                  niveles: Array.isArray(estante.niveles)
-                    ? estante.niveles.map((nivel: any) => ({
-                        id: nivel.id,
-                        niveles: nivel.niveles || 0,
-                      }))
-                    : [],
-                }))
-              : [],
-          }));
-          
+          const ubicacionesMapeadas =
+            mapUbicacionesFromResponse(ubicacionesData);
+
           setUbicaciones(ubicacionesMapeadas);
         }
       }
@@ -209,7 +214,12 @@ export default function NuevaVariante() {
   };
 
   const handleCreateEstante = async () => {
-    if (!selectedUbicacionId || !pasillo.trim() || !seccion.trim() || !niveles.trim()) {
+    if (
+      !selectedUbicacionId ||
+      !pasillo.trim() ||
+      !seccion.trim() ||
+      !niveles.trim()
+    ) {
       showError("Completa todos los campos para crear el estante");
       return;
     }
@@ -217,18 +227,24 @@ export default function NuevaVariante() {
     const pasilloNum = parseInt(pasillo);
     const nivelesNum = parseInt(niveles);
 
-    if (isNaN(pasilloNum) || isNaN(nivelesNum) || pasilloNum <= 0 || nivelesNum <= 0) {
+    if (
+      isNaN(pasilloNum) ||
+      isNaN(nivelesNum) ||
+      pasilloNum <= 0 ||
+      nivelesNum <= 0
+    ) {
       showError("El pasillo y niveles deben ser números válidos mayores a 0");
       return;
     }
 
     setIsCreatingEstante(true);
     try {
-      const response = await request("/stock/estantes/crear", "POST", {
-        pasillo: pasilloNum,
-        seccion: seccion.trim().toUpperCase(),
-        niveles: nivelesNum,
-        ubicacionId: parseInt(selectedUbicacionId),
+      const seccionUpper = seccion.trim().toUpperCase();
+      const response = await request("/stock/ubicacion-almacen/crear", "POST", {
+        codigo: `${seccionUpper}-${pasilloNum}`,
+        tipo: "estante",
+        descripcion: `Estante ${seccionUpper}, pasillo ${pasilloNum}, niveles ${nivelesNum}`,
+        ubicacion_id: parseInt(selectedUbicacionId, 10),
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -253,13 +269,12 @@ export default function NuevaVariante() {
 
   const isFormValid =
     productId &&
-    selectedNivelId &&
+    selectedEstanteId &&
     nombre.trim() &&
     codigo.trim() &&
     color.trim() &&
     descripcion.trim() &&
     cantidad.trim() &&
-    medidas.trim() &&
     precioPublico.trim() &&
     precioContratista.trim() &&
     costoCompra.trim() &&
@@ -317,19 +332,30 @@ export default function NuevaVariante() {
       const formData = new FormData();
 
       formData.append("productoId", String(productId));
-      formData.append("nivelesId", selectedNivelId);
+      formData.append("ubi_alma_id", selectedEstanteId);
       formData.append("nombre", nombre.trim());
       formData.append("codigo", codigo.trim());
       formData.append("color", color.trim());
       formData.append("descripcion", descripcion.trim());
       formData.append("cantidad", cantidad.trim());
-      formData.append("medidas", medidas.trim());
       formData.append("precio_publico", precioPublico.trim());
       formData.append("precio_contratista", precioContratista.trim());
       formData.append("costo_compra", costoCompra.trim());
 
+      const medidasParts = medidas
+        .split(/[xX]/)
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+      if (medidasParts.length === 3) {
+        const [alto, ancho, largo] = medidasParts;
+        formData.append("alto", alto);
+        formData.append("ancho", ancho);
+        formData.append("largo", largo);
+      }
+
       if (image) {
-        formData.append("foto", {
+        formData.append("files", {
           uri: image.uri,
           name: image.name,
           type: image.type,
@@ -352,7 +378,10 @@ export default function NuevaVariante() {
         router.back();
       } else {
         const errorText = await response.text();
-        showError(errorText || "No se pudo crear la variante. Verifica los datos e intenta de nuevo");
+        showError(
+          errorText ||
+            "No se pudo crear la variante. Verifica los datos e intenta de nuevo",
+        );
       }
     } catch (error) {
       console.error("Error creando variante:", error);
@@ -416,7 +445,7 @@ export default function NuevaVariante() {
             <VStack space="xl" className="mt-6">
               <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
-                  Ubicacion y nivel
+                  Ubicacion y estante
                 </Text>
                 <VStack space="md">
                   <Box>
@@ -465,7 +494,9 @@ export default function NuevaVariante() {
                           variant="outline"
                           size="sm"
                           className="border-[#169500]"
-                          onPress={() => setShowCreateEstante(!showCreateEstante)}
+                          onPress={() =>
+                            setShowCreateEstante(!showCreateEstante)
+                          }
                         >
                           <ButtonIcon as={Plus} className="text-[#169500]" />
                           <ButtonText className="text-[#169500] text-xs">
@@ -474,9 +505,9 @@ export default function NuevaVariante() {
                         </Button>
                       )}
                     </HStack>
-                    
-                    {selectedUbicacionId && (
-                      availableEstantes.length === 0 || showCreateEstante ? (
+
+                    {selectedUbicacionId &&
+                      (availableEstantes.length === 0 || showCreateEstante ? (
                         // Vista para crear estante
                         <Box className="bg-secondary-600/50 border border-[#169500]/50 rounded-xl p-4">
                           <Text className="text-white font-semibold text-sm mb-3">
@@ -484,7 +515,9 @@ export default function NuevaVariante() {
                           </Text>
                           <VStack space="md">
                             <Box>
-                              <Text className="text-gray-400 text-xs mb-2">Pasillo</Text>
+                              <Text className="text-gray-400 text-xs mb-2">
+                                Pasillo
+                              </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
                                   placeholder="Ej: 1"
@@ -496,7 +529,9 @@ export default function NuevaVariante() {
                               </Input>
                             </Box>
                             <Box>
-                              <Text className="text-gray-400 text-xs mb-2">Sección</Text>
+                              <Text className="text-gray-400 text-xs mb-2">
+                                Sección
+                              </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
                                   placeholder="Ej: A"
@@ -508,7 +543,9 @@ export default function NuevaVariante() {
                               </Input>
                             </Box>
                             <Box>
-                              <Text className="text-gray-400 text-xs mb-2">Niveles</Text>
+                              <Text className="text-gray-400 text-xs mb-2">
+                                Niveles
+                              </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
                                   placeholder="Ej: 4"
@@ -524,14 +561,23 @@ export default function NuevaVariante() {
                               action="primary"
                               className="bg-[#13E000] rounded-lg mt-2"
                               onPress={handleCreateEstante}
-                              isDisabled={isCreatingEstante || !pasillo.trim() || !seccion.trim() || !niveles.trim()}
+                              isDisabled={
+                                isCreatingEstante ||
+                                !pasillo.trim() ||
+                                !seccion.trim() ||
+                                !niveles.trim()
+                              }
                             >
                               <ButtonText className="text-black font-semibold text-sm">
-                                {isCreatingEstante ? "Creando..." : "Crear estante"}
+                                {isCreatingEstante
+                                  ? "Creando..."
+                                  : "Crear estante"}
                               </ButtonText>
                             </Button>
                             {availableEstantes.length > 0 && (
-                              <Pressable onPress={() => setShowCreateEstante(false)}>
+                              <Pressable
+                                onPress={() => setShowCreateEstante(false)}
+                              >
                                 <Text className="text-gray-400 text-xs text-center mt-2">
                                   Cancelar
                                 </Text>
@@ -543,17 +589,14 @@ export default function NuevaVariante() {
                         // Vista para seleccionar estante
                         <Select
                           selectedValue={selectedEstanteId}
-                          onValueChange={(value) => {
-                            setSelectedEstanteId(value);
-                            resetEstanteChain();
-                          }}
+                          onValueChange={setSelectedEstanteId}
                           isDisabled={!selectedUbicacionId}
                         >
                           <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
                             <SelectInput
                               placeholder={
                                 selectedUbicacionId
-                                  ? "Selecciona un estante"
+                                  ? "Selecciona una ubicacion de almacen"
                                   : "Selecciona una ubicacion primero"
                               }
                               className="text-white"
@@ -571,13 +614,17 @@ export default function NuevaVariante() {
                                   availableEstantes.map((estante) => (
                                     <SelectItem
                                       key={estante.id}
-                                      label={`Sección ${estante.Seccion} • Pasillo ${estante.pasillo}`}
+                                      label={
+                                        estante.descripcion
+                                          ? `${estante.codigo} • ${estante.descripcion}`
+                                          : estante.codigo
+                                      }
                                       value={String(estante.id)}
                                     />
                                   ))
                                 ) : (
                                   <SelectItem
-                                    label="No hay estantes disponibles"
+                                    label="No hay ubicaciones de almacen disponibles"
                                     value=""
                                     isDisabled
                                   />
@@ -586,9 +633,8 @@ export default function NuevaVariante() {
                             </SelectContent>
                           </SelectPortal>
                         </Select>
-                      )
-                    )}
-                    
+                      ))}
+
                     {!selectedUbicacionId && (
                       <Box className="bg-secondary-600/50 border border-[#169500]/30 rounded-xl p-4">
                         <Text className="text-gray-500 text-sm text-center">
@@ -596,52 +642,6 @@ export default function NuevaVariante() {
                         </Text>
                       </Box>
                     )}
-                  </Box>
-
-                  <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Nivel</Text>
-                    <Select
-                      selectedValue={selectedNivelId}
-                      onValueChange={setSelectedNivelId}
-                      isDisabled={!selectedEstanteId}
-                    >
-                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
-                        <SelectInput
-                          placeholder={
-                            selectedEstanteId
-                              ? "Selecciona un nivel"
-                              : "Selecciona un estante primero"
-                          }
-                          className="text-white"
-                        />
-                        <SelectIcon className="mr-3" as={ChevronDown} />
-                      </SelectTrigger>
-                      <SelectPortal>
-                        <SelectBackdrop />
-                        <SelectContent>
-                          <SelectDragIndicatorWrapper>
-                            <SelectDragIndicator />
-                          </SelectDragIndicatorWrapper>
-                          <SelectScrollView>
-                            {availableNiveles.length > 0 ? (
-                              availableNiveles.map((nivel) => (
-                                <SelectItem
-                                  key={nivel.id}
-                                  label={`Nivel ${nivel.niveles}`}
-                                  value={String(nivel.id)}
-                                />
-                              ))
-                            ) : (
-                              <SelectItem
-                                label="No hay niveles disponibles"
-                                value=""
-                                isDisabled
-                              />
-                            )}
-                          </SelectScrollView>
-                        </SelectContent>
-                      </SelectPortal>
-                    </Select>
                   </Box>
                 </VStack>
               </Box>
@@ -823,9 +823,7 @@ export default function NuevaVariante() {
                       onPress={() => pickImage("library")}
                     >
                       <ButtonIcon as={ImagePlus} className="text-[#169500]" />
-                      <ButtonText className="text-[#169500]">
-                        Cargar
-                      </ButtonText>
+                      <ButtonText className="text-[#169500]">Cargar</ButtonText>
                     </Button>
                   </HStack>
                   {image && (
