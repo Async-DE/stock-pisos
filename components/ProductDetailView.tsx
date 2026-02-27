@@ -3,8 +3,24 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Pressable, Image, ImageBackground, Modal, Dimensions, FlatList, View as RNView } from "react-native";
-import { ShoppingBag, ArrowLeft, Package, Check, ChevronDown, ChevronUp, X } from "lucide-react-native";
+import {
+  Pressable,
+  Image,
+  ImageBackground,
+  Modal,
+  Dimensions,
+  FlatList,
+  View as RNView,
+} from "react-native";
+import {
+  ShoppingBag,
+  ArrowLeft,
+  Package,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  X,
+} from "lucide-react-native";
 import type { Product, ProductVariant } from "./constants";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,11 +30,13 @@ import { Plus } from "lucide-react-native";
 interface ProductDetailViewProps {
   product: Product;
   onAddVariant?: () => void;
+  onEditVariant?: (variantId: number) => void;
 }
 
 export function ProductDetailView({
   product,
   onAddVariant,
+  onEditVariant,
 }: ProductDetailViewProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -29,7 +47,7 @@ export function ProductDetailView({
       ? product.variants[0]
       : null,
   );
-  
+
   // Resetear índice de imagen cuando cambia la variante
   const handleVariantChange = (variant: ProductVariant) => {
     setSelectedVariant(variant);
@@ -45,11 +63,11 @@ export function ProductDetailView({
   // Estado para mostrar la imagen en grande
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  
+
   // Referencias para el carrusel
   const carouselRef = useRef<FlatList>(null);
   const modalCarouselRef = useRef<FlatList>(null);
-  
+
   // Obtener array de fotos de la variante seleccionada
   const getVariantPhotos = (variant: ProductVariant | null): string[] => {
     if (!variant?.attributes?.fotos) {
@@ -193,7 +211,7 @@ export function ProductDetailView({
           {/* Carrusel de imágenes de la variante seleccionada */}
           {(() => {
             const photos = getVariantPhotos(selectedVariant);
-            
+
             if (photos.length === 0) {
               return (
                 <Box
@@ -204,9 +222,9 @@ export function ProductDetailView({
                 </Box>
               );
             }
-            
+
             const itemWidth = Dimensions.get("window").width - 32;
-            
+
             return (
               <Box className="mb-4">
                 <FlatList
@@ -223,7 +241,7 @@ export function ProductDetailView({
                   })}
                   onMomentumScrollEnd={(event) => {
                     const index = Math.round(
-                      event.nativeEvent.contentOffset.x / itemWidth
+                      event.nativeEvent.contentOffset.x / itemWidth,
                     );
                     setSelectedImageIndex(index);
                   }}
@@ -251,10 +269,13 @@ export function ProductDetailView({
                     </Pressable>
                   )}
                 />
-                
+
                 {/* Indicadores de página */}
                 {photos.length > 1 && (
-                  <HStack space="xs" className="justify-center items-center mt-2">
+                  <HStack
+                    space="xs"
+                    className="justify-center items-center mt-2"
+                  >
                     {photos.map((_, index) => (
                       <Box
                         key={`indicator-${index}`}
@@ -364,6 +385,19 @@ export function ProductDetailView({
                       Vender
                     </ButtonText>
                   </Button>
+                  {onEditVariant && (
+                    <Button
+                      size="md"
+                      variant="outline"
+                      action="secondary"
+                      className="border-[#13E000] rounded-full px-4"
+                      onPress={() => onEditVariant(selectedVariant.id)}
+                    >
+                      <ButtonText className="text-[#13E000] font-semibold">
+                        Actualizar
+                      </ButtonText>
+                    </Button>
+                  )}
                 </HStack>
               </Box>
 
@@ -404,7 +438,8 @@ export function ProductDetailView({
                       <Text className="text-white text-sm font-semibold">
                         {formatPrice(
                           parseFloat(
-                            selectedVariant.attributes?.ganacia_contratista || "0",
+                            selectedVariant.attributes?.ganacia_contratista ||
+                              "0",
                           ),
                         )}
                       </Text>
@@ -517,13 +552,15 @@ export function ProductDetailView({
           {/* Carrusel de imágenes en grande */}
           {(() => {
             const photos = getVariantPhotos(selectedVariant);
-            
+
             if (photos.length === 0) {
               return null;
             }
-            
+
             return (
-              <RNView style={{ flex: 1, width: "100%", justifyContent: "center" }}>
+              <RNView
+                style={{ flex: 1, width: "100%", justifyContent: "center" }}
+              >
                 <FlatList
                   ref={modalCarouselRef}
                   data={photos}
@@ -539,7 +576,8 @@ export function ProductDetailView({
                   })}
                   onMomentumScrollEnd={(event) => {
                     const index = Math.round(
-                      event.nativeEvent.contentOffset.x / Dimensions.get("window").width
+                      event.nativeEvent.contentOffset.x /
+                        Dimensions.get("window").width,
                     );
                     setSelectedImageIndex(index);
                   }}
@@ -564,11 +602,11 @@ export function ProductDetailView({
                     </Pressable>
                   )}
                 />
-                
+
                 {/* Indicadores de página en el modal */}
                 {photos.length > 1 && (
-                  <HStack 
-                    space="xs" 
+                  <HStack
+                    space="xs"
                     className="justify-center items-center"
                     style={{
                       position: "absolute",

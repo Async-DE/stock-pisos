@@ -32,34 +32,41 @@ export default function ProductDetailScreen() {
 
     try {
       const url = `/stock/productos/ver/${productId}`;
-      
-      console.log(`[${new Date().toLocaleTimeString()}] Consultando producto: ${productId}`);
-      
+
+      console.log(
+        `[${new Date().toLocaleTimeString()}] Consultando producto: ${productId}`,
+      );
+
       const response = await request(url, "GET");
 
-      console.log(`[${new Date().toLocaleTimeString()}] Respuesta recibida para producto ${productId}`);
+      console.log(
+        `[${new Date().toLocaleTimeString()}] Respuesta recibida para producto ${productId}`,
+      );
 
       // La respuesta del servidor es: { message: "...", data: {...} }
       const productoData = response.data?.data || response.data;
 
       if (response.status === 200 && productoData) {
-
         // Mapear respuesta del API al formato Product
         const mappedProduct: Product = {
           id: productoData.id,
           productId: productoData.id,
-          name: productoData.subcategoria?.nombre || `Producto ${productoData.id}`,
+          name:
+            productoData.subcategoria?.nombre || `Producto ${productoData.id}`,
           price: 0, // Se establecerá desde la variante seleccionada
-          description: `${productoData.subcategoria?.categoria?.nombre || ""} / ${productoData.subcategoria?.nombre || ""}`.trim(),
+          description:
+            `${productoData.subcategoria?.categoria?.nombre || ""} / ${productoData.subcategoria?.nombre || ""}`.trim(),
           variants: Array.isArray(productoData.variantes)
             ? productoData.variantes.map((variante: any) => {
                 // Extraer datos anidados de ubicación desde ubicacion_almacen
                 const ubicacionAlmacen = variante.ubicacion_almacen;
                 const ubicacion = ubicacionAlmacen?.ubicacion;
-                
+
                 // Extraer array de fotos
-                const fotos = Array.isArray(variante.fotos) 
-                  ? variante.fotos.map((foto: any) => foto?.url || "").filter(Boolean)
+                const fotos = Array.isArray(variante.fotos)
+                  ? variante.fotos
+                      .map((foto: any) => foto?.url || "")
+                      .filter(Boolean)
                   : [];
                 const primeraFoto = fotos.length > 0 ? fotos[0] : "";
 
@@ -76,12 +83,16 @@ export default function ProductDetailScreen() {
                     descripcion: variante.descripcion || "",
                     medidas: variante.medidas || "",
                     precio_publico: variante.precio_publico?.toString() || "",
-                    precio_contratista: variante.precio_contratista?.toString() || "",
+                    precio_contratista:
+                      variante.precio_contratista?.toString() || "",
                     costo_compra: variante.costo_compra?.toString() || "",
                     cantidad: variante.cantidad?.toString() || "",
-                    ganacia_publico: variante.ganacia_publico?.toString() || "0",
-                    ganacia_contratista: variante.ganacia_contratista?.toString() || "0",
-                    ganancias_stock: variante.ganancias_stock?.toString() || "0",
+                    ganacia_publico:
+                      variante.ganacia_publico?.toString() || "0",
+                    ganacia_contratista:
+                      variante.ganacia_contratista?.toString() || "0",
+                    ganancias_stock:
+                      variante.ganancias_stock?.toString() || "0",
                     valor_stock: variante.valor_stock?.toString() || "0",
                     // Datos de ubicación anidados
                     ubicacion_id: ubicacion?.id?.toString() || "",
@@ -108,13 +119,18 @@ export default function ProductDetailScreen() {
           mappedProduct.image = firstVariant.attributes?.foto;
         }
 
-        console.log(`[${new Date().toLocaleTimeString()}] Producto mapeado con ${mappedProduct.variants?.length || 0} variantes`);
+        console.log(
+          `[${new Date().toLocaleTimeString()}] Producto mapeado con ${mappedProduct.variants?.length || 0} variantes`,
+        );
         setProduct(mappedProduct);
       } else {
         setError("Producto no encontrado");
       }
     } catch (err) {
-      console.error(`[${new Date().toLocaleTimeString()}] Error cargando producto:`, err);
+      console.error(
+        `[${new Date().toLocaleTimeString()}] Error cargando producto:`,
+        err,
+      );
       setError("Error al cargar el producto");
     } finally {
       setLoading(false);
@@ -129,14 +145,16 @@ export default function ProductDetailScreen() {
   useFocusEffect(
     useCallback(() => {
       if (productId && !isNaN(productId)) {
-        console.log(`[${new Date().toLocaleTimeString()}] Pantalla enfocada, consultando producto en tiempo real...`);
+        console.log(
+          `[${new Date().toLocaleTimeString()}] Pantalla enfocada, consultando producto en tiempo real...`,
+        );
         // Pequeño delay para asegurar que la pantalla esté lista
         const timer = setTimeout(() => {
           fetchProduct();
         }, 100);
         return () => clearTimeout(timer);
       }
-    }, [productId, fetchProduct])
+    }, [productId, fetchProduct]),
   );
 
   if (!productId || isNaN(productId)) {
@@ -192,11 +210,21 @@ export default function ProductDetailScreen() {
     <View style={{ flex: 1, backgroundColor: "#000000" }}>
       <ProductDetailView
         product={product}
-        onAddVariant={canCreate ? () =>
-          router.push(`/tabs/(tabs)/producto/${productId}/variante/nuevo`)
-        : undefined}
+        onAddVariant={
+          canCreate
+            ? () =>
+                router.push(`/tabs/(tabs)/producto/${productId}/variante/nuevo`)
+            : undefined
+        }
+        onEditVariant={
+          canCreate
+            ? (variantId) =>
+                router.push(
+                  `/tabs/(tabs)/producto/${productId}/variante/${variantId}/editar`,
+                )
+            : undefined
+        }
       />
     </View>
   );
 }
-
