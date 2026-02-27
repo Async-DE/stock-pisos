@@ -38,6 +38,7 @@ import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
 import { showSuccess, showError } from "@/utils/notifications";
+import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { usePermissions } from "@/contexts/PermissionsContext";
 
 type UbicacionAlmacen = {
@@ -143,6 +144,7 @@ export default function NuevaVariante() {
   const [precioContratista, setPrecioContratista] = useState("");
   const [costoCompra, setCostoCompra] = useState("");
   const [images, setImages] = useState<SelectedImage[]>([]);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -791,14 +793,23 @@ export default function NuevaVariante() {
 
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">Codigo *</Text>
-                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
-                      <InputField
-                        placeholder="Ej: DL-200"
-                        value={codigo}
-                        onChangeText={setCodigo}
-                        className="text-white"
-                      />
-                    </Input>
+                    <HStack space="sm" className="items-center">
+                      <Input className="flex-1 bg-secondary-600 border-[#169500] rounded-xl">
+                        <InputField
+                          placeholder="Ej: DL-200"
+                          value={codigo}
+                          onChangeText={setCodigo}
+                          className="text-white"
+                        />
+                      </Input>
+                      <Pressable
+                        onPress={() => setIsScannerOpen(true)}
+                        className="bg-[#169500] rounded-xl px-3 py-3 ml-1"
+                        hitSlop={10}
+                      >
+                        <Camera size={20} color="#000000" strokeWidth={2} />
+                      </Pressable>
+                    </HStack>
                   </Box>
 
                   <Box>
@@ -1043,6 +1054,14 @@ export default function NuevaVariante() {
           )}
         </Box>
       </ScrollView>
+      <BarcodeScannerModal
+        visible={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanned={(code) => {
+          setCodigo(code);
+        }}
+        title="Escanear código de la variante"
+      />
     </ImageBackground>
   );
 }
