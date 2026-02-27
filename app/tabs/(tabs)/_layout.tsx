@@ -1,6 +1,6 @@
 import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 
 function TabBarIcon(props: {
@@ -11,6 +11,8 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
+  const router = useRouter();
+
   return (
     <Tabs
       screenOptions={{
@@ -33,6 +35,15 @@ export default function TabLayout() {
           title: "Inicio",
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.replace({
+              pathname: "/tabs/(tabs)/inicio",
+              params: { resetKey: String(Date.now()) },
+            } as any);
+          },
+        }}
       />
 
       <Tabs.Screen
@@ -40,6 +51,12 @@ export default function TabLayout() {
         options={{
           title: "Buscar",
           tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.replace("/tabs/(tabs)/buscar");
+          },
         }}
       />
 
@@ -50,6 +67,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="ellipsis-h" color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.replace("/tabs/(tabs)/almacenamientos");
+          },
         }}
       />
 

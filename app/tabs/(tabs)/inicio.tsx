@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Box } from "@/components/ui/box";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Dimensions, RefreshControl, ImageBackground } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { categoryIcons, type Product } from "../../../components/constants";
 import { request } from "@/constants/Request";
@@ -29,6 +29,7 @@ type Category = {
 
 export default function Inicio() {
   const router = useRouter();
+  const { resetKey } = useLocalSearchParams<{ resetKey?: string }>();
   const { canCreate } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [apiCategories, setApiCategories] = useState<Category[]>([]);
@@ -273,6 +274,18 @@ export default function Inicio() {
   const handleCreateProduct = () => {
     router.push("/tabs/(tabs)/producto/nuevo" as any);
   };
+
+  useEffect(() => {
+    if (!resetKey) {
+      return;
+    }
+
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setSelectedSubcategoryId(null);
+    setProducts([]);
+    setSearchTerm("");
+  }, [resetKey]);
 
   return (
     <ImageBackground
