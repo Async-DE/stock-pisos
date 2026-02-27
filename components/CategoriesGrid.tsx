@@ -46,6 +46,13 @@ export function CategoriesGrid({
   categories,
   onSubcategoryPress,
 }: CategoriesGridProps) {
+  const formatPrice = (price?: number) => {
+    return `$ ${new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price ?? 0)}`;
+  };
+
   if (categories.length === 0) {
     return (
       <Center className="py-8">
@@ -128,9 +135,7 @@ export function CategoriesGrid({
                                 Ganancias
                               </Text>
                               <Text className="text-[#13E000] text-sm font-semibold">
-                                $
-                                {subcategory.gananciaVentas?.toLocaleString() ||
-                                  0}
+                                {formatPrice(subcategory.gananciaVentas)}
                               </Text>
                             </Box>
                             <Box>
@@ -138,7 +143,7 @@ export function CategoriesGrid({
                                 Valor Stock
                               </Text>
                               <Text className="text-[#13E000] text-sm font-semibold">
-                                ${subcategory.valorStock?.toLocaleString() || 0}
+                                {formatPrice(subcategory.valorStock)}
                               </Text>
                             </Box>
                           </HStack>

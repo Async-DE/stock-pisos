@@ -93,16 +93,17 @@ export default function NuevaVenta() {
   }, [costosExtras]);
 
   const totalVenta = useMemo(() => {
-    const cantidad = Number.isNaN(cantidadNumber) || cantidadNumber <= 0 ? 0 : cantidadNumber;
+    const cantidad =
+      Number.isNaN(cantidadNumber) || cantidadNumber <= 0 ? 0 : cantidadNumber;
     const total = basePrice * cantidad;
     return Math.max(0, total);
   }, [basePrice, cantidadNumber, extrasTotal]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-    }).format(price);
+    return `$ ${new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price)}`;
   };
 
   const handleAddExtra = () => {

@@ -98,10 +98,10 @@ export default function BuscarVentas() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-    }).format(price);
+    return `$ ${new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price)}`;
   };
 
   const resetErrors = () => {
