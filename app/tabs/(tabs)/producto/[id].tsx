@@ -20,7 +20,7 @@ export default function ProductDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProduct = useCallback(async (forceRefresh: boolean = false) => {
+  const fetchProduct = useCallback(async () => {
     if (!productId || isNaN(productId)) {
       setError("ID inválido");
       setLoading(false);
@@ -31,11 +31,7 @@ export default function ProductDetailScreen() {
     setError(null);
 
     try {
-      // Agregar timestamp para evitar caché del navegador
-      const timestamp = forceRefresh ? Date.now() : 0;
-      const url = timestamp 
-        ? `/stock/productos/ver/${productId}?_t=${timestamp}`
-        : `/stock/productos/ver/${productId}`;
+      const url = `/stock/productos/ver/${productId}`;
       
       console.log(`[${new Date().toLocaleTimeString()}] Consultando producto: ${productId}`);
       
@@ -57,10 +53,9 @@ export default function ProductDetailScreen() {
           description: `${productoData.subcategoria?.categoria?.nombre || ""} / ${productoData.subcategoria?.nombre || ""}`.trim(),
           variants: Array.isArray(productoData.variantes)
             ? productoData.variantes.map((variante: any) => {
-                // Extraer datos anidados de ubicación
-                const ubicacion = variante.niveles?.estantes?.ubicacion;
-                const estante = variante.niveles?.estantes;
-                const nivel = variante.niveles;
+                // Extraer datos anidados de ubicación desde ubicacion_almacen
+                const ubicacionAlmacen = variante.ubicacion_almacen;
+                const ubicacion = ubicacionAlmacen?.ubicacion;
                 
                 // Extraer array de fotos
                 const fotos = Array.isArray(variante.fotos) 
@@ -95,13 +90,11 @@ export default function ProductDetailScreen() {
                     ubicacion_cp: ubicacion?.cp || "",
                     ubicacion_colonia: ubicacion?.colonia || "",
                     ubicacion_celular: ubicacion?.celular || "",
-                    // Datos de estante
-                    estante_id: estante?.id?.toString() || "",
-                    estante_seccion: estante?.Seccion || "",
-                    estante_pasillo: estante?.pasillo?.toString() || "",
-                    // Datos de nivel
-                    nivel_id: nivel?.id?.toString() || "",
-                    nivel_numero: nivel?.niveles?.toString() || "",
+                    // Datos de almacén/estante
+                    almacen_id: ubicacionAlmacen?.id?.toString() || "",
+                    almacen_codigo: ubicacionAlmacen?.codigo || "",
+                    almacen_tipo: ubicacionAlmacen?.tipo || "",
+                    almacen_descripcion: ubicacionAlmacen?.descripcion || "",
                   },
                 };
               })
@@ -129,7 +122,7 @@ export default function ProductDetailScreen() {
   }, [productId]);
 
   useEffect(() => {
-    fetchProduct(false);
+    fetchProduct();
   }, [fetchProduct]);
 
   // Consultar cuando la pantalla se enfoca (usuario vuelve a esta pantalla)
@@ -139,7 +132,7 @@ export default function ProductDetailScreen() {
         console.log(`[${new Date().toLocaleTimeString()}] Pantalla enfocada, consultando producto en tiempo real...`);
         // Pequeño delay para asegurar que la pantalla esté lista
         const timer = setTimeout(() => {
-          fetchProduct(true);
+          fetchProduct();
         }, 100);
         return () => clearTimeout(timer);
       }
