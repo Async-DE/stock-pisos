@@ -27,7 +27,13 @@ import {
   ImageBackground,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Camera, ChevronDown, ImagePlus } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Camera,
+  ChevronDown,
+  ImagePlus,
+  Plus,
+} from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { request, baseUrl } from "@/constants/Request";
@@ -49,6 +55,19 @@ type UbicacionAlmacenOption = {
   label: string;
 };
 
+type UbicacionAlmacen = {
+  id: number;
+  codigo: string;
+  tipo?: string;
+  descripcion?: string;
+};
+
+type Ubicacion = {
+  id: number;
+  nombre: string;
+  ubicacioneAlmacen?: UbicacionAlmacen[];
+};
+
 type VariantSnapshot = {
   ubi_alma_id: string;
   nombre: string;
@@ -67,6 +86,39 @@ type VariantSnapshot = {
 const ALLOWED_IMAGE_EXTENSIONS = ["jpeg", "jpg", "png", "webp"];
 const MAX_FILES = 5;
 
+const mapUbicacionesFromResponse = (ubicacionesData: any[]): Ubicacion[] => {
+  return ubicacionesData.map((ubicacion: any) => {
+    const estantesLegacy = Array.isArray(ubicacion.estantes)
+      ? ubicacion.estantes.map((estante: any) => ({
+          id: estante.id,
+          codigo: `${estante.Seccion || "N/A"}-${estante.pasillo || 0}`,
+          tipo: "estante",
+          descripcion: `Sección ${estante.Seccion || "N/A"} • Pasillo ${estante.pasillo || 0}`,
+        }))
+      : [];
+
+    const estantesFromUbicacionAlmacen = Array.isArray(
+      ubicacion.ubicacione_almacen,
+    )
+      ? ubicacion.ubicacione_almacen.map((item: any) => ({
+          id: item.id,
+          codigo: item.codigo || "N/A",
+          tipo: item.tipo,
+          descripcion: item.descripcion,
+        }))
+      : [];
+
+    return {
+      id: ubicacion.id,
+      nombre: ubicacion.nombre || `Ubicación ${ubicacion.id}`,
+      ubicacioneAlmacen:
+        estantesLegacy.length > 0
+          ? estantesLegacy
+          : estantesFromUbicacionAlmacen,
+    };
+  });
+};
+
 export default function EditarVariante() {
   const router = useRouter();
   const { id, varianteId } = useLocalSearchParams<{
@@ -80,9 +132,19 @@ export default function EditarVariante() {
   const [loadingData, setLoadingData] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [ubicacionOptions, setUbicacionOptions] = useState<
     UbicacionAlmacenOption[]
   >([]);
+
+  const [selectedUbicacionId, setSelectedUbicacionId] = useState("");
+  const [showCreateEstante, setShowCreateEstante] = useState(false);
+  const [pasillo, setPasillo] = useState("");
+  const [seccion, setSeccion] = useState("");
+  const [codigoAlmacenManual, setCodigoAlmacenManual] = useState("");
+  const [tipoAlmacen, setTipoAlmacen] = useState("");
+  const [descripcionAlmacen, setDescripcionAlmacen] = useState("");
+  const [isCreatingEstante, setIsCreatingEstante] = useState(false);
 
   const [selectedUbiAlmaId, setSelectedUbiAlmaId] = useState("");
   const [nombre, setNombre] = useState("");
@@ -193,14 +255,18 @@ export default function EditarVariante() {
           ubicacionesResponse.status === 200 &&
           Array.isArray(ubicacionesData)
         ) {
+          const ubicacionesMapeadas =
+            mapUbicacionesFromResponse(ubicacionesData);
+          setUbicaciones(ubicacionesMapeadas);
+
           const options: UbicacionAlmacenOption[] = [];
 
-          ubicacionesData.forEach((ubicacion: any) => {
-            if (!Array.isArray(ubicacion.ubicacione_almacen)) {
+          ubicacionesMapeadas.forEach((ubicacion) => {
+            if (!Array.isArray(ubicacion.ubicacioneAlmacen)) {
               return;
             }
 
-            ubicacion.ubicacione_almacen.forEach((item: any) => {
+            ubicacion.ubicacioneAlmacen.forEach((item) => {
               options.push({
                 id: item.id,
                 label: `${ubicacion.nombre || "Ubicación"} • ${item.codigo || "N/A"}`,
@@ -209,6 +275,16 @@ export default function EditarVariante() {
           });
 
           setUbicacionOptions(options);
+
+          const currentUbicacion = ubicacionesMapeadas.find((ubicacion) =>
+            (ubicacion.ubicacioneAlmacen || []).some(
+              (item) => String(item.id) === snapshot.ubi_alma_id,
+            ),
+          );
+
+          if (currentUbicacion) {
+            setSelectedUbicacionId(String(currentUbicacion.id));
+          }
         }
       } catch (error) {
         console.error("Error cargando datos para editar variante:", error);
@@ -221,10 +297,150 @@ export default function EditarVariante() {
     fetchData();
   }, [productId, currentVarianteId]);
 
-  const activeExistingPhotos = useMemo(
-    () => existingPhotos.filter((photo) => !fotosEliminar.includes(photo.id)),
-    [existingPhotos, fotosEliminar],
+  const selectedUbicacion = useMemo(
+    () => ubicaciones.find((item) => String(item.id) === selectedUbicacionId),
+    [ubicaciones, selectedUbicacionId],
   );
+
+  const availableEstantes = selectedUbicacion?.ubicacioneAlmacen ?? [];
+
+  const resetCreateEstanteForm = () => {
+    setPasillo("");
+    setSeccion("");
+    setCodigoAlmacenManual("");
+    setTipoAlmacen("");
+    setDescripcionAlmacen("");
+  };
+
+  const reloadUbicaciones = async () => {
+    try {
+      const ubicacionesResponse = await request(
+        "/stock/ubicaciones/ver",
+        "GET",
+      );
+      if (ubicacionesResponse.status !== 200) {
+        return;
+      }
+
+      const ubicacionesData =
+        ubicacionesResponse.data?.data || ubicacionesResponse.data;
+      if (!Array.isArray(ubicacionesData)) {
+        return;
+      }
+
+      const ubicacionesMapeadas = mapUbicacionesFromResponse(ubicacionesData);
+      setUbicaciones(ubicacionesMapeadas);
+
+      const options: UbicacionAlmacenOption[] = [];
+      ubicacionesMapeadas.forEach((ubicacion) => {
+        (ubicacion.ubicacioneAlmacen || []).forEach((item) => {
+          options.push({
+            id: item.id,
+            label: `${ubicacion.nombre || "Ubicación"} • ${item.codigo || "N/A"}`,
+          });
+        });
+      });
+      setUbicacionOptions(options);
+
+      return ubicacionesMapeadas;
+    } catch (error) {
+      console.error("Error recargando ubicaciones:", error);
+      return;
+    }
+  };
+
+  const handleCreateEstante = async () => {
+    if (!selectedUbicacionId) {
+      showError("Selecciona una ubicación para crear la ubicación de almacén");
+      return;
+    }
+
+    const codigoManual = codigoAlmacenManual.trim();
+    const hasPasillo = pasillo.trim().length > 0;
+    const hasSeccion = seccion.trim().length > 0;
+    const hasPair = hasPasillo && hasSeccion;
+    const hasHalfPair = hasPasillo !== hasSeccion;
+
+    if (!codigoManual && !hasPair) {
+      showError("Ingresa Código manual o completa Pasillo y Sección");
+      return;
+    }
+
+    if (hasHalfPair) {
+      showError("Para usar Pasillo/Sección debes completar ambos campos");
+      return;
+    }
+
+    let codigoFinal = codigoManual;
+    if (!codigoFinal && hasPair) {
+      const pasilloNum = parseInt(pasillo, 10);
+      if (isNaN(pasilloNum) || pasilloNum <= 0) {
+        showError("El pasillo debe ser un número válido mayor a 0");
+        return;
+      }
+
+      codigoFinal = `${seccion.trim().toUpperCase()}-${pasilloNum}`;
+    }
+
+    setIsCreatingEstante(true);
+    try {
+      const payload: {
+        codigo?: string;
+        ubicacion_id: number;
+        tipo?: string;
+        descripcion?: string;
+      } = {
+        ubicacion_id: parseInt(selectedUbicacionId, 10),
+      };
+
+      if (codigoFinal) {
+        payload.codigo = codigoFinal;
+      }
+
+      if (tipoAlmacen.trim()) {
+        payload.tipo = tipoAlmacen.trim();
+      }
+
+      if (descripcionAlmacen.trim()) {
+        payload.descripcion = descripcionAlmacen.trim();
+      }
+
+      const response = await request(
+        "/stock/ubicacion-almacen/crear",
+        "POST",
+        payload,
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        showSuccess("Ubicación de almacén creada correctamente");
+        const recargadas = await reloadUbicaciones();
+        resetCreateEstanteForm();
+        setShowCreateEstante(false);
+
+        const createdId = response.data?.data?.id || response.data?.id;
+        if (createdId) {
+          setSelectedUbiAlmaId(String(createdId));
+        } else if (recargadas) {
+          const ubicacion = recargadas.find(
+            (item) => String(item.id) === selectedUbicacionId,
+          );
+          const found = (ubicacion?.ubicacioneAlmacen || []).find(
+            (item) => item.codigo === codigoFinal,
+          );
+          if (found) {
+            setSelectedUbiAlmaId(String(found.id));
+          }
+        }
+      } else {
+        showError("No se pudo crear la ubicación de almacén");
+      }
+    } catch (error) {
+      console.error("Error creando ubicación de almacén:", error);
+      showError("Error al crear la ubicación de almacén");
+    } finally {
+      setIsCreatingEstante(false);
+    }
+  };
 
   const toggleFotoEliminar = (photoId: number) => {
     setFotosEliminar((prev) =>
@@ -315,6 +531,13 @@ export default function EditarVariante() {
 
   const handleSubmit = async () => {
     if (!currentVarianteId || !initialSnapshot || isSubmitting) {
+      return;
+    }
+
+    if (selectedUbicacionId && !selectedUbiAlmaId) {
+      showError(
+        "Selecciona o crea una ubicación de almacén antes de actualizar",
+      );
       return;
     }
 
@@ -463,37 +686,246 @@ export default function EditarVariante() {
             <VStack space="xl" className="mt-6">
               <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
-                  Ubicación almacén
+                  Ubicación y ubicación almacén
                 </Text>
-                <Select
-                  selectedValue={selectedUbiAlmaId}
-                  onValueChange={setSelectedUbiAlmaId}
-                >
-                  <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
-                    <SelectInput
-                      placeholder="Selecciona ubicación de almacén"
-                      className="text-white"
-                    />
-                    <SelectIcon className="mr-3" as={ChevronDown} />
-                  </SelectTrigger>
-                  <SelectPortal>
-                    <SelectBackdrop />
-                    <SelectContent>
-                      <SelectDragIndicatorWrapper>
-                        <SelectDragIndicator />
-                      </SelectDragIndicatorWrapper>
-                      <SelectScrollView>
-                        {ubicacionOptions.map((item) => (
-                          <SelectItem
-                            key={item.id}
-                            label={item.label}
-                            value={String(item.id)}
-                          />
-                        ))}
-                      </SelectScrollView>
-                    </SelectContent>
-                  </SelectPortal>
-                </Select>
+                <VStack space="md">
+                  <Box>
+                    <Text className="text-gray-400 text-sm mb-2">
+                      Ubicación
+                    </Text>
+                    <Select
+                      selectedValue={selectedUbicacionId}
+                      onValueChange={(value) => {
+                        setSelectedUbicacionId(value);
+                        setSelectedUbiAlmaId("");
+                        setShowCreateEstante(false);
+                        resetCreateEstanteForm();
+                      }}
+                    >
+                      <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
+                        <SelectInput
+                          placeholder="Selecciona una ubicación"
+                          className="text-white"
+                        />
+                        <SelectIcon className="mr-3" as={ChevronDown} />
+                      </SelectTrigger>
+                      <SelectPortal>
+                        <SelectBackdrop />
+                        <SelectContent>
+                          <SelectDragIndicatorWrapper>
+                            <SelectDragIndicator />
+                          </SelectDragIndicatorWrapper>
+                          <SelectScrollView>
+                            {ubicaciones.map((ubicacion) => (
+                              <SelectItem
+                                key={ubicacion.id}
+                                label={ubicacion.nombre}
+                                value={String(ubicacion.id)}
+                              />
+                            ))}
+                          </SelectScrollView>
+                        </SelectContent>
+                      </SelectPortal>
+                    </Select>
+                  </Box>
+
+                  <Box>
+                    <HStack className="items-center justify-between mb-2">
+                      <Text className="text-gray-400 text-sm">
+                        Ubicación almacén
+                      </Text>
+                      {selectedUbicacionId && availableEstantes.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-[#169500]"
+                          onPress={() =>
+                            setShowCreateEstante(!showCreateEstante)
+                          }
+                        >
+                          <ButtonIcon as={Plus} className="text-[#169500]" />
+                          <ButtonText className="text-[#169500] text-xs">
+                            {showCreateEstante ? "Seleccionar" : "Crear"}
+                          </ButtonText>
+                        </Button>
+                      )}
+                    </HStack>
+
+                    {selectedUbicacionId &&
+                      (availableEstantes.length === 0 || showCreateEstante ? (
+                        <Box className="bg-secondary-600/50 border border-[#169500]/50 rounded-xl p-4">
+                          <Text className="text-white font-semibold text-sm mb-3">
+                            Crear ubicación almacén
+                          </Text>
+                          <Text className="text-gray-500 text-xs mb-3">
+                            Código es opcional. También puedes generarlo con
+                            Pasillo + Sección.
+                          </Text>
+                          <VStack space="md">
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">
+                                Código (manual, opcional)
+                              </Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: A-1"
+                                  value={codigoAlmacenManual}
+                                  onChangeText={setCodigoAlmacenManual}
+                                  className="text-white"
+                                />
+                              </Input>
+                            </Box>
+
+                            <HStack space="md" className="items-start">
+                              <Box className="flex-1">
+                                <Text className="text-gray-400 text-xs mb-2">
+                                  Pasillo (opcional)
+                                </Text>
+                                <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                  <InputField
+                                    placeholder="Ej: 1"
+                                    keyboardType="numeric"
+                                    value={pasillo}
+                                    onChangeText={setPasillo}
+                                    className="text-white"
+                                  />
+                                </Input>
+                              </Box>
+
+                              <Box className="flex-1">
+                                <Text className="text-gray-400 text-xs mb-2">
+                                  Sección (opcional)
+                                </Text>
+                                <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                  <InputField
+                                    placeholder="Ej: A"
+                                    value={seccion}
+                                    onChangeText={setSeccion}
+                                    className="text-white"
+                                    maxLength={1}
+                                  />
+                                </Input>
+                              </Box>
+                            </HStack>
+
+                            <Text className="text-gray-500 text-xs">
+                              Debes ingresar Código manual o completar Pasillo y
+                              Sección.
+                            </Text>
+
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">
+                                Tipo (opcional)
+                              </Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: estante"
+                                  value={tipoAlmacen}
+                                  onChangeText={setTipoAlmacen}
+                                  className="text-white"
+                                />
+                              </Input>
+                            </Box>
+
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">
+                                Descripción (opcional)
+                              </Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: Estante A, pasillo 1"
+                                  value={descripcionAlmacen}
+                                  onChangeText={setDescripcionAlmacen}
+                                  className="text-white"
+                                />
+                              </Input>
+                            </Box>
+
+                            <Button
+                              size="sm"
+                              action="primary"
+                              className="bg-[#13E000] rounded-lg mt-2"
+                              onPress={handleCreateEstante}
+                              isDisabled={
+                                isCreatingEstante || !selectedUbicacionId
+                              }
+                            >
+                              <ButtonText className="text-black font-semibold text-sm">
+                                {isCreatingEstante
+                                  ? "Creando..."
+                                  : "Crear ubicación"}
+                              </ButtonText>
+                            </Button>
+
+                            {availableEstantes.length > 0 && (
+                              <Pressable
+                                onPress={() => setShowCreateEstante(false)}
+                              >
+                                <Text className="text-gray-400 text-xs text-center mt-2">
+                                  Cancelar
+                                </Text>
+                              </Pressable>
+                            )}
+                          </VStack>
+                        </Box>
+                      ) : (
+                        <Select
+                          selectedValue={selectedUbiAlmaId}
+                          onValueChange={setSelectedUbiAlmaId}
+                          isDisabled={!selectedUbicacionId}
+                        >
+                          <SelectTrigger className="bg-secondary-600 border-[#169500] rounded-xl">
+                            <SelectInput
+                              placeholder={
+                                selectedUbicacionId
+                                  ? "Selecciona ubicación de almacén"
+                                  : "Selecciona una ubicación primero"
+                              }
+                              className="text-white"
+                            />
+                            <SelectIcon className="mr-3" as={ChevronDown} />
+                          </SelectTrigger>
+                          <SelectPortal>
+                            <SelectBackdrop />
+                            <SelectContent>
+                              <SelectDragIndicatorWrapper>
+                                <SelectDragIndicator />
+                              </SelectDragIndicatorWrapper>
+                              <SelectScrollView>
+                                {availableEstantes.length > 0 ? (
+                                  availableEstantes.map((item) => (
+                                    <SelectItem
+                                      key={item.id}
+                                      label={
+                                        item.descripcion
+                                          ? `${item.codigo} • ${item.descripcion}`
+                                          : item.codigo
+                                      }
+                                      value={String(item.id)}
+                                    />
+                                  ))
+                                ) : (
+                                  <SelectItem
+                                    label="No hay ubicaciones de almacén disponibles"
+                                    value=""
+                                    isDisabled
+                                  />
+                                )}
+                              </SelectScrollView>
+                            </SelectContent>
+                          </SelectPortal>
+                        </Select>
+                      ))}
+
+                    {!selectedUbicacionId && (
+                      <Box className="bg-secondary-600/50 border border-[#169500]/30 rounded-xl p-4">
+                        <Text className="text-gray-500 text-sm text-center">
+                          Selecciona una ubicación primero
+                        </Text>
+                      </Box>
+                    )}
+                  </Box>
+                </VStack>
               </Box>
 
               <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">

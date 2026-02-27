@@ -154,6 +154,7 @@ export default function NuevoProducto() {
   const [showCreateEstante, setShowCreateEstante] = useState(false);
   const [pasillo, setPasillo] = useState("");
   const [seccion, setSeccion] = useState("");
+  const [codigoAlmacenManual, setCodigoAlmacenManual] = useState("");
   const [tipoAlmacen, setTipoAlmacen] = useState("");
   const [descripcionAlmacen, setDescripcionAlmacen] = useState("");
   const [isCreatingEstante, setIsCreatingEstante] = useState(false);
@@ -253,6 +254,7 @@ export default function NuevoProducto() {
     setShowCreateEstante(false);
     setPasillo("");
     setSeccion("");
+    setCodigoAlmacenManual("");
     setTipoAlmacen("");
     setDescripcionAlmacen("");
   };
@@ -282,30 +284,52 @@ export default function NuevoProducto() {
   };
 
   const handleCreateEstante = async () => {
-    if (!selectedUbicacionId || !pasillo.trim() || !seccion.trim()) {
-      showError("Completa todos los campos para crear la ubicación de almacén");
+    if (!selectedUbicacionId) {
+      showError("Selecciona una ubicación para crear la ubicación de almacén");
       return;
     }
 
-    const pasilloNum = parseInt(pasillo);
+    const codigoManual = codigoAlmacenManual.trim();
+    const hasPasillo = pasillo.trim().length > 0;
+    const hasSeccion = seccion.trim().length > 0;
+    const hasPair = hasPasillo && hasSeccion;
+    const hasHalfPair = hasPasillo !== hasSeccion;
 
-    if (isNaN(pasilloNum) || pasilloNum <= 0) {
-      showError("El pasillo debe ser un número válido mayor a 0");
+    if (!codigoManual && !hasPair) {
+      showError("Ingresa Código manual o completa Pasillo y Sección");
       return;
+    }
+
+    if (hasHalfPair) {
+      showError("Para usar Pasillo/Sección debes completar ambos campos");
+      return;
+    }
+
+    let codigoFinal = codigoManual;
+    if (!codigoFinal && hasPair) {
+      const pasilloNum = parseInt(pasillo, 10);
+      if (isNaN(pasilloNum) || pasilloNum <= 0) {
+        showError("El pasillo debe ser un número válido mayor a 0");
+        return;
+      }
+
+      codigoFinal = `${seccion.trim().toUpperCase()}-${pasilloNum}`;
     }
 
     setIsCreatingEstante(true);
     try {
-      const seccionUpper = seccion.trim().toUpperCase();
       const payload: {
-        codigo: string;
+        codigo?: string;
         ubicacion_id: number;
         tipo?: string;
         descripcion?: string;
       } = {
-        codigo: `${seccionUpper}-${pasilloNum}`,
         ubicacion_id: parseInt(selectedUbicacionId, 10),
       };
+
+      if (codigoFinal) {
+        payload.codigo = codigoFinal;
+      }
 
       if (tipoAlmacen.trim()) {
         payload.tipo = tipoAlmacen.trim();
@@ -326,6 +350,7 @@ export default function NuevoProducto() {
         // Limpiar formulario de creación
         setPasillo("");
         setSeccion("");
+        setCodigoAlmacenManual("");
         setTipoAlmacen("");
         setDescripcionAlmacen("");
         setShowCreateEstante(false);
@@ -359,6 +384,7 @@ export default function NuevoProducto() {
     setPrecioContratista("");
     setCostoCompra("");
     setImages([]);
+    setCodigoAlmacenManual("");
     // Incrementar la key para forzar re-render de todos los selects
     setFormResetKey((prev) => prev + 1);
   };
@@ -740,13 +766,27 @@ export default function NuevoProducto() {
                             Crear ubicación almacén
                           </Text>
                           <Text className="text-gray-500 text-xs mb-3">
-                            Sección y Pasillo son obligatorios. Tipo y
-                            Descripción son opcionales.
+                            Código es opcional. También puedes generarlo con
+                            Pasillo + Sección.
                           </Text>
                           <VStack space="md">
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Pasillo *
+                                Código (manual, opcional)
+                              </Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: A-1"
+                                  value={codigoAlmacenManual}
+                                  onChangeText={setCodigoAlmacenManual}
+                                  className="text-white"
+                                />
+                              </Input>
+                            </Box>
+
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">
+                                Pasillo (opcional)
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -760,7 +800,7 @@ export default function NuevoProducto() {
                             </Box>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Sección *
+                                Sección (opcional)
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -772,6 +812,10 @@ export default function NuevoProducto() {
                                 />
                               </Input>
                             </Box>
+                            <Text className="text-gray-500 text-xs">
+                              Debes ingresar Código manual o completar Pasillo y
+                              Sección.
+                            </Text>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
                                 Tipo (opcional)
@@ -804,9 +848,7 @@ export default function NuevoProducto() {
                               className="bg-[#13E000] rounded-lg mt-2"
                               onPress={handleCreateEstante}
                               isDisabled={
-                                isCreatingEstante ||
-                                !pasillo.trim() ||
-                                !seccion.trim()
+                                isCreatingEstante || !selectedUbicacionId
                               }
                             >
                               <ButtonText className="text-black font-semibold text-sm">
