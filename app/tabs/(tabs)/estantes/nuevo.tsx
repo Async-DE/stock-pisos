@@ -58,14 +58,16 @@ export default function NuevoEstante() {
   const [ubicacionId, setUbicacionId] = useState("");
   const [pasillo, setPasillo] = useState("");
   const [seccion, setSeccion] = useState("");
-  const [niveles, setNiveles] = useState("");
+  const [tipo, setTipo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
   const [formResetKey, setFormResetKey] = useState(0);
 
   const [errors, setErrors] = useState({
     ubicacionId: "",
     pasillo: "",
     seccion: "",
-    niveles: "",
+    tipo: "",
+    descripcion: "",
   });
 
   useEffect(() => {
@@ -104,12 +106,14 @@ export default function NuevoEstante() {
     setUbicacionId("");
     setPasillo("");
     setSeccion("");
-    setNiveles("");
+    setTipo("");
+    setDescripcion("");
     setErrors({
       ubicacionId: "",
       pasillo: "",
       seccion: "",
-      niveles: "",
+      tipo: "",
+      descripcion: "",
     });
     // Incrementar la key para forzar re-render del select
     setFormResetKey((prev) => prev + 1);
@@ -125,7 +129,8 @@ export default function NuevoEstante() {
       ubicacionId: "",
       pasillo: "",
       seccion: "",
-      niveles: "",
+      tipo: "",
+      descripcion: "",
     };
 
     if (!ubicacionId) {
@@ -142,10 +147,12 @@ export default function NuevoEstante() {
       newErrors.seccion = "Ingresa la seccion";
     }
 
-    if (!niveles.trim()) {
-      newErrors.niveles = "Ingresa los niveles";
-    } else if (Number.isNaN(Number(niveles))) {
-      newErrors.niveles = "Los niveles deben ser numericos";
+    if (!tipo.trim()) {
+      newErrors.tipo = "Ingresa el tipo";
+    }
+
+    if (!descripcion.trim()) {
+      newErrors.descripcion = "Ingresa la descripcion";
     }
 
     setErrors(newErrors);
@@ -161,11 +168,10 @@ export default function NuevoEstante() {
     try {
       const seccionUpper = seccion.trim().toUpperCase();
       const pasilloNum = Number(pasillo);
-      const nivelesNum = Number(niveles);
       const payload = {
         codigo: `${seccionUpper}-${pasilloNum}`,
-        tipo: "estante",
-        descripcion: `Estante ${seccionUpper}, pasillo ${pasilloNum}, niveles ${nivelesNum}`,
+        tipo: tipo.trim(),
+        descripcion: descripcion.trim(),
         ubicacion_id: Number(ubicacionId),
       };
 
@@ -180,7 +186,7 @@ export default function NuevoEstante() {
         router.back();
       }
     } catch (error) {
-      console.error("Error creando estante:", error);
+      console.error("Error creando ubicación de almacén:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -207,9 +213,11 @@ export default function NuevoEstante() {
           </Pressable>
 
           <Box className="mt-6">
-            <Text className="text-white text-2xl font-bold">Nuevo estante</Text>
+            <Text className="text-white text-2xl font-bold">
+              Nueva ubicación almacén
+            </Text>
             <Text className="text-gray-400 text-sm mt-1">
-              Registra un estante y define sus niveles.
+              Registra una ubicación de almacén.
             </Text>
           </Box>
 
@@ -270,7 +278,7 @@ export default function NuevoEstante() {
 
               <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
-                  Detalles del estante
+                  Detalles de ubicación almacén
                 </Text>
                 <VStack space="md">
                   <Box>
@@ -310,25 +318,40 @@ export default function NuevoEstante() {
                       ) : null}
                     </Box>
                     <Box className="flex-1">
-                      <Text className="text-gray-400 text-sm mb-2">
-                        Niveles
-                      </Text>
+                      <Text className="text-gray-400 text-sm mb-2">Tipo</Text>
                       <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
-                          placeholder="Ej: 4"
-                          keyboardType="numeric"
-                          value={niveles}
-                          onChangeText={setNiveles}
+                          placeholder="Ej: estante"
+                          value={tipo}
+                          onChangeText={setTipo}
                           className="text-white"
                         />
                       </Input>
-                      {errors.niveles ? (
+                      {errors.tipo ? (
                         <Text className="text-red-500 text-sm mt-2">
-                          {errors.niveles}
+                          {errors.tipo}
                         </Text>
                       ) : null}
                     </Box>
                   </HStack>
+                  <Box>
+                    <Text className="text-gray-400 text-sm mb-2">
+                      Descripcion
+                    </Text>
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
+                      <InputField
+                        placeholder="Ej: Estante A, pasillo 1"
+                        value={descripcion}
+                        onChangeText={setDescripcion}
+                        className="text-white"
+                      />
+                    </Input>
+                    {errors.descripcion ? (
+                      <Text className="text-red-500 text-sm mt-2">
+                        {errors.descripcion}
+                      </Text>
+                    ) : null}
+                  </Box>
                 </VStack>
               </Box>
 
@@ -340,7 +363,7 @@ export default function NuevoEstante() {
                 isDisabled={isSubmitting}
               >
                 <ButtonText className="text-black font-semibold">
-                  {isSubmitting ? "Guardando..." : "Crear estante"}
+                  {isSubmitting ? "Guardando..." : "Crear ubicación"}
                 </ButtonText>
               </Button>
             </VStack>

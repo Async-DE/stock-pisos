@@ -123,7 +123,8 @@ export default function NuevaVariante() {
   const [showCreateEstante, setShowCreateEstante] = useState(false);
   const [pasillo, setPasillo] = useState("");
   const [seccion, setSeccion] = useState("");
-  const [niveles, setNiveles] = useState("");
+  const [tipoAlmacen, setTipoAlmacen] = useState("");
+  const [descripcionAlmacen, setDescripcionAlmacen] = useState("");
   const [isCreatingEstante, setIsCreatingEstante] = useState(false);
 
   const [nombre, setNombre] = useState("");
@@ -186,7 +187,8 @@ export default function NuevaVariante() {
     setShowCreateEstante(false);
     setPasillo("");
     setSeccion("");
-    setNiveles("");
+    setTipoAlmacen("");
+    setDescripcionAlmacen("");
   };
 
   const reloadUbicaciones = async () => {
@@ -218,22 +220,17 @@ export default function NuevaVariante() {
       !selectedUbicacionId ||
       !pasillo.trim() ||
       !seccion.trim() ||
-      !niveles.trim()
+      !tipoAlmacen.trim() ||
+      !descripcionAlmacen.trim()
     ) {
-      showError("Completa todos los campos para crear el estante");
+      showError("Completa todos los campos para crear la ubicacion de almacen");
       return;
     }
 
     const pasilloNum = parseInt(pasillo);
-    const nivelesNum = parseInt(niveles);
 
-    if (
-      isNaN(pasilloNum) ||
-      isNaN(nivelesNum) ||
-      pasilloNum <= 0 ||
-      nivelesNum <= 0
-    ) {
-      showError("El pasillo y niveles deben ser números válidos mayores a 0");
+    if (isNaN(pasilloNum) || pasilloNum <= 0) {
+      showError("El pasillo debe ser un número válido mayor a 0");
       return;
     }
 
@@ -242,26 +239,27 @@ export default function NuevaVariante() {
       const seccionUpper = seccion.trim().toUpperCase();
       const response = await request("/stock/ubicacion-almacen/crear", "POST", {
         codigo: `${seccionUpper}-${pasilloNum}`,
-        tipo: "estante",
-        descripcion: `Estante ${seccionUpper}, pasillo ${pasilloNum}, niveles ${nivelesNum}`,
+        tipo: tipoAlmacen.trim(),
+        descripcion: descripcionAlmacen.trim(),
         ubicacion_id: parseInt(selectedUbicacionId, 10),
       });
 
       if (response.status === 200 || response.status === 201) {
-        showSuccess("Estante creado correctamente");
+        showSuccess("Ubicacion de almacen creada correctamente");
         // Limpiar formulario de creación
         setPasillo("");
         setSeccion("");
-        setNiveles("");
+        setTipoAlmacen("");
+        setDescripcionAlmacen("");
         setShowCreateEstante(false);
         // Recargar ubicaciones para mostrar el nuevo estante
         await reloadUbicaciones();
       } else {
-        showError("No se pudo crear el estante");
+        showError("No se pudo crear la ubicacion de almacen");
       }
     } catch (error) {
-      console.error("Error creando estante:", error);
-      showError("Error al crear el estante");
+      console.error("Error creando ubicacion de almacen:", error);
+      showError("Error al crear la ubicacion de almacen");
     } finally {
       setIsCreatingEstante(false);
     }
@@ -488,7 +486,9 @@ export default function NuevaVariante() {
 
                   <Box>
                     <HStack className="items-center justify-between mb-2">
-                      <Text className="text-gray-400 text-sm">Estante</Text>
+                      <Text className="text-gray-400 text-sm">
+                        Ubicacion almacen
+                      </Text>
                       {selectedUbicacionId && availableEstantes.length > 0 && (
                         <Button
                           variant="outline"
@@ -511,7 +511,7 @@ export default function NuevaVariante() {
                         // Vista para crear estante
                         <Box className="bg-secondary-600/50 border border-[#169500]/50 rounded-xl p-4">
                           <Text className="text-white font-semibold text-sm mb-3">
-                            Crear nuevo estante
+                            Crear ubicacion almacen
                           </Text>
                           <VStack space="md">
                             <Box>
@@ -544,14 +544,26 @@ export default function NuevaVariante() {
                             </Box>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Niveles
+                                Tipo
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
-                                  placeholder="Ej: 4"
-                                  keyboardType="numeric"
-                                  value={niveles}
-                                  onChangeText={setNiveles}
+                                  placeholder="Ej: estante"
+                                  value={tipoAlmacen}
+                                  onChangeText={setTipoAlmacen}
+                                  className="text-white"
+                                />
+                              </Input>
+                            </Box>
+                            <Box>
+                              <Text className="text-gray-400 text-xs mb-2">
+                                Descripcion
+                              </Text>
+                              <Input className="bg-secondary-700 border-[#169500] rounded-lg">
+                                <InputField
+                                  placeholder="Ej: Estante A, pasillo 1"
+                                  value={descripcionAlmacen}
+                                  onChangeText={setDescripcionAlmacen}
                                   className="text-white"
                                 />
                               </Input>
@@ -565,13 +577,14 @@ export default function NuevaVariante() {
                                 isCreatingEstante ||
                                 !pasillo.trim() ||
                                 !seccion.trim() ||
-                                !niveles.trim()
+                                !tipoAlmacen.trim() ||
+                                !descripcionAlmacen.trim()
                               }
                             >
                               <ButtonText className="text-black font-semibold text-sm">
                                 {isCreatingEstante
                                   ? "Creando..."
-                                  : "Crear estante"}
+                                  : "Crear ubicacion"}
                               </ButtonText>
                             </Button>
                             {availableEstantes.length > 0 && (
