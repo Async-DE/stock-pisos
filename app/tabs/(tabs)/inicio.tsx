@@ -137,14 +137,24 @@ export default function Inicio() {
             producto.variantes.length > 0
           ) {
             producto.variantes.forEach((variante: any, index: number) => {
+              // La API nueva devuelve las fotos como un array: variante.fotos[]
+              const firstPhotoUrl =
+                Array.isArray(variante.fotos) && variante.fotos.length > 0
+                  ? variante.fotos[0]?.url
+                  : undefined;
+
+              // Texto descriptivo corto para la card
+              const shortDescription = (
+                `${variante.color || ""} - ${variante.medidas || ""}`
+              ).trim();
+
               mappedProducts.push({
                 id: producto.id * 1000 + index, // ID único para cada variante (para la tarjeta)
                 productId: producto.id, // ID real del producto para consultar detalles
                 name: variante.nombre || `Producto ${producto.id}`,
                 price: variante.precio_publico || 0,
-                image: variante.foto,
-                description:
-                  `${variante.color || ""} - ${variante.medidas || ""}`.trim(),
+                image: firstPhotoUrl,
+                description: shortDescription,
                 variants: [
                   {
                     id: producto.id * 1000 + index,
@@ -152,11 +162,14 @@ export default function Inicio() {
                     price: variante.precio_publico || 0,
                     stock: variante.cantidad,
                     attributes: {
+                      // Campos básicos para mostrar info rápida
                       color: variante.color || "",
                       medidas: variante.medidas || "",
                       precio_contratista:
                         variante.precio_contratista?.toString() || "",
                       cantidad: variante.cantidad?.toString() || "",
+                      // Guardamos también la foto principal por consistencia
+                      foto: firstPhotoUrl || "",
                     },
                   },
                 ],
