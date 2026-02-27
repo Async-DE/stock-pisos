@@ -104,6 +104,9 @@ type SelectedImage = {
   type: string;
 };
 
+const ALLOWED_IMAGE_EXTENSIONS = ["jpeg", "jpg", "png", "webp"];
+const MAX_FILES = 5;
+
 export default function NuevoProducto() {
   const router = useRouter();
   const { canCreate } = usePermissions();
@@ -136,11 +139,13 @@ export default function NuevoProducto() {
   const [color, setColor] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [cantidad, setCantidad] = useState("");
-  const [medidas, setMedidas] = useState("");
+  const [alto, setAlto] = useState("");
+  const [ancho, setAncho] = useState("");
+  const [largo, setLargo] = useState("");
   const [precioPublico, setPrecioPublico] = useState("");
   const [precioContratista, setPrecioContratista] = useState("");
   const [costoCompra, setCostoCompra] = useState("");
-  const [image, setImage] = useState<SelectedImage | null>(null);
+  const [images, setImages] = useState<SelectedImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formResetKey, setFormResetKey] = useState(0);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -277,13 +282,7 @@ export default function NuevoProducto() {
   };
 
   const handleCreateEstante = async () => {
-    if (
-      !selectedUbicacionId ||
-      !pasillo.trim() ||
-      !seccion.trim() ||
-      !tipoAlmacen.trim() ||
-      !descripcionAlmacen.trim()
-    ) {
+    if (!selectedUbicacionId || !pasillo.trim() || !seccion.trim()) {
       showError("Completa todos los campos para crear la ubicación de almacén");
       return;
     }
@@ -298,12 +297,29 @@ export default function NuevoProducto() {
     setIsCreatingEstante(true);
     try {
       const seccionUpper = seccion.trim().toUpperCase();
-      const response = await request("/stock/ubicacion-almacen/crear", "POST", {
+      const payload: {
+        codigo: string;
+        ubicacion_id: number;
+        tipo?: string;
+        descripcion?: string;
+      } = {
         codigo: `${seccionUpper}-${pasilloNum}`,
-        tipo: tipoAlmacen.trim(),
-        descripcion: descripcionAlmacen.trim(),
         ubicacion_id: parseInt(selectedUbicacionId, 10),
-      });
+      };
+
+      if (tipoAlmacen.trim()) {
+        payload.tipo = tipoAlmacen.trim();
+      }
+
+      if (descripcionAlmacen.trim()) {
+        payload.descripcion = descripcionAlmacen.trim();
+      }
+
+      const response = await request(
+        "/stock/ubicacion-almacen/crear",
+        "POST",
+        payload,
+      );
 
       if (response.status === 200 || response.status === 201) {
         showSuccess("Ubicación de almacén creada correctamente");
@@ -336,11 +352,13 @@ export default function NuevoProducto() {
     setColor("");
     setDescripcion("");
     setCantidad("");
-    setMedidas("");
+    setAlto("");
+    setAncho("");
+    setLargo("");
     setPrecioPublico("");
     setPrecioContratista("");
     setCostoCompra("");
-    setImage(null);
+    setImages([]);
     // Incrementar la key para forzar re-render de todos los selects
     setFormResetKey((prev) => prev + 1);
   };
@@ -361,7 +379,8 @@ export default function NuevoProducto() {
     precioPublico.trim() &&
     precioContratista.trim() &&
     costoCompra.trim() &&
-    image?.uri;
+    images.length > 0 &&
+    images.length <= MAX_FILES;
 
   const pickImage = async (source: "camera" | "library") => {
     const permissions =
@@ -384,22 +403,53 @@ export default function NuevoProducto() {
             allowsEditing: true,
             quality: 0.8,
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            selectionLimit: MAX_FILES,
           });
 
     if (result.canceled || !result.assets?.length) {
       return;
     }
 
-    const asset = result.assets[0];
-    const uri = asset.uri;
-    const filename = asset.fileName || uri.split("/").pop() || "foto.jpg";
-    const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
-    const mimeType = asset.mimeType || `image/${ext === "jpg" ? "jpeg" : ext}`;
+    const selectedFromPicker: SelectedImage[] = result.assets
+      .map((asset) => {
+        const uri = asset.uri;
+        const filename = asset.fileName || uri.split("/").pop() || "foto.jpg";
+        const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+        const mimeType = (
+          asset.mimeType || `image/${ext === "jpg" ? "jpeg" : ext}`
+        ).toLowerCase();
+        return {
+          uri,
+          name: filename,
+          type: mimeType,
+        };
+      })
+      .filter((file) => {
+        const ext = file.name.split(".").pop()?.toLowerCase() || "";
+        const mimeSubtype = file.type.split("/")[1] || "";
+        return (
+          ALLOWED_IMAGE_EXTENSIONS.includes(ext) ||
+          ALLOWED_IMAGE_EXTENSIONS.includes(mimeSubtype)
+        );
+      });
 
-    setImage({
-      uri,
-      name: filename,
-      type: mimeType,
+    if (!selectedFromPicker.length) {
+      showError("Solo se permiten imágenes JPG, JPEG, PNG o WEBP");
+      return;
+    }
+
+    setImages((prev) => {
+      const merged = [...prev, ...selectedFromPicker].filter(
+        (file, index, arr) =>
+          arr.findIndex((item) => item.uri === file.uri) === index,
+      );
+
+      if (merged.length > MAX_FILES) {
+        showError(`Máximo ${MAX_FILES} imágenes`);
+      }
+
+      return merged.slice(0, MAX_FILES);
     });
   };
 
@@ -425,20 +475,26 @@ export default function NuevoProducto() {
       formData.append("precio_contratista", precioContratista.trim());
       formData.append("costo_compra", costoCompra.trim());
 
-      const medidasParts = medidas
-        .split(/[xX]/)
-        .map((value) => value.trim())
-        .filter(Boolean);
-
-      if (medidasParts.length === 3) {
-        const [alto, ancho, largo] = medidasParts;
-        formData.append("alto", alto);
-        formData.append("ancho", ancho);
-        formData.append("largo", largo);
+      if (alto.trim()) {
+        formData.append("alto", alto.trim());
       }
 
-      if (image) {
-        formData.append("files", {
+      if (ancho.trim()) {
+        formData.append("ancho", ancho.trim());
+      }
+
+      if (largo.trim()) {
+        formData.append("largo", largo.trim());
+      }
+
+      if (images.length === 0) {
+        showError("Debes agregar al menos 1 imagen");
+        setIsSubmitting(false);
+        return;
+      }
+
+      for (const image of images) {
+        formData.append("foto", {
           uri: image.uri,
           name: image.name,
           type: image.type,
@@ -459,6 +515,7 @@ export default function NuevoProducto() {
         router.back();
       } else {
         const errorText = await response.text();
+        console.log("Error response text:", errorText);
         showError(
           errorText ||
             "No se pudo crear el producto. Verifica los datos e intenta de nuevo",
@@ -517,7 +574,7 @@ export default function NuevoProducto() {
                 <VStack space="md">
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Categoría
+                      Categoría *
                     </Text>
                     <Select
                       key={`category-${formResetKey}`}
@@ -556,7 +613,7 @@ export default function NuevoProducto() {
 
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Subcategoría
+                      Subcategoría *
                     </Text>
                     <Select
                       key={`subcategory-${formResetKey}-${selectedCategoryId || "no-category"}`}
@@ -612,7 +669,7 @@ export default function NuevoProducto() {
                 <VStack space="md">
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Ubicación
+                      Ubicación *
                     </Text>
                     <Select
                       key={`ubicacion-${formResetKey}`}
@@ -652,7 +709,7 @@ export default function NuevoProducto() {
                   <Box>
                     <HStack className="items-center justify-between mb-2">
                       <Text className="text-gray-400 text-sm">
-                        Ubicación almacén
+                        Ubicación almacén *
                       </Text>
                       {selectedUbicacionId && availableEstantes.length > 0 && (
                         <Button
@@ -678,10 +735,14 @@ export default function NuevoProducto() {
                           <Text className="text-white font-semibold text-sm mb-3">
                             Crear ubicación almacén
                           </Text>
+                          <Text className="text-gray-500 text-xs mb-3">
+                            Sección y Pasillo son obligatorios. Tipo y
+                            Descripción son opcionales.
+                          </Text>
                           <VStack space="md">
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Pasillo
+                                Pasillo *
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -695,7 +756,7 @@ export default function NuevoProducto() {
                             </Box>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Sección
+                                Sección *
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -709,7 +770,7 @@ export default function NuevoProducto() {
                             </Box>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Tipo
+                                Tipo (opcional)
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -722,7 +783,7 @@ export default function NuevoProducto() {
                             </Box>
                             <Box>
                               <Text className="text-gray-400 text-xs mb-2">
-                                Descripción
+                                Descripción (opcional)
                               </Text>
                               <Input className="bg-secondary-700 border-[#169500] rounded-lg">
                                 <InputField
@@ -741,9 +802,7 @@ export default function NuevoProducto() {
                               isDisabled={
                                 isCreatingEstante ||
                                 !pasillo.trim() ||
-                                !seccion.trim() ||
-                                !tipoAlmacen.trim() ||
-                                !descripcionAlmacen.trim()
+                                !seccion.trim()
                               }
                             >
                               <ButtonText className="text-black font-semibold text-sm">
@@ -831,7 +890,7 @@ export default function NuevoProducto() {
                 </Text>
                 <VStack space="md">
                   <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Nombre</Text>
+                    <Text className="text-gray-400 text-sm mb-2">Nombre *</Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: Pisos Laminados Premium"
@@ -843,7 +902,7 @@ export default function NuevoProducto() {
                   </Box>
 
                   <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Código</Text>
+                    <Text className="text-gray-400 text-sm mb-2">Código *</Text>
                     <HStack space="sm" className="items-center">
                       <Input className="flex-1 bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
@@ -864,7 +923,7 @@ export default function NuevoProducto() {
                   </Box>
 
                   <Box>
-                    <Text className="text-gray-400 text-sm mb-2">Color</Text>
+                    <Text className="text-gray-400 text-sm mb-2">Color *</Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
                         placeholder="Ej: Nogal"
@@ -877,7 +936,7 @@ export default function NuevoProducto() {
 
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Descripción
+                      Descripción *
                     </Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
@@ -892,7 +951,7 @@ export default function NuevoProducto() {
                   <HStack space="md" className="items-start">
                     <Box className="flex-1">
                       <Text className="text-gray-400 text-sm mb-2">
-                        Cantidad
+                        Cantidad *
                       </Text>
                       <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
@@ -904,20 +963,53 @@ export default function NuevoProducto() {
                         />
                       </Input>
                     </Box>
+                  </HStack>
+
+                  <HStack space="md" className="items-start">
                     <Box className="flex-1">
                       <Text className="text-gray-400 text-sm mb-2">
-                        Medidas
+                        Alto (opcional)
                       </Text>
                       <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                         <InputField
-                          placeholder="Ej: 15x16x35"
-                          value={medidas}
-                          onChangeText={setMedidas}
+                          placeholder="Ej: 10.5"
+                          keyboardType="numeric"
+                          value={alto}
+                          onChangeText={setAlto}
+                          className="text-white"
+                        />
+                      </Input>
+                    </Box>
+                    <Box className="flex-1">
+                      <Text className="text-gray-400 text-sm mb-2">
+                        Ancho (opcional)
+                      </Text>
+                      <Input className="bg-secondary-600 border-[#169500] rounded-xl">
+                        <InputField
+                          placeholder="Ej: 5.0"
+                          keyboardType="numeric"
+                          value={ancho}
+                          onChangeText={setAncho}
                           className="text-white"
                         />
                       </Input>
                     </Box>
                   </HStack>
+
+                  <Box>
+                    <Text className="text-gray-400 text-sm mb-2">
+                      Largo (opcional)
+                    </Text>
+                    <Input className="bg-secondary-600 border-[#169500] rounded-xl">
+                      <InputField
+                        placeholder="Ej: 2.0"
+                        keyboardType="numeric"
+                        value={largo}
+                        onChangeText={setLargo}
+                        className="text-white"
+                      />
+                    </Input>
+                  </Box>
                 </VStack>
               </Box>
 
@@ -928,7 +1020,7 @@ export default function NuevoProducto() {
                 <VStack space="md">
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Precio público
+                      Precio público *
                     </Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
@@ -942,7 +1034,7 @@ export default function NuevoProducto() {
                   </Box>
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Precio contratista
+                      Precio contratista *
                     </Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
@@ -956,7 +1048,7 @@ export default function NuevoProducto() {
                   </Box>
                   <Box>
                     <Text className="text-gray-400 text-sm mb-2">
-                      Costo compra
+                      Costo compra *
                     </Text>
                     <Input className="bg-secondary-600 border-[#169500] rounded-xl">
                       <InputField
@@ -973,13 +1065,13 @@ export default function NuevoProducto() {
 
               <Box className="bg-secondary-500/50 border border-[#169500] rounded-2xl p-4">
                 <Text className="text-white font-semibold text-lg mb-3">
-                  Foto del producto
+                  Foto del producto *
                 </Text>
                 <VStack space="md">
-                  {image ? (
+                  {images.length > 0 ? (
                     <Box className="border border-[#169500]/40 rounded-2xl overflow-hidden">
                       <Image
-                        source={{ uri: image.uri }}
+                        source={{ uri: images[0].uri }}
                         style={{ width: "100%", height: 220 }}
                       />
                     </Box>
@@ -987,9 +1079,15 @@ export default function NuevoProducto() {
                     <Center className="border border-dashed border-[#169500]/40 rounded-2xl py-8">
                       <ImagePlus size={36} color="#13E000" strokeWidth={1.5} />
                       <Text className="text-gray-400 text-sm mt-2">
-                        Agrega una foto (JPG, PNG o WEBP)
+                        Agrega entre 1 y 5 fotos (JPG, JPEG, PNG o WEBP)
                       </Text>
                     </Center>
+                  )}
+
+                  {images.length > 0 && (
+                    <Text className="text-gray-400 text-xs text-center">
+                      {images.length} de {MAX_FILES} imágenes seleccionadas
+                    </Text>
                   )}
 
                   <HStack space="md" className="items-center">
@@ -1014,10 +1112,10 @@ export default function NuevoProducto() {
                       <ButtonText className="text-[#169500]">Cargar</ButtonText>
                     </Button>
                   </HStack>
-                  {image && (
-                    <Pressable onPress={() => setImage(null)}>
+                  {images.length > 0 && (
+                    <Pressable onPress={() => setImages([])}>
                       <Text className="text-gray-500 text-sm text-center">
-                        Quitar foto
+                        Quitar fotos
                       </Text>
                     </Pressable>
                   )}
